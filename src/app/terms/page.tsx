@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { Scale, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | QR Vibe",
+  title: "Terms of Service",
   description: "Terms and conditions of use for QR Vibe free online QR code generation utilities.",
   alternates: {
     canonical: "https://qrvibe.online/terms",

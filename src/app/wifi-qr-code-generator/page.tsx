@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Wifi, ShieldCheck, Printer, KeyRound, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { PageFAQ } from "@/components/PageFAQ";
+import { PAGE_FAQS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Wi-Fi QR Code Generator - One-Tap Auto Connect (WPA/WPA2/WPA3)",
@@ -12,6 +14,7 @@ export const metadata: Metadata = {
     canonical: "https://qrvibe.online/wifi-qr-code-generator",
   },
   openGraph: {
+    images: "/opengraph-image",
     title: "Free Wi-Fi QR Code Generator | Auto Connect Scanner",
     description: "Connect guests instantly to your Wi-Fi network. Scannable by any iOS and Android camera.",
   },
@@ -100,6 +103,8 @@ export default function WiFiQRPage() {
               </ul>
             </div>
           </div>
+
+          <PageFAQ title="Wi-Fi QR Code FAQ" faqs={PAGE_FAQS.wifi} />
 
           {/* Quick Links */}
           <div className="text-center">

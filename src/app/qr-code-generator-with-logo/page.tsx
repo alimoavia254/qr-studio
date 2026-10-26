@@ -2,11 +2,11 @@ import { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { QRStudio } from "@/components/QRStudio";
-import { ShieldCheck, Sparkles, CheckCircle2, AlertCircle, ArrowRight } from "lucide-react";
+import { ShieldCheck, Sparkles, CheckCircle2, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "QR Code Generator with Logo - Free & Scan-Guaranteed | QR Vibe",
+  title: "QR Code Generator with Logo - Free & Scan-Guaranteed",
   description:
     "Generate custom branded QR codes with your company logo centered. Verified with real-time in-browser computer-vision decoder and Level-H 30% error correction.",
   keywords: [

@@ -1,0 +1,23 @@
+# QR Vibe
+
+> QR Vibe (https://qrvibe.online) is a free online QR code generator with logo. It makes branded, scan-tested QR codes for websites, WhatsApp, Wi-Fi, business cards (vCard), email and text. No sign-up, no watermark, and codes never expire because they are static. Everything runs in the browser, so logos and Wi-Fi passwords are never uploaded.
+
+## Key facts
+- Price: 100% free, unlimited downloads
+- Downloads: PNG, JPG and SVG (HD and print sizes)
+- Logo support: error correction switches to Level H (30%) automatically when a logo is added
+- Live scan check: a built-in decoder test-scans every design before download
+- Design: colors, gradients, dot and corner styles, ready-made themes, poster frames with a call-to-action
+- Privacy: generated locally in the browser; no account and no server storage
+
+## Generators
+- [QR code generator with logo](https://qrvibe.online/qr-code-generator-with-logo): add a brand logo to the center of a QR code
+- [WhatsApp QR code generator](https://qrvibe.online/whatsapp-qr-code-generator): opens a WhatsApp chat with an optional pre-filled message
+- [Wi-Fi QR code generator](https://qrvibe.online/wifi-qr-code-generator): guests join Wi-Fi by scanning, no password typing
+- [Business card QR code generator](https://qrvibe.online/qr-code-for-business-cards): vCard QR that saves your contact in one tap
+- [Custom QR code generator](https://qrvibe.online/custom-qr-code-generator): custom colors, dots, corners and frames
+
+## About
+- [About QR Vibe](https://qrvibe.online/about)
+- [Privacy policy](https://qrvibe.online/privacy-policy)
+- [Contact](https://qrvibe.online/contact)

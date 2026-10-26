@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Contact, CreditCard, ShieldCheck, Printer, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { PageFAQ } from "@/components/PageFAQ";
+import { PAGE_FAQS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "QR Code Generator for Business Cards (vCard 3.0 / Digital Card)",
@@ -12,6 +14,7 @@ export const metadata: Metadata = {
     canonical: "https://qrvibe.online/qr-code-for-business-cards",
   },
   openGraph: {
+    images: "/opengraph-image",
     title: "Business Card QR Code Generator | vCard Digital Contact",
     description: "Generate print-ready vCard QR codes for your paper business cards. Works natively with iOS Contacts and Android Google Contacts.",
   },
@@ -100,6 +103,8 @@ export default function BusinessCardQRPage() {
               </ul>
             </div>
           </div>
+
+          <PageFAQ title="Business Card QR Code FAQ" faqs={PAGE_FAQS.businessCard} />
 
           {/* Quick Links */}
           <div className="text-center">
