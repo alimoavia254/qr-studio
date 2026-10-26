@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Custom QR Code Generator - Designer Dots, Corners & Gradients",
   description: "Design custom QR codes with rounded dots, sleek corner eye styles, modern color gradients, and brand frames with instant real-time scan verification.",
   alternates: {
-    canonical: "https://qr-studio-rouge-six.vercel.app/custom-qr-code-generator",
+    canonical: "https://qrvibe.online/custom-qr-code-generator",
   },
   openGraph: {
     title: "Custom QR Code Generator | Aesthetic Brand Designer",

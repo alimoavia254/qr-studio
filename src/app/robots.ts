@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
     },
-    sitemap: "https://qr-studio-rouge-six.vercel.app/sitemap.xml",
+    sitemap: "https://qrvibe.online/sitemap.xml",
   };
 }

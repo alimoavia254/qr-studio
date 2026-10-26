@@ -6,7 +6,7 @@ import { ShieldCheck, Sparkles, CheckCircle2, AlertCircle, ArrowRight } from "lu
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "QR Code Generator with Logo - Free & Scan-Guaranteed | QR Studio PRO",
+  title: "QR Code Generator with Logo - Free & Scan-Guaranteed | QR Vibe",
   description:
     "Generate custom branded QR codes with your company logo centered. Verified with real-time in-browser computer-vision decoder and Level-H 30% error correction.",
   keywords: [
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     "high resolution qr code logo",
   ],
   alternates: {
-    canonical: "https://qr-studio-rouge-six.vercel.app/qr-code-generator-with-logo",
+    canonical: "https://qrvibe.online/qr-code-generator-with-logo",
   },
 };
 
@@ -31,7 +31,7 @@ export default function LogoQRPage() {
         name: "Will putting a logo in the center of a QR code prevent it from scanning?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "No, provided you use Level-H (High) Reed-Solomon Error Correction, which restores up to 30% of covered or damaged data modules. QR Studio PRO automatically locks Level-H when a logo is detected.",
+          text: "No, provided you use Level-H (High) Reed-Solomon Error Correction, which restores up to 30% of covered or damaged data modules. QR Vibe automatically locks Level-H when a logo is detected.",
         },
       },
       {

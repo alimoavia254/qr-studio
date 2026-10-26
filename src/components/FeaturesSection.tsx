@@ -14,7 +14,7 @@ export function FeaturesSection() {
       icon: Sparkles,
       title: "Custom Brand Logo Blend",
       description:
-        "Upload your company or brand logo. QR Studio auto-centers and pads it seamlessly without obscuring critical data patterns.",
+        "Upload your company or brand logo. QR Vibe auto-centers and pads it seamlessly without obscuring critical data patterns.",
       color: "from-pink-500 to-rose-500",
     },
     {
@@ -63,11 +63,11 @@ export function FeaturesSection() {
             <span>Built For Brands & Creators</span>
           </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-            Why QR Studio Delivers Better Results
+            Why QR Vibe Delivers Better Results
           </h2>
           <p className="mt-3 text-slate-400 text-sm sm:text-base">
             Most online QR generators create boring black-and-white codes or break when you add a logo.
-            QR Studio bridges high-end aesthetics with mathematical scan reliability.
+            QR Vibe bridges high-end aesthetics with mathematical scan reliability.
           </p>
         </div>
 

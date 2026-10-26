@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "QR Code Generator for Business Cards (vCard 3.0 / Digital Card)",
   description: "Create professional vCard QR codes for physical business cards. One scan lets clients instantly save your phone number, email, company, and portfolio.",
   alternates: {
-    canonical: "https://qr-studio-rouge-six.vercel.app/qr-code-for-business-cards",
+    canonical: "https://qrvibe.online/qr-code-for-business-cards",
   },
   openGraph: {
     title: "Business Card QR Code Generator | vCard Digital Contact",

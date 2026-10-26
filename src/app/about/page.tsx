@@ -5,10 +5,10 @@ import { Sparkles, Code2, Heart, Award, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About Us | QR Studio PRO - The Private QR Code Platform",
-  description: "Learn why we built QR Studio PRO: to free creators from scammy subscription redirects and provide a fast, beautiful, 100% private QR generator.",
+  title: "About Us | QR Vibe - The Private QR Code Platform",
+  description: "Learn why we built QR Vibe: to free creators from scammy subscription redirects and provide a fast, beautiful, 100% private QR generator.",
   alternates: {
-    canonical: "https://qr-studio-rouge-six.vercel.app/about",
+    canonical: "https://qrvibe.online/about",
   },
 };
 
@@ -78,7 +78,7 @@ export default function AboutPage() {
               href="/"
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all"
             >
-              Open QR Studio <ArrowRight className="w-4 h-4" />
+              Open QR Vibe <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>

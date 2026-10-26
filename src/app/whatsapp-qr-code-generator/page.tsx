@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "WhatsApp QR Code Generator - Direct Chat Link (No Contact Save)",
   description: "Create direct-to-chat WhatsApp QR codes with pre-filled custom messages. Fast, free, scannable by any mobile camera, with 100% private in-browser generation.",
   alternates: {
-    canonical: "https://qr-studio-rouge-six.vercel.app/whatsapp-qr-code-generator",
+    canonical: "https://qrvibe.online/whatsapp-qr-code-generator",
   },
   openGraph: {
     title: "Free WhatsApp QR Code Generator | Instant Chat Opener",
@@ -95,7 +95,7 @@ export default function WhatsAppQRPage() {
                 </li>
                 <li className="flex items-start gap-2.5">
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-1" />
-                  <span><strong>Automatic URL-Encoding:</strong> QR Studio PRO automatically URL-encodes spaces and special characters inside your pre-filled message body so it never breaks camera decoders.</span>
+                  <span><strong>Automatic URL-Encoding:</strong> QR Vibe automatically URL-encodes spaces and special characters inside your pre-filled message body so it never breaks camera decoders.</span>
                 </li>
               </ul>
             </div>

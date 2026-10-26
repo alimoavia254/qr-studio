@@ -4,10 +4,10 @@ import Footer from "@/components/Footer";
 import { Scale, CheckCircle2, AlertTriangle } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | QR Studio PRO",
-  description: "Terms and conditions of use for QR Studio PRO free online QR code generation utilities.",
+  title: "Terms of Service | QR Vibe",
+  description: "Terms and conditions of use for QR Vibe free online QR code generation utilities.",
   alternates: {
-    canonical: "https://qr-studio-rouge-six.vercel.app/terms",
+    canonical: "https://qrvibe.online/terms",
   },
 };
 
@@ -35,7 +35,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">1. Agreement to Terms</h2>
             <p>
-              By accessing or using QR Studio PRO (<code className="text-indigo-400">qr-studio-rouge-six.vercel.app</code>), you agree to be bound by these Terms of Service and all applicable laws and regulations. If you disagree with any part of these terms, you may not access our service.
+              By accessing or using QR Vibe (<code className="text-indigo-400">qrvibe.online</code>), you agree to be bound by these Terms of Service and all applicable laws and regulations. If you disagree with any part of these terms, you may not access our service.
             </p>
           </section>
 
@@ -45,7 +45,7 @@ export default function TermsPage() {
               2. Commercial &amp; Personal License
             </h2>
             <p>
-              All QR codes generated through QR Studio PRO are 100% free for both personal and commercial use without royalty fees, attribution requirements, or forced subscription renewals. You retain full ownership and intellectual property rights over any logos and content you encode into your QR images.
+              All QR codes generated through QR Vibe are 100% free for both personal and commercial use without royalty fees, attribution requirements, or forced subscription renewals. You retain full ownership and intellectual property rights over any logos and content you encode into your QR images.
             </p>
           </section>
 
@@ -54,7 +54,7 @@ export default function TermsPage() {
               <AlertTriangle className="w-5 h-5 text-amber-400" />
               3. Prohibited Uses
             </h2>
-            <p>You agree not to use QR Studio PRO to generate codes for:</p>
+            <p>You agree not to use QR Vibe to generate codes for:</p>
             <ul className="list-disc list-inside space-y-1.5 text-slate-400 my-2">
               <li>Phishing schemes, malware distribution, or deceptive social engineering URLs.</li>
               <li>Harassment, illicit content, or illegal activities in your local jurisdiction.</li>
@@ -65,7 +65,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">4. Disclaimer of Warranty &amp; Print Verification</h2>
             <p>
-              While QR Studio PRO includes real-time computer-vision scan validation (<code className="text-slate-200">jsQR</code>) to assist in creating readable designs, real-world scannability depends on factors beyond our control, including physical print ink saturation, paper finish (glossy vs. matte), ambient lighting, and individual camera hardware capabilities. <strong>Users must test-scan physical test prints with multiple smartphone models before executing large commercial print runs.</strong>
+              While QR Vibe includes real-time computer-vision scan validation (<code className="text-slate-200">jsQR</code>) to assist in creating readable designs, real-world scannability depends on factors beyond our control, including physical print ink saturation, paper finish (glossy vs. matte), ambient lighting, and individual camera hardware capabilities. <strong>Users must test-scan physical test prints with multiple smartphone models before executing large commercial print runs.</strong>
             </p>
           </section>
 

@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://qr-studio-rouge-six.vercel.app";
+  const baseUrl = "https://qrvibe.online";
   const lastModified = new Date();
 
   return [

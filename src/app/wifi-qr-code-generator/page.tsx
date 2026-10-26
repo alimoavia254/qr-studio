@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Wi-Fi QR Code Generator - One-Tap Auto Connect (WPA/WPA2/WPA3)",
   description: "Generate free Wi-Fi QR codes for Airbnb hosts, cafes, and offices. Guests scan to auto-connect without typing complex network passwords.",
   alternates: {
-    canonical: "https://qr-studio-rouge-six.vercel.app/wifi-qr-code-generator",
+    canonical: "https://qrvibe.online/wifi-qr-code-generator",
   },
   openGraph: {
     title: "Free Wi-Fi QR Code Generator | Auto Connect Scanner",

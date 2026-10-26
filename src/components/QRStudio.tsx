@@ -49,7 +49,7 @@ import type {
 const INITIAL_CONFIG: QRDesignConfig = {
   contentType: "url",
   url: "https://mybrand.com",
-  text: "Hello from QR Studio!",
+  text: "Hello from QR Vibe (qrvibe.online)!",
   wifi: {
     ssid: "Office_5G",
     password: "SecurePassword123",
@@ -67,9 +67,9 @@ const INITIAL_CONFIG: QRDesignConfig = {
     lastName: "Morgan",
     phone: "+1 555-0199",
     email: "alex@brand.com",
-    company: "Apex Studio",
+    company: "QR Vibe Media",
     title: "Creative Director",
-    website: "https://apexstudio.com",
+    website: "https://qrvibe.online",
     address: "New York, USA",
   },
   email: {
@@ -600,7 +600,7 @@ export function QRStudio({
               if (blob) {
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blob);
-                a.download = `qr-studio-poster-${config.contentType}-${exportRes}px.${format}`;
+                a.download = `qrvibe-poster-${config.contentType}-${exportRes}px.${format}`;
                 a.click();
               }
             }, `image/${format}`);
@@ -613,7 +613,7 @@ export function QRStudio({
       }
 
       await exporter.download({
-        name: `qr-studio-${config.contentType}-${exportRes}px`,
+        name: `qrvibe-${config.contentType}-${exportRes}px`,
         extension: format,
       });
 
@@ -662,14 +662,14 @@ export function QRStudio({
       const exporter = new QRCodeStyling(tempOptions);
       const rawBlob = await exporter.getRawData("png");
       if (rawBlob && navigator.share) {
-        const file = new File([rawBlob as Blob], `qr-studio-${config.contentType}.png`, {
+        const file = new File([rawBlob as Blob], `qrvibe-${config.contentType}.png`, {
           type: "image/png",
         });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
           await navigator.share({
             files: [file],
             title: "My Custom QR Code",
-            text: "Generated with QR Studio PRO",
+            text: "Generated with QR Vibe (qrvibe.online)",
           });
           return;
         } else {
@@ -781,7 +781,7 @@ export function QRStudio({
       <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold mb-3 shadow-inner">
           <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Interactive Brand QR Studio</span>
+          <span>Interactive QR Vibe Studio</span>
         </div>
         <h1 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-tight">
           Create Beautiful,{" "}
@@ -1807,7 +1807,7 @@ export function QRStudio({
                 <div>
                   <span className="font-semibold text-white">High Scannability Protection</span>
                   <p className="text-slate-300 mt-0.5">
-                    When a logo is present, QR Studio automatically activates Level-H error correction
+                    When a logo is present, QR Vibe automatically activates Level-H error correction
                     (30% redundancy), ensuring your code scans flawlessly even with a centered emblem.
                   </p>
                 </div>

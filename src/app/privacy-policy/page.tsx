@@ -4,10 +4,10 @@ import Footer from "@/components/Footer";
 import { ShieldCheck, Lock, EyeOff, ServerOff, FileCheck } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | QR Studio PRO - 100% In-Browser Privacy",
-  description: "Learn how QR Studio PRO protects your privacy with 100% client-side QR code generation. Zero server uploads, zero database storage.",
+  title: "Privacy Policy | QR Vibe - 100% In-Browser Privacy",
+  description: "Learn how QR Vibe protects your privacy with 100% client-side QR code generation. Zero server uploads, zero database storage.",
   alternates: {
-    canonical: "https://qr-studio-rouge-six.vercel.app/privacy-policy",
+    canonical: "https://qrvibe.online/privacy-policy",
   },
 };
 
@@ -64,10 +64,10 @@ export default function PrivacyPolicyPage() {
               1. Our Foundational Privacy Promise
             </h2>
             <p>
-              At QR Studio PRO (accessible from <code className="text-indigo-400">qr-studio-rouge-six.vercel.app</code>), the privacy of our visitors is of paramount importance. This document explains the exact technical mechanisms and data policies governing your use of our platform.
+              At QR Vibe (accessible from <code className="text-indigo-400">qrvibe.online</code>), the privacy of our visitors is of paramount importance. This document explains the exact technical mechanisms and data policies governing your use of our platform.
             </p>
             <p className="mt-2">
-              Unlike legacy QR generators that route your data through intermediary tracking servers, <strong>QR Studio PRO executes 100% of QR code compilation and image encoding in your local browser&apos;s memory</strong>. When you input a Wi-Fi password, paste a vCard contact, type a message, or upload a custom company logo, that information is processed directly by client-side JavaScript (<code className="text-slate-200">qr-code-styling</code> and <code className="text-slate-200">jsQR</code>) without ever being transmitted to our web servers or any remote storage facility.
+              Unlike legacy QR generators that route your data through intermediary tracking servers, <strong>QR Vibe executes 100% of QR code compilation and image encoding in your local browser&apos;s memory</strong>. When you input a Wi-Fi password, paste a vCard contact, type a message, or upload a custom company logo, that information is processed directly by client-side JavaScript (<code className="text-slate-200">qr-code-styling</code> and <code className="text-slate-200">jsQR</code>) without ever being transmitted to our web servers or any remote storage facility.
             </p>
           </section>
 
@@ -90,7 +90,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">4. Third-Party Advertising &amp; Google AdSense</h2>
             <p>
-              QR Studio PRO may display non-intrusive advertisements served by third-party ad networks, including Google AdSense, to support free development and hosting costs.
+              QR Vibe may display non-intrusive advertisements served by third-party ad networks, including Google AdSense, to support free development and hosting costs.
             </p>
             <ul className="list-disc list-inside space-y-1.5 text-slate-400 my-3">
               <li>Google, as a third-party vendor, uses cookies to serve ads on our site.</li>
@@ -102,7 +102,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="text-xl font-bold text-white mb-3">5. GDPR &amp; CCPA Compliance</h2>
             <p>
-              Under General Data Protection Regulation (GDPR) and California Consumer Privacy Act (CCPA), users possess rights including the right to know, delete, and prevent the sale of personal data. Because QR Studio PRO does not gather or retain personal data or sell user information to data brokers, our service by design satisfies the highest standard of data minimization.
+              Under General Data Protection Regulation (GDPR) and California Consumer Privacy Act (CCPA), users possess rights including the right to know, delete, and prevent the sale of personal data. Because QR Vibe does not gather or retain personal data or sell user information to data brokers, our service by design satisfies the highest standard of data minimization.
             </p>
           </section>
 

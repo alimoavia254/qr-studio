@@ -20,15 +20,15 @@ export function Header() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                QR Studio
+              <span className="text-xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
+                QR Vibe
               </span>
-              <span className="px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                PRO
+              <span className="px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-300 border border-indigo-500/30">
+                .ONLINE
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              Branded &amp; Scannable QR Code Studio
+              Vibrant &amp; Scannable Brand QR Codes
             </p>
           </div>
         </Link>

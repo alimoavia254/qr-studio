@@ -18,7 +18,7 @@ export function Footer() {
               <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
                 <QrCode className="w-4 h-4" />
               </div>
-              <span className="text-base font-bold text-white tracking-tight">QR Studio <span className="text-indigo-400 text-xs">PRO</span></span>
+              <span className="text-base font-black text-white tracking-tight">QR Vibe <span className="text-indigo-400 text-xs font-semibold">.ONLINE</span></span>
             </Link>
             <p className="text-slate-400 text-xs leading-relaxed">
               Professional, static QR code generator with real-time computer-vision scan validation and 100% private in-browser generation.
@@ -123,7 +123,7 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
-          <p>© {currentYear} QR Studio PRO. All rights reserved. Made for creators, businesses &amp; agencies worldwide.</p>
+          <p>© {currentYear} QR Vibe (qrvibe.online). All rights reserved. Made for creators, businesses &amp; agencies worldwide.</p>
           <div className="flex items-center gap-1.5 text-slate-400">
             <span>Client-side optical verification</span>
             <Heart className="w-3 h-3 text-rose-500 fill-rose-500 inline mx-0.5" />

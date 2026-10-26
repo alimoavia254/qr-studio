@@ -9,14 +9,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://qr-studio-rouge-six.vercel.app"),
+  metadataBase: new URL("https://qrvibe.online"),
   title: {
-    default: "QR Studio PRO - Free Custom Brand QR Code Generator With Logo",
-    template: "%s | QR Studio PRO",
+    default: "QR Vibe - Free Brand QR Code Generator With Logo",
+    template: "%s | QR Vibe",
   },
   description:
-    "Generate branded, scannable QR codes with custom logo, gradient patterns, and error-correction protection. 100% free, no sign-up, ultra-HD PNG and SVG export.",
+    "QR Vibe - Generate stunning, scannable QR codes with custom logos, vibrant gradients, and real-time scan verification. 100% free, no sign-up, ultra-HD PNG & vector SVG export.",
   keywords: [
+    "QR Vibe",
+    "qrvibe",
     "QR code generator",
     "QR code with logo",
     "custom QR code",
@@ -27,17 +29,18 @@ export const metadata: Metadata = {
     "WhatsApp QR code",
     "vCard QR generator",
   ],
-  authors: [{ name: "QR Studio Team" }],
+  authors: [{ name: "QR Vibe Team" }],
   openGraph: {
-    title: "QR Studio PRO - Branded QR Code Generator With Logo",
+    title: "QR Vibe - Branded QR Code Generator With Logo",
     description:
       "Design scannable brand QR codes with logo embedding, custom colors, and verified scannability score.",
     type: "website",
     locale: "en_US",
+    siteName: "QR Vibe",
   },
   twitter: {
     card: "summary_large_image",
-    title: "QR Studio PRO - Custom Brand QR Code Generator",
+    title: "QR Vibe - Custom Brand QR Code Generator",
     description:
       "Generate guaranteed-scannable QR codes with your brand logo, custom styles, and high-res vector downloads.",
   },

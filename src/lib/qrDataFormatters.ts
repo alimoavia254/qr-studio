@@ -100,6 +100,6 @@ export function formatQRData(config: QRDesignConfig): string {
 
     case "text":
     default:
-      return config.text || "Hello from QR Studio!";
+      return config.text || "Hello from QR Vibe (qrvibe.online)!";
   }
 }
