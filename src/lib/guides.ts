@@ -24,7 +24,7 @@ export const GUIDES: Guide[] = [
     slug: "static-vs-dynamic-qr-codes",
     title: "Static vs Dynamic QR Codes: Which One Should You Use?",
     description:
-      "The real difference between static and dynamic QR codes, why some 'free' QR codes stop working, and how to choose the right type for print, menus and marketing.",
+      "Static vs dynamic QR codes explained: why some 'free' QR codes stop working, and how to pick the right type for print, menus and marketing.",
     excerpt:
       "Why some free QR codes suddenly stop working, and how to pick a type that will still scan in five years.",
     published: "2026-10-26",
@@ -106,7 +106,7 @@ export const GUIDES: Guide[] = [
     slug: "qr-code-size-for-printing",
     title: "What Size Should a QR Code Be? Print Size Guide (cm and inches)",
     description:
-      "Minimum QR code print sizes for business cards, flyers, posters and signs, the 10:1 distance rule, quiet zone requirements and the best file format for printing.",
+      "Minimum QR code print sizes for business cards, flyers, posters and signs, plus the 10:1 distance rule, quiet zone and best file format.",
     excerpt:
       "Minimum sizes in cm and inches for business cards, flyers, posters and signs, plus the simple 10:1 distance rule.",
     published: "2026-10-26",
@@ -186,7 +186,7 @@ export const GUIDES: Guide[] = [
     slug: "how-to-make-a-qr-code-for-a-restaurant-menu",
     title: "How to Make a QR Code for a Restaurant Menu (Free, Step by Step)",
     description:
-      "Create a free QR code menu for your restaurant, café or bar: host your menu as a PDF or web page, generate a QR code that never expires, and print it on table tents.",
+      "Make a free QR code menu for your restaurant, café or bar: host the menu as a PDF or web page, create a QR code that never expires, and print it.",
     excerpt:
       "Put your menu online, generate a QR code that never expires, and print table tents that guests actually scan.",
     published: "2026-10-26",
@@ -406,7 +406,7 @@ export const GUIDES: Guide[] = [
     slug: "qr-code-scams-how-to-stay-safe",
     title: "QR Code Scams (Quishing): How to Spot a Fake QR Code",
     description:
-      "How QR code phishing ('quishing') works, common scams on parking meters, emails and parcels, warning signs of a fake QR code, and how businesses can protect their customers.",
+      "How QR code phishing ('quishing') works, common scams on parking meters, emails and parcels, and the warning signs of a fake QR code.",
     excerpt:
       "How quishing works, the parking meter and email scams to watch for, and how to protect your customers.",
     published: "2026-10-26",

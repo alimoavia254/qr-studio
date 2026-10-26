@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     template: "%s | QR Vibe",
   },
   description:
-    "QR Vibe - Generate stunning, scannable QR codes with custom logos, vibrant gradients, and real-time scan verification. 100% free, no sign-up, ultra-HD PNG & vector SVG export.",
+    "Free QR code generator with logo. Design scan-tested QR codes with custom colors and gradients. No sign-up, no watermark, HD PNG and SVG downloads.",
   keywords: [
     "QR Vibe",
     "qrvibe",

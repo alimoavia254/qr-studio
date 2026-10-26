@@ -5,7 +5,7 @@ import { UseCasePage } from "@/components/UseCasePage";
 export const metadata: Metadata = {
   title: "Google Review QR Code Generator - Get More 5-Star Reviews",
   description:
-    "Create a free Google review QR code that opens your Google Business review form. Add your logo, a 'Review us' frame, and print it for your counter or receipts.",
+    "Create a free Google review QR code that opens your review form in one scan. Add your logo and a 'Review us' frame, then print it for your counter.",
   alternates: { canonical: "https://qrvibe.online/google-review-qr-code-generator" },
   openGraph: {
     images: "/opengraph-image",
