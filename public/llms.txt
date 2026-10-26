@@ -15,6 +15,9 @@
 - [WhatsApp QR code generator](https://qrvibe.online/whatsapp-qr-code-generator): opens a WhatsApp chat with an optional pre-filled message
 - [Wi-Fi QR code generator](https://qrvibe.online/wifi-qr-code-generator): guests join Wi-Fi by scanning, no password typing
 - [Business card QR code generator](https://qrvibe.online/qr-code-for-business-cards): vCard QR that saves your contact in one tap
+- [Instagram QR code generator](https://qrvibe.online/instagram-qr-code-generator): branded QR codes for Instagram profiles, posts and reels
+- [Google review QR code generator](https://qrvibe.online/google-review-qr-code-generator): opens your Google Business review form in one scan
+- [Restaurant menu QR code generator](https://qrvibe.online/menu-qr-code-generator): contactless menu QR codes for restaurants and cafes
 - [Custom QR code generator](https://qrvibe.online/custom-qr-code-generator): custom colors, dots, corners and frames
 
 ## About

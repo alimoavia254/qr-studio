@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { QrCode, ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact } from "lucide-react";
+import { QrCode, ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact, Camera, Star, UtensilsCrossed } from "lucide-react";
 
 export function Footer() {
   const currentYear = 2026;
@@ -51,6 +51,21 @@ export function Footer() {
               <li>
                 <Link href="/custom-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
                   <Palette className="w-3.5 h-3.5 text-purple-400" /> Custom Designer QR
+                </Link>
+              </li>
+              <li>
+                <Link href="/instagram-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <Camera className="w-3.5 h-3.5 text-pink-400" /> Instagram QR Code
+                </Link>
+              </li>
+              <li>
+                <Link href="/google-review-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <Star className="w-3.5 h-3.5 text-yellow-400" /> Google Review QR
+                </Link>
+              </li>
+              <li>
+                <Link href="/menu-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <UtensilsCrossed className="w-3.5 h-3.5 text-orange-400" /> Restaurant Menu QR
                 </Link>
               </li>
               <li>
