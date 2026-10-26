@@ -1,17 +1,21 @@
 "use client";
 
-import React from "react";
-import { QrCode, Sparkles, ShieldCheck, Download, Smartphone } from "lucide-react";
+import React, { useState } from "react";
+import Link from "next/link";
+import { QrCode, ShieldCheck, ChevronDown, Sparkles, MessageSquare, Wifi, Palette, Contact, Menu, X } from "lucide-react";
 
 export function Header() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [toolsDropdown, setToolsDropdown] = useState(false);
+
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/80 border-b border-slate-800/80">
+    <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/20">
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
             <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <QrCode className="w-5 h-5 text-indigo-400" />
+              <QrCode className="w-5 h-5 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
             </div>
           </div>
           <div>
@@ -24,38 +28,172 @@ export function Header() {
               </span>
             </div>
             <p className="text-[11px] text-slate-400 hidden sm:block">
-              Branded & Scannable QR Code Studio
+              Branded &amp; Scannable QR Code Studio
             </p>
           </div>
-        </div>
+        </Link>
 
-        {/* Feature Badges */}
-        <div className="hidden md:flex items-center gap-6 text-xs text-slate-300 font-medium">
-          <div className="flex items-center gap-1.5 text-emerald-400">
+        {/* Desktop Navigation Links */}
+        <nav className="hidden md:flex items-center gap-6 text-xs text-slate-300 font-medium">
+          {/* Tools Dropdown */}
+          <div
+            className="relative"
+            onMouseEnter={() => setToolsDropdown(true)}
+            onMouseLeave={() => setToolsDropdown(false)}
+          >
+            <button className="flex items-center gap-1.5 py-2 hover:text-white transition-colors cursor-pointer">
+              <span>QR Tools</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${toolsDropdown ? "rotate-180" : ""}`} />
+            </button>
+
+            {toolsDropdown && (
+              <div className="absolute top-full left-0 w-64 pt-2 shadow-2xl z-50">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-2 shadow-xl backdrop-blur-xl space-y-1">
+                  <Link
+                    href="/qr-code-generator-with-logo"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+                  >
+                    <Sparkles className="w-4 h-4 text-indigo-400 shrink-0" />
+                    <div>
+                      <div className="text-xs font-semibold">QR Code with Logo</div>
+                      <div className="text-[10px] text-slate-500">Center brand logo with safe margin</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/whatsapp-qr-code-generator"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+                  >
+                    <MessageSquare className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div>
+                      <div className="text-xs font-semibold">WhatsApp QR Code</div>
+                      <div className="text-[10px] text-slate-500">Direct wa.me chat opener</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/wifi-qr-code-generator"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+                  >
+                    <Wifi className="w-4 h-4 text-cyan-400 shrink-0" />
+                    <div>
+                      <div className="text-xs font-semibold">Wi-Fi QR Code</div>
+                      <div className="text-[10px] text-slate-500">Instant one-tap network join</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/custom-qr-code-generator"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+                  >
+                    <Palette className="w-4 h-4 text-purple-400 shrink-0" />
+                    <div>
+                      <div className="text-xs font-semibold">Custom Designer QR</div>
+                      <div className="text-[10px] text-slate-500">Dots, eyes &amp; modern gradients</div>
+                    </div>
+                  </Link>
+
+                  <Link
+                    href="/qr-code-for-business-cards"
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+                  >
+                    <Contact className="w-4 h-4 text-amber-400 shrink-0" />
+                    <div>
+                      <div className="text-xs font-semibold">Business Card vCard</div>
+                      <div className="text-[10px] text-slate-500">Direct contact phone book saver</div>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Link href="/about" className="hover:text-white transition-colors">
+            About Us
+          </Link>
+          <Link href="/privacy-policy" className="hover:text-white transition-colors">
+            Privacy
+          </Link>
+          <Link href="/contact" className="hover:text-white transition-colors">
+            Contact
+          </Link>
+
+          <div className="flex items-center gap-1.5 text-emerald-400 pl-2 border-l border-slate-800">
             <ShieldCheck className="w-4 h-4" />
-            <span>100% Client-Side Safe</span>
+            <span>100% In-Browser</span>
           </div>
-          <div className="flex items-center gap-1.5 text-indigo-400">
-            <Sparkles className="w-4 h-4" />
-            <span>Brand Logo Integration</span>
-          </div>
-          <div className="flex items-center gap-1.5 text-purple-400">
-            <Smartphone className="w-4 h-4" />
-            <span>Scan-Guaranteed</span>
-          </div>
-        </div>
+        </nav>
 
-        {/* Action / CTA */}
+        {/* Action / CTA + Mobile Menu Button */}
         <div className="flex items-center gap-3">
-          <a
-            href="#generator"
+          <Link
+            href="/"
             className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm shadow-indigo-500/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
-            <Download className="w-3.5 h-3.5" />
-            <span>Create Free QR</span>
-          </a>
+            <span>Launch Studio</span>
+          </Link>
+
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-slate-400 hover:text-white rounded-lg bg-slate-900 border border-slate-800"
+            aria-label="Toggle Navigation Menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
       </div>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden bg-slate-950 border-b border-slate-800 px-4 py-4 space-y-3">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2">Dedicated Generators</div>
+          <div className="grid grid-cols-1 gap-1">
+            <Link
+              href="/qr-code-generator-with-logo"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-slate-900 text-xs text-slate-300 hover:text-white flex items-center gap-2"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> QR Code with Logo
+            </Link>
+            <Link
+              href="/whatsapp-qr-code-generator"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-slate-900 text-xs text-slate-300 hover:text-white flex items-center gap-2"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-emerald-400" /> WhatsApp QR Code
+            </Link>
+            <Link
+              href="/wifi-qr-code-generator"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-slate-900 text-xs text-slate-300 hover:text-white flex items-center gap-2"
+            >
+              <Wifi className="w-3.5 h-3.5 text-cyan-400" /> Wi-Fi QR Code
+            </Link>
+            <Link
+              href="/custom-qr-code-generator"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-slate-900 text-xs text-slate-300 hover:text-white flex items-center gap-2"
+            >
+              <Palette className="w-3.5 h-3.5 text-purple-400" /> Custom Designer QR
+            </Link>
+            <Link
+              href="/qr-code-for-business-cards"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-3 py-2 rounded-lg hover:bg-slate-900 text-xs text-slate-300 hover:text-white flex items-center gap-2"
+            >
+              <Contact className="w-3.5 h-3.5 text-amber-400" /> Business Card vCard
+            </Link>
+          </div>
+
+          <div className="border-t border-slate-800 pt-3 flex flex-wrap gap-4 px-2 text-xs text-slate-400">
+            <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">About</Link>
+            <Link href="/privacy-policy" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Privacy</Link>
+            <Link href="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Terms</Link>
+            <Link href="/contact" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Contact</Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
+export default Header;

@@ -9,7 +9,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "QR Studio - Free Custom Brand QR Code Generator With Logo",
+  metadataBase: new URL("https://qr-studio-rouge-six.vercel.app"),
+  title: {
+    default: "QR Studio PRO - Free Custom Brand QR Code Generator With Logo",
+    template: "%s | QR Studio PRO",
+  },
   description:
     "Generate branded, scannable QR codes with custom logo, gradient patterns, and error-correction protection. 100% free, no sign-up, ultra-HD PNG and SVG export.",
   keywords: [
@@ -25,7 +29,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "QR Studio Team" }],
   openGraph: {
-    title: "QR Studio - Branded QR Code Generator With Logo",
+    title: "QR Studio PRO - Branded QR Code Generator With Logo",
     description:
       "Design scannable brand QR codes with logo embedding, custom colors, and verified scannability score.",
     type: "website",
@@ -33,7 +37,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "QR Studio - Custom Brand QR Code Generator",
+    title: "QR Studio PRO - Custom Brand QR Code Generator",
     description:
       "Generate guaranteed-scannable QR codes with your brand logo, custom styles, and high-res vector downloads.",
   },
