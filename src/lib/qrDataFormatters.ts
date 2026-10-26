@@ -68,12 +68,27 @@ export function formatQRData(config: QRDesignConfig): string {
     }
 
     case "email": {
-      const { email, subject, body } = config.email;
+      const { email, subject, body, format } = config.email;
+      const cleanEmail = email.trim();
+
+      // MATMSG format (widely recognized by Android cameras & QR scanners to auto-populate TO, SUB, and BODY)
+      if (format === "matmsg") {
+        const cleanSub = (subject || "").replace(/;/g, "\\;");
+        const cleanBody = (body || "").replace(/;/g, "\\;");
+        return `MATMSG:TO:${cleanEmail};SUB:${cleanSub};BODY:${cleanBody};;`;
+      }
+
+      // Default: RFC 6068 mailto URI with strict CRLF line-break encoding
       const params: string[] = [];
-      if (subject) params.push(`subject=${encodeURIComponent(subject)}`);
-      if (body) params.push(`body=${encodeURIComponent(body)}`);
+      if (subject) {
+        params.push(`subject=${encodeURIComponent(subject)}`);
+      }
+      if (body) {
+        const formattedBody = body.replace(/\r?\n/g, "\r\n");
+        params.push(`body=${encodeURIComponent(formattedBody)}`);
+      }
       const query = params.length > 0 ? `?${params.join("&")}` : "";
-      return `mailto:${email.trim()}${query}`;
+      return `mailto:${cleanEmail}${query}`;
     }
 
     case "text":

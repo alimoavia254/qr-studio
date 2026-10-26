@@ -67,6 +67,7 @@ const INITIAL_CONFIG: QRDesignConfig = {
     email: "contact@brand.com",
     subject: "Business Inquiry",
     body: "Hi team,\n\nI would like to discuss a project with you.",
+    format: "mailto",
   },
   shape: "square",
   dotType: "rounded",
@@ -803,10 +804,113 @@ export function QRStudio() {
 
                 {/* 5. Email Input */}
                 {config.contentType === "email" && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
+                    {/* Format Selector */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-200 mb-1.5">
+                        Scan Auto-Fill Format
+                      </label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              email: { ...prev.email, format: "mailto" },
+                            }))
+                          }
+                          className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
+                            config.email.format !== "matmsg"
+                              ? "bg-indigo-600/20 border-indigo-500 text-white"
+                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <div className="font-bold flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-indigo-400" />
+                            <span>Standard URI (mailto:)</span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            Standard RFC format for iOS Camera, Mac &amp; Webmail
+                          </p>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              email: { ...prev.email, format: "matmsg" },
+                            }))
+                          }
+                          className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
+                            config.email.format === "matmsg"
+                              ? "bg-indigo-600/20 border-indigo-500 text-white"
+                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <div className="font-bold flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                            <span>Phone Scanner (MATMSG)</span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            Forces Android camera/scanners to auto-fill Subject &amp; Body
+                          </p>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Quick Subject & Body Templates */}
+                    <div>
+                      <span className="block text-[11px] text-slate-400 mb-1.5">
+                        Quick Templates (Auto-fill all fields):
+                      </span>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {[
+                          {
+                            label: "💼 Business Inquiry",
+                            sub: "Business & Project Inquiry",
+                            body: "Hi team,\n\nI would like to inquire about your services.",
+                          },
+                          {
+                            label: "🛠️ Customer Support",
+                            sub: "Support Request - [Order / Account #]",
+                            body: "Hello Support,\n\nI need assistance with the following issue:\n",
+                          },
+                          {
+                            label: "💰 Request a Quote",
+                            sub: "Price Quote Request",
+                            body: "Hello,\n\nPlease provide a quote for the following requirements:\n",
+                          },
+                          {
+                            label: "⭐ Feedback",
+                            sub: "Customer Feedback & Review",
+                            body: "Hi there,\n\nI would love to share some feedback regarding:\n",
+                          },
+                        ].map((tmpl) => (
+                          <button
+                            key={tmpl.label}
+                            type="button"
+                            onClick={() =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                email: {
+                                  ...prev.email,
+                                  subject: tmpl.sub,
+                                  body: tmpl.body,
+                                },
+                              }))
+                            }
+                            className="px-2.5 py-1 rounded-lg text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+                          >
+                            {tmpl.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     <div>
                       <label className="block text-xs font-semibold text-slate-200 mb-1">
-                        Recipient Email
+                        Recipient Email (TO:)
                       </label>
                       <input
                         type="email"
@@ -821,8 +925,11 @@ export function QRStudio() {
                         className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500"
                       />
                     </div>
+
                     <div>
-                      <label className="block text-xs font-semibold text-slate-200 mb-1">Subject</label>
+                      <label className="block text-xs font-semibold text-slate-200 mb-1">
+                        Subject Line
+                      </label>
                       <input
                         type="text"
                         value={config.email.subject}
@@ -832,14 +939,17 @@ export function QRStudio() {
                             email: { ...prev.email, subject: e.target.value },
                           }))
                         }
-                        placeholder="Inquiry regarding..."
+                        placeholder="Project Inquiry"
                         className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500"
                       />
                     </div>
+
                     <div>
-                      <label className="block text-xs font-semibold text-slate-200 mb-1">Body Text</label>
+                      <label className="block text-xs font-semibold text-slate-200 mb-1">
+                        Email Body (Message Text)
+                      </label>
                       <textarea
-                        rows={2}
+                        rows={3}
                         value={config.email.body}
                         onChange={(e) =>
                           setConfig((prev) => ({
@@ -847,9 +957,43 @@ export function QRStudio() {
                             email: { ...prev.email, body: e.target.value },
                           }))
                         }
-                        placeholder="Message details..."
+                        placeholder="Type your pre-filled email message here..."
                         className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500"
                       />
+                    </div>
+
+                    {/* Live Auto-fill Preview and Test Button */}
+                    <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">
+                          Auto-Filled Draft Preview:
+                        </span>
+                        <a
+                          href={`mailto:${config.email.email}?subject=${encodeURIComponent(
+                            config.email.subject
+                          )}&body=${encodeURIComponent(config.email.body)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          <span>Test in Mail App</span>
+                        </a>
+                      </div>
+                      <div className="text-[11px] font-mono text-slate-300 space-y-0.5">
+                        <p>
+                          <span className="text-slate-500">TO:</span>{" "}
+                          <span className="text-indigo-400">{config.email.email || "(empty)"}</span>
+                        </p>
+                        <p>
+                          <span className="text-slate-500">Subject:</span>{" "}
+                          <span className="text-white">{config.email.subject || "(empty)"}</span>
+                        </p>
+                        <p className="truncate">
+                          <span className="text-slate-500">Body:</span>{" "}
+                          <span className="text-slate-400">{config.email.body || "(empty)"}</span>
+                        </p>
+                      </div>
                     </div>
                   </div>
                 )}

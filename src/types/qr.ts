@@ -38,6 +38,7 @@ export interface EmailData {
   email: string;
   subject: string;
   body: string;
+  format?: "mailto" | "matmsg";
 }
 
 export interface QRDesignConfig {
