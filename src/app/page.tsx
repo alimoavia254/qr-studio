@@ -15,8 +15,8 @@ export default function Home() {
 
       <Header />
       <main className="flex-1">
-        <div className="max-w-3xl mx-auto px-4 pt-6 pb-4 sm:pt-10 sm:pb-8 text-center">
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+        <div className="max-w-3xl mx-auto px-4 pt-4 pb-3 sm:pt-10 sm:pb-8 text-center">
+          <h1 className="text-xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
             Free QR Code Generator{" "}
             <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
               With Logo
