@@ -27,7 +27,6 @@ import {
   X,
   Loader2,
   CheckCircle2,
-  ChevronUp,
 } from "lucide-react";
 import { QRDesignConfig, QRContentType, ThemeCategory, PosterTemplatePreset } from "@/types/qr";
 import { formatQRData } from "@/lib/qrDataFormatters";
@@ -279,7 +278,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-3">
+    <section className="space-y-3 max-lg:p-4 max-lg:rounded-2xl max-lg:bg-slate-900/70 max-lg:border max-lg:border-slate-800/80">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-bold text-white">{title}</h3>
@@ -497,6 +496,7 @@ export function QRStudio({
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
   const [studioInView, setStudioInView] = useState(true);
   const [previewInView, setPreviewInView] = useState(true);
+  const [thumb, setThumb] = useState<string | null>(null);
   // `design` changes identity on every edit; a result for an older design means "still checking"
   const design = useMemo(() => ({ config }), [config]);
   const [scanResult, setScanResult] = useState<{
@@ -645,6 +645,7 @@ export function QRStudio({
         if (!ctx) return;
         const { default: jsQR } = await import("jsqr");
         if (cancelled) return;
+        setThumb(canvas.toDataURL("image/png"));
         const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
         if (cancelled) return;
@@ -986,11 +987,14 @@ export function QRStudio({
     setActiveTab(id);
     // If the panel's top is hidden under the sticky tab bar, bring it back into view
     requestAnimationFrame(() => {
-      const bar = document.getElementById("studio-tabs");
       const panel = panelRef.current;
-      if (!bar || !panel) return;
-      const gap = panel.getBoundingClientRect().top - bar.getBoundingClientRect().bottom;
-      if (gap < 0) window.scrollBy({ top: gap - 8, behavior: "smooth" });
+      if (!panel) return;
+      const isMobile = window.innerWidth < 1024;
+      const bar = document.getElementById("studio-tabs");
+      // Mobile: tabs live in the bottom nav, so align under the site header
+      const limit = isMobile ? 64 : (bar?.getBoundingClientRect().bottom ?? 0) + 8;
+      const gap = panel.getBoundingClientRect().top - limit;
+      if (gap < 0) window.scrollBy({ top: gap, behavior: "smooth" });
     });
   };
 
@@ -1768,7 +1772,7 @@ export function QRStudio({
   const statusOk = decoder.ok && !decoder.checking;
 
   const previewCard = (
-    <div className="rounded-3xl bg-slate-900/80 border border-slate-800 p-4 sm:p-6 shadow-2xl shadow-black/30">
+    <div className="rounded-3xl bg-slate-900/80 max-lg:bg-gradient-to-b max-lg:from-indigo-950/70 max-lg:via-slate-900/90 max-lg:to-slate-900/90 border border-slate-800 p-4 sm:p-6 shadow-2xl shadow-black/30">
       {/* QR / poster */}
       <div
         className={`mx-auto w-full max-w-[250px] sm:max-w-[320px] rounded-2xl flex flex-col items-center ${f.enabled ? "p-5 border" : "p-3 bg-slate-950 border border-slate-800"}`}
@@ -1898,18 +1902,27 @@ export function QRStudio({
         <p className="mt-2 text-[11px] text-amber-300/90">SVG saves the QR only. Choose PNG or JPG to get the full poster.</p>
       )}
 
-      {/* Actions (desktop; on mobile these live in the bottom bar) */}
-      <div className="hidden lg:block mt-4 space-y-2">
+      {/* Actions */}
+      <div className="mt-4 flex lg:block gap-2 lg:space-y-2">
+        <button
+          type="button"
+          onClick={shareQR}
+          disabled={busy !== null}
+          className="lg:hidden w-12 h-12 shrink-0 rounded-xl bg-slate-800 border border-slate-700 text-white grid place-items-center disabled:opacity-60"
+          aria-label="Share QR code"
+        >
+          {busy === "share" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+        </button>
         <button
           type="button"
           onClick={downloadQR}
           disabled={busy !== null}
-          className="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 hover:brightness-110 text-white shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition disabled:opacity-60"
+          className="flex-1 w-full h-12 lg:h-auto lg:py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 hover:brightness-110 text-white shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition disabled:opacity-60"
         >
           {busy === "download" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
           Download {exportFormat === "jpeg" ? "JPG" : exportFormat.toUpperCase()}
         </button>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="hidden lg:grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={copyToClipboard}
@@ -1962,7 +1975,7 @@ export function QRStudio({
 
         {/* Controls */}
         <div className="lg:col-span-7 lg:order-1 min-w-0">
-          <div id="studio-tabs" className="sticky top-14 lg:top-16 z-20 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 bg-slate-950/90 backdrop-blur-xl scroll-mt-14">
+          <div id="studio-tabs" className="hidden lg:block sticky top-16 z-20 py-2 bg-slate-950/90 backdrop-blur-xl">
             <div role="tablist" className="grid grid-cols-5 gap-1 p-1 rounded-2xl bg-slate-900 border border-slate-800">
               {TABS.map((t) => {
                 const Icon = t.icon;
@@ -1976,7 +1989,7 @@ export function QRStudio({
                     role="tab"
                     aria-selected={active}
                     onClick={() => selectTab(t.id)}
-                    className={`relative flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold transition-colors ${
+                    className={`relative flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-colors ${
                       active ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30" : "text-slate-400 hover:text-white"
                     }`}
                   >
@@ -1989,57 +2002,87 @@ export function QRStudio({
             </div>
           </div>
 
-          <div ref={panelRef} className="mt-3 p-4 sm:p-6 rounded-3xl bg-slate-900/60 border border-slate-800">
+          <div
+            ref={panelRef}
+            className="lg:mt-3 lg:p-6 lg:rounded-3xl lg:bg-slate-900/60 lg:border lg:border-slate-800 scroll-mt-16"
+          >
+            <div className="lg:hidden flex items-center gap-2 mb-3 px-1">
+              {(() => {
+                const t = TABS.find((x) => x.id === activeTab)!;
+                const Icon = t.icon;
+                return (
+                  <>
+                    <span className="w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-300 grid place-items-center">
+                      <Icon className="w-4 h-4" />
+                    </span>
+                    <h2 className="text-lg font-black text-white">{t.label}</h2>
+                  </>
+                );
+              })()}
+            </div>
             {panels[activeTab]}
           </div>
         </div>
       </div>
 
-      {/* Mobile bottom action bar */}
-      <div
-        className={`lg:hidden fixed inset-x-0 bottom-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800 px-4 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] transition-transform duration-300 ${
+      {/* Mobile: floating live mini preview while the big preview is off screen */}
+      {thumb && (
+        <button
+          type="button"
+          onClick={scrollToPreview}
+          aria-label="Show QR preview"
+          className={`lg:hidden fixed right-4 z-40 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] w-[72px] h-[72px] p-1.5 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl shadow-black/60 transition-all duration-300 ${
+            !previewInView && studioInView ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none"
+          }`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={thumb} alt="" className="w-full h-full rounded-lg" />
+          <span
+            className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-slate-900 ${
+              decoder.checking ? "bg-slate-500" : decoder.ok ? "bg-emerald-400" : "bg-rose-400"
+            }`}
+          />
+        </button>
+      )}
+
+      {/* Mobile: app-style bottom tab bar */}
+      <nav
+        role="tablist"
+        aria-label="QR settings"
+        className={`lg:hidden fixed inset-x-0 bottom-0 z-40 bg-slate-950 border-t border-slate-800 pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ${
           studioInView ? "translate-y-0" : "translate-y-full"
         }`}
       >
-        <div className="max-w-md mx-auto flex items-center gap-2">
-          <button
-            type="button"
-            onClick={scrollToPreview}
-            className={`flex items-center gap-2 h-11 px-3 rounded-xl bg-slate-900 border border-slate-800 text-left transition-opacity ${
-              previewInView ? "opacity-60" : ""
-            }`}
-            aria-label="Show QR preview"
-          >
-            <span
-              className={`w-2 h-2 rounded-full shrink-0 ${
-                decoder.checking ? "bg-slate-500" : decoder.ok ? "bg-emerald-400" : "bg-rose-400"
-              }`}
-            />
-            <span className="text-xs font-semibold text-white whitespace-nowrap">
-              {decoder.checking ? "Checking" : decoder.ok ? "Scannable" : "Check QR"}
-            </span>
-            <ChevronUp className="w-4 h-4 text-slate-400" />
-          </button>
-          <button
-            type="button"
-            onClick={shareQR}
-            disabled={busy !== null}
-            className="w-11 h-11 shrink-0 rounded-xl bg-slate-900 border border-slate-800 text-white grid place-items-center disabled:opacity-60"
-            aria-label="Share QR code"
-          >
-            {busy === "share" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
-          </button>
-          <button
-            type="button"
-            onClick={downloadQR}
-            disabled={busy !== null}
-            className="flex-1 h-11 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-60"
-          >
-            {busy === "download" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            Download
-          </button>
+        <div className="max-w-md mx-auto grid grid-cols-5">
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            const active = activeTab === t.id;
+            const dot = (t.id === "logo" && Boolean(config.logoUrl)) || (t.id === "frame" && config.frame.enabled);
+            return (
+              <button
+                key={t.id}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => selectTab(t.id)}
+                className={`relative flex flex-col items-center gap-1 pt-2.5 pb-2 text-[11px] font-semibold transition-colors ${
+                  active ? "text-white" : "text-slate-500"
+                }`}
+              >
+                <span
+                  className={`w-12 h-7 rounded-full grid place-items-center transition-colors ${
+                    active ? "bg-indigo-600 shadow-md shadow-indigo-600/40" : ""
+                  }`}
+                >
+                  <Icon className="w-[18px] h-[18px]" />
+                </span>
+                {t.label}
+                {dot && <span className="absolute top-2 right-[22%] w-1.5 h-1.5 rounded-full bg-emerald-400" />}
+              </button>
+            );
+          })}
         </div>
-      </div>
+      </nav>
 
       {/* Toast */}
       {toast && (
