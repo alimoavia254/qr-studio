@@ -104,7 +104,7 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: "qr-code-size-for-printing",
-    title: "What Size Should a QR Code Be? Print Size Guide (cm and inches)",
+    title: "What Size Should a QR Code Be? Print Size Guide",
     description:
       "Minimum QR code print sizes for business cards, flyers, posters and signs, plus the 10:1 distance rule, quiet zone and best file format.",
     excerpt:
@@ -184,7 +184,7 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: "how-to-make-a-qr-code-for-a-restaurant-menu",
-    title: "How to Make a QR Code for a Restaurant Menu (Free, Step by Step)",
+    title: "How to Make a QR Code for a Restaurant Menu (Free)",
     description:
       "Make a free QR code menu for your restaurant, café or bar: host the menu as a PDF or web page, create a QR code that never expires, and print it.",
     excerpt:

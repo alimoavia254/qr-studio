@@ -8,7 +8,7 @@ import { PageFAQ } from "@/components/PageFAQ";
 import { PAGE_FAQS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Wi-Fi QR Code Generator - One-Tap Auto Connect (WPA/WPA2/WPA3)",
+  title: "Wi-Fi QR Code Generator - One-Tap Auto Connect",
   description: "Generate free Wi-Fi QR codes for Airbnb hosts, cafes, and offices. Guests scan to auto-connect without typing complex network passwords.",
   alternates: {
     canonical: "https://qrvibe.online/wifi-qr-code-generator",
