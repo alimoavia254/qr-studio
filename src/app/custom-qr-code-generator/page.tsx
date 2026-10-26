@@ -8,7 +8,7 @@ import { PageFAQ } from "@/components/PageFAQ";
 import { PAGE_FAQS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Custom QR Code Generator - Designer Dots, Corners & Gradients",
+  title: "Custom QR Code Generator - Dots, Corners & Gradients",
   description: "Design custom QR codes with rounded dots, sleek corner eye styles, modern color gradients, and brand frames with instant real-time scan verification.",
   alternates: {
     canonical: "https://qrvibe.online/custom-qr-code-generator",

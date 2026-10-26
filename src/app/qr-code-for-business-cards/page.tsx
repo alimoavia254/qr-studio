@@ -8,7 +8,7 @@ import { PageFAQ } from "@/components/PageFAQ";
 import { PAGE_FAQS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "QR Code Generator for Business Cards (vCard 3.0 / Digital Card)",
+  title: "QR Code Generator for Business Cards (vCard)",
   description: "Create professional vCard QR codes for physical business cards. One scan lets clients instantly save your phone number, email, company, and portfolio.",
   alternates: {
     canonical: "https://qrvibe.online/qr-code-for-business-cards",

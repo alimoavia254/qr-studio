@@ -22,8 +22,8 @@
 
 ## Guides
 - [Static vs Dynamic QR Codes: Which One Should You Use?](https://qrvibe.online/guides/static-vs-dynamic-qr-codes)
-- [What Size Should a QR Code Be? Print Size Guide (cm and inches)](https://qrvibe.online/guides/qr-code-size-for-printing)
-- [How to Make a QR Code for a Restaurant Menu (Free, Step by Step)](https://qrvibe.online/guides/how-to-make-a-qr-code-for-a-restaurant-menu)
+- [What Size Should a QR Code Be? Print Size Guide](https://qrvibe.online/guides/qr-code-size-for-printing)
+- [How to Make a QR Code for a Restaurant Menu (Free)](https://qrvibe.online/guides/how-to-make-a-qr-code-for-a-restaurant-menu)
 - [QR Code Error Correction Levels Explained (L, M, Q, H)](https://qrvibe.online/guides/qr-code-error-correction-levels)
 - [How to Scan a QR Code on iPhone and Android (No App Needed)](https://qrvibe.online/guides/how-to-scan-a-qr-code-on-iphone-and-android)
 - [QR Code Scams (Quishing): How to Spot a Fake QR Code](https://qrvibe.online/guides/qr-code-scams-how-to-stay-safe)

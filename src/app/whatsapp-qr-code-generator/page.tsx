@@ -8,7 +8,7 @@ import { PageFAQ } from "@/components/PageFAQ";
 import { PAGE_FAQS } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "WhatsApp QR Code Generator - Direct Chat Link (No Contact Save)",
+  title: "WhatsApp QR Code Generator - Direct Chat Link",
   description: "Create direct-to-chat WhatsApp QR codes with pre-filled custom messages. Fast, free, scannable by any mobile camera, with 100% private in-browser generation.",
   alternates: {
     canonical: "https://qrvibe.online/whatsapp-qr-code-generator",
