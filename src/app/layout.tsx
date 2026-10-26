@@ -30,6 +30,9 @@ export const metadata: Metadata = {
     "vCard QR generator",
   ],
   authors: [{ name: "QR Vibe Team" }],
+  verification: {
+    other: { "msvalidate.01": "3F863F7A3269B3F3D408BC3E2FBBE96F" },
+  },
   openGraph: {
     title: "QR Vibe - Branded QR Code Generator With Logo",
     description:
