@@ -28,11 +28,15 @@ import {
   LayoutTemplate,
   Tag,
   Type,
+  Scan,
+  Shield,
+  Printer,
 } from "lucide-react";
-import { QRDesignConfig, QRContentType, ThemeCategory } from "@/types/qr";
+import { QRDesignConfig, QRContentType, ThemeCategory, PosterTemplatePreset } from "@/types/qr";
 import { formatQRData } from "@/lib/qrDataFormatters";
 import { evaluateScannability } from "@/lib/colorUtils";
 import { QR_PRESETS, SAMPLE_LOGOS } from "@/lib/qrPresets";
+import { POSTER_TEMPLATES } from "@/lib/posterTemplates";
 import type {
   DotType,
   CornerSquareType,
@@ -94,13 +98,22 @@ const INITIAL_CONFIG: QRDesignConfig = {
   errorCorrectionLevel: "H",
   frame: {
     enabled: false,
-    text: "SCAN ME",
-    subtext: "Point phone camera to scan",
+    templateId: "viewfinder-minimal",
+    text: "SCAN HERE",
+    subtext: "Point your smartphone camera to open link",
+    brandName: "OFFICIAL VERIFIED QR",
+    footerNote: "No app required • Works with all smartphone cameras",
+    showViewfinder: true,
+    showStepsBadge: true,
     position: "bottom",
     theme: "match",
     bgColor: "#4f46e5",
     textColor: "#ffffff",
-    style: "badge",
+    accentColor: "#4f46e5",
+    cardBgColor: "#ffffff",
+    cardTextColor: "#0f172a",
+    style: "poster",
+    layout: "poster",
   },
 };
 
@@ -273,6 +286,41 @@ export function QRStudio() {
     }));
   };
 
+  // Apply Poster Template Preset
+  const applyPosterTemplate = (tpl: PosterTemplatePreset) => {
+    setConfig((prev) => ({
+      ...prev,
+      frame: {
+        ...prev.frame,
+        enabled: true,
+        templateId: tpl.id,
+        text: tpl.title,
+        subtext: tpl.subtitle,
+        brandName: tpl.brandName,
+        footerNote: tpl.footerNote,
+        showViewfinder: tpl.showViewfinder,
+        showStepsBadge: tpl.showStepsBadge,
+        cardBgColor: tpl.cardBgColor,
+        cardTextColor: tpl.cardTextColor,
+        accentColor: tpl.accentColor,
+        style: "poster",
+      },
+      // Apply recommended styling for maximum aesthetic harmony
+      dotsColor: tpl.dotsColor,
+      colorType: tpl.gradientColor1 ? "gradient" : "single",
+      gradientColor1: tpl.gradientColor1 || tpl.dotsColor,
+      gradientColor2: tpl.gradientColor2 || tpl.dotsColor,
+      bgColor: tpl.bgColor,
+      isTransparentBg: false,
+      customEyeColor: true,
+      cornerSquareColor: tpl.cornerSquareColor,
+      cornerDotColor: tpl.cornerDotColor,
+      dotType: tpl.dotType,
+      cornerSquareType: tpl.cornerSquareType,
+      cornerDotType: tpl.cornerDotType,
+    }));
+  };
+
   // High-Resolution Export
   const downloadQR = async (format: "png" | "svg" | "jpeg") => {
     if (typeof window === "undefined") return;
@@ -294,76 +342,158 @@ export function QRStudio() {
             img.src = imgUrl;
           });
 
-          const size = exportRes;
-          const padding = Math.round(size * 0.08);
-          const bannerH = Math.round(size * 0.16);
-          const totalW = size + padding * 2;
-          const totalH = size + padding * 2 + bannerH;
-
+          // Proportions: 1 : 1.42 printable poster ratio
+          const posterW = exportRes;
+          const posterH = Math.round(exportRes * 1.42);
           const canvas = document.createElement("canvas");
-          canvas.width = totalW;
-          canvas.height = totalH;
+          canvas.width = posterW;
+          canvas.height = posterH;
           const ctx = canvas.getContext("2d");
 
           if (ctx) {
-            ctx.fillStyle = config.isTransparentBg ? "transparent" : (config.bgColor || "#ffffff");
+            // 1. Draw Card Background
+            ctx.fillStyle = config.frame.cardBgColor || "#ffffff";
             if (ctx.roundRect) {
               ctx.beginPath();
-              ctx.roundRect(0, 0, totalW, totalH, Math.round(size * 0.05));
+              ctx.roundRect(0, 0, posterW, posterH, Math.round(posterW * 0.04));
               ctx.fill();
             } else {
-              ctx.fillRect(0, 0, totalW, totalH);
+              ctx.fillRect(0, 0, posterW, posterH);
             }
 
-            let qrY = padding;
-            let bY = size + padding + Math.round(bannerH * 0.1);
-
-            if (config.frame.position === "top") {
-              bY = padding;
-              qrY = padding + bannerH + Math.round(bannerH * 0.1);
-            }
-
-            ctx.drawImage(img, padding, qrY, size, size);
-
-            const badgeW = config.frame.style === "banner" ? size : Math.round(size * 0.86);
-            const badgeH = Math.round(bannerH * 0.74);
-            const badgeX = (totalW - badgeW) / 2;
-            const badgeY = bY;
-            const radius = config.frame.style === "badge" ? Math.round(badgeH / 2) : Math.round(size * 0.03);
-
-            if (config.frame.theme === "match" && config.colorType === "gradient") {
-              const grad = ctx.createLinearGradient(badgeX, badgeY, badgeX + badgeW, badgeY + badgeH);
-              grad.addColorStop(0, config.gradientColor1);
-              grad.addColorStop(1, config.gradientColor2);
-              ctx.fillStyle = grad;
-            } else if (config.frame.theme === "match") {
-              ctx.fillStyle = config.dotsColor;
-            } else {
-              ctx.fillStyle = config.frame.bgColor;
-            }
-
-            ctx.beginPath();
+            // 2. Draw Card Border
+            ctx.strokeStyle = config.frame.cardTextColor === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)";
+            ctx.lineWidth = Math.round(posterW * 0.005);
             if (ctx.roundRect) {
-              ctx.roundRect(badgeX, badgeY, badgeW, badgeH, radius);
-            } else {
-              ctx.fillRect(badgeX, badgeY, badgeW, badgeH);
+              ctx.beginPath();
+              ctx.roundRect(0, 0, posterW, posterH, Math.round(posterW * 0.04));
+              ctx.stroke();
             }
-            ctx.fill();
 
-            ctx.fillStyle = config.frame.textColor || "#ffffff";
+            // 3. Top Brand Tag
+            const topY = Math.round(posterH * 0.08);
+            if (config.frame.brandName) {
+              ctx.fillStyle = config.frame.accentColor || "#4f46e5";
+              ctx.font = `bold ${Math.round(posterW * 0.028)}px sans-serif`;
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(config.frame.brandName.toUpperCase(), posterW / 2, topY);
+            }
+
+            // 4. Main Headline
+            const titleY = topY + Math.round(posterH * 0.065);
+            ctx.fillStyle = config.frame.cardTextColor || "#0f172a";
+            ctx.font = `900 ${Math.round(posterW * 0.068)}px sans-serif`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(config.frame.text.toUpperCase(), posterW / 2, titleY);
+
+            // 5. Subtitle
+            let subY = titleY;
             if (config.frame.subtext) {
-              ctx.font = `bold ${Math.round(badgeH * 0.38)}px sans-serif`;
+              subY = titleY + Math.round(posterH * 0.04);
+              ctx.fillStyle = config.frame.cardTextColor === "#ffffff" ? "rgba(255,255,255,0.75)" : "rgba(15,23,42,0.65)";
+              ctx.font = `500 ${Math.round(posterW * 0.03)}px sans-serif`;
               ctx.textAlign = "center";
               ctx.textBaseline = "middle";
-              ctx.fillText(config.frame.text.toUpperCase(), totalW / 2, badgeY + badgeH * 0.36);
+              ctx.fillText(config.frame.subtext, posterW / 2, subY);
+            }
 
-              ctx.font = `500 ${Math.round(badgeH * 0.24)}px sans-serif`;
-              ctx.fillText(config.frame.subtext, totalW / 2, badgeY + badgeH * 0.72);
+            // 6. QR Code Area Centered
+            const qrSize = Math.round(posterW * 0.58);
+            const qrX = (posterW - qrSize) / 2;
+            const qrY = subY + Math.round(posterH * 0.05);
+
+            // White backing pad
+            const pad = Math.round(qrSize * 0.05);
+            ctx.fillStyle = "#ffffff";
+            if (ctx.roundRect) {
+              ctx.beginPath();
+              ctx.roundRect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, Math.round(qrSize * 0.06));
+              ctx.fill();
             } else {
-              ctx.font = `900 ${Math.round(badgeH * 0.44)}px sans-serif`;
+              ctx.fillRect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2);
+            }
+
+            // 7. Viewfinder Corner Brackets [   ]
+            if (config.frame.showViewfinder) {
+              const vfPad = Math.round(qrSize * 0.08);
+              const vfX = qrX - vfPad;
+              const vfY = qrY - vfPad;
+              const vfW = qrSize + vfPad * 2;
+              const vfH = qrSize + vfPad * 2;
+              const arm = Math.round(qrSize * 0.16);
+              const lw = Math.round(posterW * 0.012);
+
+              ctx.strokeStyle = config.frame.accentColor || "#4f46e5";
+              ctx.lineWidth = lw;
+              ctx.lineCap = "round";
+
+              // Top-Left
+              ctx.beginPath();
+              ctx.moveTo(vfX, vfY + arm);
+              ctx.lineTo(vfX, vfY);
+              ctx.lineTo(vfX + arm, vfY);
+              ctx.stroke();
+
+              // Top-Right
+              ctx.beginPath();
+              ctx.moveTo(vfX + vfW - arm, vfY);
+              ctx.lineTo(vfX + vfW, vfY);
+              ctx.lineTo(vfX + vfW, vfY + arm);
+              ctx.stroke();
+
+              // Bottom-Left
+              ctx.beginPath();
+              ctx.moveTo(vfX, vfY + vfH - arm);
+              ctx.lineTo(vfX, vfY + vfH);
+              ctx.lineTo(vfX + arm, vfY + vfH);
+              ctx.stroke();
+
+              // Bottom-Right
+              ctx.beginPath();
+              ctx.moveTo(vfX + vfW - arm, vfY + vfH);
+              ctx.lineTo(vfX + vfW, vfY + vfH);
+              ctx.lineTo(vfX + vfW, vfY + vfH - arm);
+              ctx.stroke();
+            }
+
+            // Draw QR image
+            ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
+
+            // 8. Steps Badge
+            let footerAreaY = qrY + qrSize + pad + Math.round(posterH * 0.04);
+            if (config.frame.showStepsBadge) {
+              const badgeText = "1. Open Camera   •   2. Point at QR   •   3. Tap Link";
+              const bw = Math.round(posterW * 0.82);
+              const bh = Math.round(posterH * 0.048);
+              const bx = (posterW - bw) / 2;
+
+              ctx.fillStyle = config.frame.accentColor || "#4f46e5";
+              if (ctx.roundRect) {
+                ctx.beginPath();
+                ctx.roundRect(bx, footerAreaY, bw, bh, Math.round(bh / 2));
+                ctx.fill();
+              } else {
+                ctx.fillRect(bx, footerAreaY, bw, bh);
+              }
+
+              ctx.fillStyle = "#ffffff";
+              ctx.font = `bold ${Math.round(posterW * 0.026)}px sans-serif`;
               ctx.textAlign = "center";
               ctx.textBaseline = "middle";
-              ctx.fillText(config.frame.text.toUpperCase(), totalW / 2, badgeY + badgeH / 2);
+              ctx.fillText(badgeText, posterW / 2, footerAreaY + bh / 2);
+
+              footerAreaY += bh + Math.round(posterH * 0.03);
+            }
+
+            // 9. Footer Note
+            if (config.frame.footerNote) {
+              ctx.fillStyle = config.frame.cardTextColor === "#ffffff" ? "rgba(255,255,255,0.7)" : "rgba(15,23,42,0.6)";
+              ctx.font = `500 ${Math.round(posterW * 0.026)}px sans-serif`;
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(config.frame.footerNote, posterW / 2, footerAreaY);
             }
 
             URL.revokeObjectURL(imgUrl);
@@ -372,12 +502,12 @@ export function QRStudio() {
               if (blob) {
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blob);
-                a.download = `qr-studio-card-${config.contentType}-${exportRes}px.${format}`;
+                a.download = `qr-studio-poster-${config.contentType}-${exportRes}px.${format}`;
                 a.click();
               }
             }, `image/${format}`);
 
-            confetti({ particleCount: 80, spread: 60, origin: { y: 0.8 } });
+            confetti({ particleCount: 90, spread: 70, origin: { y: 0.8 } });
             setIsDownloading(false);
             return;
           }
@@ -508,7 +638,7 @@ export function QRStudio() {
               }`}
             >
               <LayoutTemplate className="w-3.5 h-3.5" />
-              <span>4. Card Frame</span>
+              <span>4. Poster Templates</span>
               {config.frame.enabled && (
                 <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 right-2" />
               )}
@@ -2056,17 +2186,17 @@ export function QRStudio() {
             </div>
           )}
 
-          {/* TAB 4: CARD FRAME & TEXT BADGE */}
+          {/* TAB 4: PRINTABLE POSTER & STAND CARD TEMPLATES */}
           {activeTab === "frame" && (
             <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl space-y-6">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     <LayoutTemplate className="w-4 h-4 text-indigo-400" />
-                    Card Frame & Custom Text Banner
+                    Printable Poster & Table-Stand Templates
                   </h3>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Choose between a clean stand-alone QR code or an attractive framed text card / table tent banner.
+                    Choose from Canva-style printable card templates (viewfinder, payment stands, cafe menus, Wi-Fi signs) and customize all text and colors.
                   </p>
                 </div>
               </div>
@@ -2097,7 +2227,7 @@ export function QRStudio() {
                     )}
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    Sirf pure QR code download karein, bina kisi frame ya text ke.
+                    Sirf pure standalone QR code download karein, bina kisi poster frame ya text ke.
                   </p>
                 </button>
 
@@ -2118,281 +2248,361 @@ export function QRStudio() {
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-bold flex items-center gap-1.5">
                       <LayoutTemplate className="w-3.5 h-3.5 text-indigo-400" />
-                      Text Card / Poster Frame
+                      Printable Poster / Stand Template
                     </span>
                     {config.frame.enabled && (
                       <Check className="w-4 h-4 text-indigo-400" />
                     )}
                   </div>
                   <p className="text-[11px] text-slate-400">
-                    Apna text card, &apos;SCAN ME&apos; badge ya table-tent banner banayein.
+                    Canva-style printable poster, table tent ya cashier card banayein aur customize karein.
                   </p>
                 </button>
               </div>
 
-              {/* Frame Settings (when enabled) */}
+              {/* Template Customizer (when enabled) */}
               {config.frame.enabled && (
-                <div className="space-y-5 pt-2 border-t border-slate-800/80">
-                  {/* Quick CTA Presets */}
+                <div className="space-y-6 pt-3 border-t border-slate-800/80">
+                  {/* Ready-to-use Template Gallery */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                      Quick Call-to-Action Presets
-                    </label>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        { label: "SCAN ME", sub: "Point camera to scan" },
-                        { label: "VISIT WEBSITE", sub: "Tap to open our official site" },
-                        { label: "CHAT ON WHATSAPP", sub: "Quick instant chat" },
-                        { label: "CONNECT WI-FI", sub: "Scan to auto connect" },
-                        { label: "SAVE CONTACT", sub: "Add to your phonebook" },
-                        { label: "ORDER / MENU", sub: "View digital menu" },
-                        { label: "FOLLOW US", sub: "Connect on social media" },
-                        { label: "PAY HERE", sub: "Scan to pay securely" },
-                      ].map((cta) => (
-                        <button
-                          key={cta.label}
-                          type="button"
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              frame: {
-                                ...prev.frame,
-                                text: cta.label,
-                                subtext: cta.sub,
-                              },
-                            }))
-                          }
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                            config.frame.text === cta.label
-                              ? "bg-indigo-600 text-white border-indigo-500 shadow-sm"
-                              : "bg-slate-950/80 border-slate-800 text-slate-300 hover:border-slate-700 hover:text-white"
-                          }`}
-                        >
-                          {cta.label}
-                        </button>
-                      ))}
+                    <div className="flex items-center justify-between mb-2.5">
+                      <label className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                        <Printer className="w-3.5 h-3.5 text-indigo-400" />
+                        Choose a Template Style
+                      </label>
+                      <span className="text-[10px] text-slate-400">
+                        Click any to apply &amp; edit details
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {POSTER_TEMPLATES.map((tpl) => {
+                        const isSelected = config.frame.templateId === tpl.id;
+                        return (
+                          <button
+                            key={tpl.id}
+                            type="button"
+                            onClick={() => applyPosterTemplate(tpl)}
+                            className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 relative ${
+                              isSelected
+                                ? "bg-indigo-950/40 border-indigo-500 ring-1 ring-indigo-500/50"
+                                : "bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900/90"
+                            }`}
+                          >
+                            {/* Visual Thumbnail */}
+                            <div
+                              className="w-12 h-16 rounded-lg shrink-0 border border-white/20 shadow-md flex flex-col items-center justify-between p-1 text-[8px] font-black"
+                              style={{
+                                background: tpl.cardBgColor,
+                                color: tpl.cardTextColor,
+                              }}
+                            >
+                              <div
+                                className="w-full text-center truncate px-0.5 rounded text-[6px]"
+                                style={{ background: tpl.accentColor, color: "#fff" }}
+                              >
+                                {tpl.title.slice(0, 8)}
+                              </div>
+                              <div className="w-6 h-6 rounded bg-white flex items-center justify-center text-slate-900 font-mono text-[7px] shadow-sm">
+                                QR
+                              </div>
+                              <div className="w-full h-1 rounded-full bg-slate-400/40" />
+                            </div>
+
+                            <div className="overflow-hidden flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-xs font-bold text-white truncate">
+                                  {tpl.name}
+                                </p>
+                                <span className="text-[8px] uppercase tracking-wider px-1 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
+                                  {tpl.category}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-indigo-300 font-medium truncate mt-0.5">
+                                {tpl.title}
+                              </p>
+                              <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                                {tpl.tagline}
+                              </p>
+                            </div>
+
+                            {isSelected && (
+                              <div className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                                <Check className="w-2.5 h-2.5" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* Custom Text Inputs */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                        Card Main Title / Badge Text
-                      </label>
-                      <input
-                        type="text"
-                        value={config.frame.text}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            frame: { ...prev.frame, text: e.target.value },
-                          }))
-                        }
-                        placeholder="e.g. SCAN ME"
-                        maxLength={32}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm font-semibold focus:outline-none focus:border-indigo-500 transition-colors uppercase tracking-wider"
-                      />
+                  {/* Editable Fields Section */}
+                  <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-4">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                        <Type className="w-3.5 h-3.5 text-indigo-400" />
+                        Customize Template Text
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        Live preview updates automatically
+                      </span>
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                        Subtitle / Instructions (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={config.frame.subtext}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            frame: { ...prev.frame, subtext: e.target.value },
-                          }))
-                        }
-                        placeholder="e.g. Point phone camera to open"
-                        maxLength={48}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:outline-none focus:border-indigo-500 transition-colors"
-                      />
-                    </div>
-                  </div>
 
-                  {/* Position & Style Options */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                        Banner Position
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          Poster Main Headline
+                        </label>
+                        <input
+                          type="text"
+                          value={config.frame.text}
+                          onChange={(e) =>
                             setConfig((prev) => ({
                               ...prev,
-                              frame: { ...prev.frame, position: "bottom" },
+                              frame: { ...prev.frame, text: e.target.value },
                             }))
                           }
-                          className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
-                            config.frame.position === "bottom"
-                              ? "bg-indigo-600 text-white border-indigo-500"
-                              : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          Bottom Badge
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
+                          placeholder="e.g. SCAN HERE"
+                          maxLength={36}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs font-bold focus:outline-none focus:border-indigo-500 uppercase tracking-wider"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          Subtitle / Call to Action
+                        </label>
+                        <input
+                          type="text"
+                          value={config.frame.subtext}
+                          onChange={(e) =>
                             setConfig((prev) => ({
                               ...prev,
-                              frame: { ...prev.frame, position: "top" },
+                              frame: { ...prev.frame, subtext: e.target.value },
                             }))
                           }
-                          className={`py-2 px-3 rounded-lg text-xs font-semibold border transition-all ${
-                            config.frame.position === "top"
-                              ? "bg-indigo-600 text-white border-indigo-500"
-                              : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          Top Banner
-                        </button>
+                          placeholder="e.g. Point your smartphone camera"
+                          maxLength={55}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs focus:outline-none focus:border-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          Business / Brand Name Tag
+                        </label>
+                        <input
+                          type="text"
+                          value={config.frame.brandName}
+                          onChange={(e) =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              frame: { ...prev.frame, brandName: e.target.value },
+                            }))
+                          }
+                          placeholder="e.g. APEX CAFE &amp; LOUNGE"
+                          maxLength={32}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs uppercase tracking-wider focus:outline-none focus:border-indigo-500"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-300 mb-1">
+                          Footer Note / Instructions
+                        </label>
+                        <input
+                          type="text"
+                          value={config.frame.footerNote}
+                          onChange={(e) =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              frame: { ...prev.frame, footerNote: e.target.value },
+                            }))
+                          }
+                          placeholder="e.g. Table #12 • Free Wi-Fi"
+                          maxLength={65}
+                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs focus:outline-none focus:border-indigo-500"
+                        />
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                        Badge Style
+                    {/* Interactive Feature Toggles */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            frame: {
+                              ...prev.frame,
+                              showViewfinder: !prev.frame.showViewfinder,
+                            },
+                          }))
+                        }
+                        className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
+                          config.frame.showViewfinder
+                            ? "bg-indigo-950/40 border-indigo-500 text-white"
+                            : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Scan className="w-4 h-4 text-indigo-400" />
+                          <div>
+                            <p className="text-xs font-bold">Viewfinder Brackets [ ]</p>
+                            <p className="text-[10px] text-slate-400">Camera scan corners around QR</p>
+                          </div>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${config.frame.showViewfinder ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
+                          {config.frame.showViewfinder ? "ON" : "OFF"}
+                        </span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            frame: {
+                              ...prev.frame,
+                              showStepsBadge: !prev.frame.showStepsBadge,
+                            },
+                          }))
+                        }
+                        className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
+                          config.frame.showStepsBadge
+                            ? "bg-indigo-950/40 border-indigo-500 text-white"
+                            : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Shield className="w-4 h-4 text-indigo-400" />
+                          <div>
+                            <p className="text-xs font-bold">Scan Steps Guide</p>
+                            <p className="text-[10px] text-slate-400">1. Open • 2. Point • 3. Tap</p>
+                          </div>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${config.frame.showStepsBadge ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
+                          {config.frame.showStepsBadge ? "ON" : "OFF"}
+                        </span>
+                      </button>
+                    </div>
+
+                    {/* Poster Color Customization */}
+                    <div className="pt-2">
+                      <label className="block text-xs font-semibold text-slate-300 mb-2">
+                        Poster Card Background Color
                       </label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="flex flex-wrap gap-2 items-center">
                         {[
-                          { id: "badge", label: "Pill Badge" },
-                          { id: "banner", label: "Full Banner" },
-                          { id: "card", label: "Card Box" },
-                        ].map((st) => (
+                          { id: "#ffffff", label: "Clean White" },
+                          { id: "#09152b", label: "Deep Navy" },
+                          { id: "#042f2e", label: "Cafe Spruce" },
+                          { id: "#1e1b4b", label: "Dark Indigo" },
+                          { id: "#fff7ed", label: "Warm Peach" },
+                          { id: "#18181b", label: "Obsidian" },
+                        ].map((c) => (
                           <button
-                            key={st.id}
+                            key={c.id}
                             type="button"
                             onClick={() =>
                               setConfig((prev) => ({
                                 ...prev,
                                 frame: {
                                   ...prev.frame,
-                                  style: st.id as "badge" | "card" | "banner",
+                                  cardBgColor: c.id,
+                                  cardTextColor: c.id === "#ffffff" || c.id === "#fff7ed" ? "#0f172a" : "#ffffff",
                                 },
                               }))
                             }
-                            className={`py-2 px-2 rounded-lg text-xs font-semibold border text-center transition-all ${
-                              config.frame.style === st.id
-                                ? "bg-indigo-600 text-white border-indigo-500"
-                                : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white"
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border flex items-center gap-1.5 transition-all ${
+                              config.frame.cardBgColor === c.id
+                                ? "border-indigo-500 bg-slate-900 text-white"
+                                : "border-slate-800 bg-slate-950 text-slate-400 hover:text-white"
                             }`}
                           >
-                            {st.label}
+                            <span
+                              className="w-3.5 h-3.5 rounded-full border border-white/20"
+                              style={{ background: c.id }}
+                            />
+                            <span>{c.label}</span>
                           </button>
                         ))}
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Frame Colors */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                      Card / Banner Color Theme
-                    </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                      {[
-                        { id: "match", label: "Match QR", bg: "from-indigo-600 to-purple-600" },
-                        { id: "dark", label: "Obsidian Dark", bg: "bg-slate-900" },
-                        { id: "blue", label: "Royal Indigo", bg: "bg-indigo-600" },
-                        { id: "emerald", label: "Emerald", bg: "bg-emerald-600" },
-                        { id: "amber", label: "Warm Amber", bg: "bg-amber-600" },
-                        { id: "custom", label: "Custom Hex", bg: "bg-slate-800" },
-                      ].map((thm) => (
-                        <button
-                          key={thm.id}
-                          type="button"
-                          onClick={() => {
-                            let bg = config.frame.bgColor;
-                            if (thm.id === "dark") bg = "#090d16";
-                            if (thm.id === "blue") bg = "#4f46e5";
-                            if (thm.id === "emerald") bg = "#059669";
-                            if (thm.id === "amber") bg = "#d97706";
-                            setConfig((prev) => ({
-                              ...prev,
-                              frame: {
-                                ...prev.frame,
-                                theme: thm.id as any,
-                                bgColor: bg,
-                              },
-                            }));
-                          }}
-                          className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all ${
-                            config.frame.theme === thm.id
-                              ? "bg-slate-800/90 border-indigo-500 text-white"
-                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700"
-                          }`}
-                        >
-                          <span
-                            className={`w-4 h-4 rounded-full shrink-0 ${thm.bg}`}
-                            style={
-                              thm.id === "match"
-                                ? {
-                                    background:
-                                      config.colorType === "gradient"
-                                        ? `linear-gradient(135deg, ${config.gradientColor1}, ${config.gradientColor2})`
-                                        : config.dotsColor,
-                                  }
-                                : undefined
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950">
+                          <input
+                            type="color"
+                            value={config.frame.cardBgColor}
+                            onChange={(e) =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                frame: { ...prev.frame, cardBgColor: e.target.value },
+                              }))
                             }
+                            className="w-5 h-5 rounded cursor-pointer bg-transparent border-0"
                           />
-                          <span className="text-xs font-semibold">{thm.label}</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    {config.frame.theme === "custom" && (
-                      <div className="grid grid-cols-2 gap-3 mt-3 p-3 rounded-xl bg-slate-950 border border-slate-800">
-                        <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">
-                            Banner Background Color
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="color"
-                              value={config.frame.bgColor}
-                              onChange={(e) =>
-                                setConfig((prev) => ({
-                                  ...prev,
-                                  frame: { ...prev.frame, bgColor: e.target.value },
-                                }))
-                              }
-                              className="w-8 h-8 rounded border-0 cursor-pointer bg-transparent"
-                            />
-                            <span className="text-xs font-mono text-slate-300">
-                              {config.frame.bgColor}
-                            </span>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">
-                            Banner Text Color
-                          </label>
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="color"
-                              value={config.frame.textColor}
-                              onChange={(e) =>
-                                setConfig((prev) => ({
-                                  ...prev,
-                                  frame: { ...prev.frame, textColor: e.target.value },
-                                }))
-                              }
-                              className="w-8 h-8 rounded border-0 cursor-pointer bg-transparent"
-                            />
-                            <span className="text-xs font-mono text-slate-300">
-                              {config.frame.textColor}
-                            </span>
-                          </div>
+                          <span className="text-[11px] font-mono text-slate-300">
+                            Custom
+                          </span>
                         </div>
                       </div>
-                    )}
+                    </div>
+
+                    {/* Accent Color */}
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-300 mb-2">
+                        Accent &amp; Viewfinder Brackets Color
+                      </label>
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {[
+                          { id: "#4f46e5", label: "Indigo" },
+                          { id: "#0ea5e9", label: "Sky" },
+                          { id: "#14b8a6", label: "Teal" },
+                          { id: "#e11d48", label: "Rose" },
+                          { id: "#d97706", label: "Amber" },
+                          { id: "#8b5cf6", label: "Purple" },
+                        ].map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                frame: { ...prev.frame, accentColor: c.id },
+                              }))
+                            }
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border flex items-center gap-1.5 transition-all ${
+                              config.frame.accentColor === c.id
+                                ? "border-indigo-500 bg-slate-900 text-white"
+                                : "border-slate-800 bg-slate-950 text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            <span
+                              className="w-3.5 h-3.5 rounded-full"
+                              style={{ background: c.id }}
+                            />
+                            <span>{c.label}</span>
+                          </button>
+                        ))}
+
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950">
+                          <input
+                            type="color"
+                            value={config.frame.accentColor}
+                            onChange={(e) =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                frame: { ...prev.frame, accentColor: e.target.value },
+                              }))
+                            }
+                            className="w-5 h-5 rounded cursor-pointer bg-transparent border-0"
+                          />
+                          <span className="text-[11px] font-mono text-slate-300">
+                            Custom
+                          </span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -2546,65 +2756,106 @@ export function QRStudio() {
               </button>
             </div>
 
-            {/* QR Canvas Render Container (with Framed Card Badge if enabled) */}
+            {/* QR Canvas Render Container (with Full Poster Preview when enabled) */}
             <div
-              className={`relative mx-auto flex flex-col items-center justify-center rounded-2xl border transition-all duration-300 group shadow-inner ${
+              className={`relative mx-auto rounded-3xl transition-all duration-300 shadow-2xl flex flex-col items-center border ${
                 config.frame.enabled
-                  ? "p-6 bg-slate-950/90 border-indigo-500/30 ring-1 ring-indigo-500/20"
-                  : "p-5 bg-gradient-to-b from-slate-950 to-slate-900 border-slate-800"
+                  ? "p-6"
+                  : "p-5 bg-gradient-to-b from-slate-950 to-slate-900 border-slate-800 shadow-inner group"
               }`}
+              style={
+                config.frame.enabled
+                  ? {
+                      background: config.frame.cardBgColor,
+                      color: config.frame.cardTextColor,
+                      borderColor:
+                        config.frame.cardTextColor === "#ffffff"
+                          ? "rgba(255,255,255,0.15)"
+                          : "rgba(0,0,0,0.12)",
+                    }
+                  : undefined
+              }
             >
-              {/* Optional Top Card Banner */}
-              {config.frame.enabled && config.frame.position === "top" && (
-                <div
-                  className="w-full mb-4 py-2 px-3 rounded-xl text-center shadow-md transition-all"
-                  style={{
-                    background:
-                      config.frame.theme === "match"
-                        ? config.colorType === "gradient"
-                          ? `linear-gradient(135deg, ${config.gradientColor1}, ${config.gradientColor2})`
-                          : config.dotsColor
-                        : config.frame.bgColor,
-                    color: config.frame.textColor,
-                  }}
-                >
-                  <p className="text-xs font-black tracking-wider uppercase">
-                    {config.frame.text || "SCAN ME"}
-                  </p>
+              {/* Poster Header (Brand Tag, Headline, Subtitle) */}
+              {config.frame.enabled && (
+                <div className="w-full text-center mb-3">
+                  {config.frame.brandName && (
+                    <p
+                      className="text-[10px] font-extrabold uppercase tracking-widest mb-1"
+                      style={{ color: config.frame.accentColor }}
+                    >
+                      {config.frame.brandName}
+                    </p>
+                  )}
+                  <h3 className="text-lg font-black uppercase tracking-wider leading-tight mb-1">
+                    {config.frame.text || "SCAN HERE"}
+                  </h3>
                   {config.frame.subtext && (
-                    <p className="text-[10px] opacity-90 font-medium">
+                    <p className="text-[11px] opacity-80 font-medium max-w-[280px] mx-auto">
                       {config.frame.subtext}
                     </p>
                   )}
                 </div>
               )}
 
-              {/* QR Code Container */}
+              {/* QR Code Container with Camera Viewfinder Brackets */}
               <div
-                ref={qrContainerRef}
-                className="flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]"
-              />
+                className={`relative transition-all ${
+                  config.frame.enabled
+                    ? "p-3 rounded-2xl bg-white shadow-lg my-1"
+                    : ""
+                }`}
+              >
+                {config.frame.enabled && config.frame.showViewfinder && (
+                  <>
+                    {/* Top-Left Viewfinder Bracket */}
+                    <div
+                      className="absolute -top-2.5 -left-2.5 w-6 h-6 border-t-[4px] border-l-[4px] rounded-tl-lg pointer-events-none"
+                      style={{ borderColor: config.frame.accentColor }}
+                    />
+                    {/* Top-Right Viewfinder Bracket */}
+                    <div
+                      className="absolute -top-2.5 -right-2.5 w-6 h-6 border-t-[4px] border-r-[4px] rounded-tr-lg pointer-events-none"
+                      style={{ borderColor: config.frame.accentColor }}
+                    />
+                    {/* Bottom-Left Viewfinder Bracket */}
+                    <div
+                      className="absolute -bottom-2.5 -left-2.5 w-6 h-6 border-b-[4px] border-l-[4px] rounded-bl-lg pointer-events-none"
+                      style={{ borderColor: config.frame.accentColor }}
+                    />
+                    {/* Bottom-Right Viewfinder Bracket */}
+                    <div
+                      className="absolute -bottom-2.5 -right-2.5 w-6 h-6 border-b-[4px] border-r-[4px] rounded-br-lg pointer-events-none"
+                      style={{ borderColor: config.frame.accentColor }}
+                    />
+                  </>
+                )}
 
-              {/* Optional Bottom Card Banner */}
-              {config.frame.enabled && config.frame.position === "bottom" && (
                 <div
-                  className="w-full mt-4 py-2 px-3 rounded-xl text-center shadow-md transition-all"
-                  style={{
-                    background:
-                      config.frame.theme === "match"
-                        ? config.colorType === "gradient"
-                          ? `linear-gradient(135deg, ${config.gradientColor1}, ${config.gradientColor2})`
-                          : config.dotsColor
-                        : config.frame.bgColor,
-                    color: config.frame.textColor,
-                  }}
-                >
-                  <p className="text-xs font-black tracking-wider uppercase">
-                    {config.frame.text || "SCAN ME"}
-                  </p>
-                  {config.frame.subtext && (
-                    <p className="text-[10px] opacity-90 font-medium">
-                      {config.frame.subtext}
+                  ref={qrContainerRef}
+                  className="flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]"
+                />
+              </div>
+
+              {/* Poster Footer (Steps Guide & Footer Note) */}
+              {config.frame.enabled && (
+                <div className="w-full text-center mt-3">
+                  {config.frame.showStepsBadge && (
+                    <div
+                      className="py-1.5 px-3 rounded-full text-[10px] font-bold text-white shadow-md flex items-center justify-center gap-1.5 max-w-[280px] mx-auto"
+                      style={{ background: config.frame.accentColor }}
+                    >
+                      <span>1. Open Camera</span>
+                      <span>•</span>
+                      <span>2. Point at QR</span>
+                      <span>•</span>
+                      <span>3. Tap Link</span>
+                    </div>
+                  )}
+
+                  {config.frame.footerNote && (
+                    <p className="mt-2 text-[10px] opacity-75 font-medium max-w-[280px] mx-auto">
+                      {config.frame.footerNote}
                     </p>
                   )}
                 </div>

@@ -41,15 +41,60 @@ export interface EmailData {
   format?: "mailto" | "matmsg";
 }
 
+export type PosterTemplateId =
+  | "none"
+  | "viewfinder-minimal"
+  | "payment-merchant"
+  | "cafe-menu"
+  | "wifi-stand"
+  | "vibrant-retro"
+  | "luxury-event"
+  | "social-creator"
+  | "modern-cyber";
+
 export interface QRCardFrameConfig {
   enabled: boolean;
+  templateId: PosterTemplateId;
   text: string;
   subtext: string;
+  brandName: string;
+  footerNote: string;
+  showViewfinder: boolean;
+  showStepsBadge: boolean;
   position: "bottom" | "top";
   theme: "match" | "dark" | "blue" | "emerald" | "amber" | "custom";
   bgColor: string;
   textColor: string;
-  style: "badge" | "card" | "banner";
+  accentColor: string;
+  cardBgColor: string;
+  cardTextColor: string;
+  style: "badge" | "card" | "banner" | "poster";
+  layout: "poster" | "compact" | "badge";
+}
+
+export interface PosterTemplatePreset {
+  id: PosterTemplateId;
+  name: string;
+  category: "Business" | "Dining & Cafe" | "Events" | "Tech & Wi-Fi" | "Creative";
+  tagline: string;
+  title: string;
+  subtitle: string;
+  brandName: string;
+  footerNote: string;
+  showViewfinder: boolean;
+  showStepsBadge: boolean;
+  cardBgColor: string;
+  cardTextColor: string;
+  accentColor: string;
+  dotsColor: string;
+  gradientColor1?: string;
+  gradientColor2?: string;
+  bgColor: string;
+  cornerSquareColor: string;
+  cornerDotColor: string;
+  dotType: DotType;
+  cornerSquareType: CornerSquareType;
+  cornerDotType: CornerDotType;
 }
 
 export interface QRDesignConfig {
