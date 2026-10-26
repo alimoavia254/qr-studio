@@ -655,6 +655,37 @@ export const QR_PRESETS: QRPreset[] = [
 // Curated sample SVG logos encoded for quick 1-click user testing
 export const SAMPLE_LOGOS = [
   {
+    name: "Crownix Bet",
+    icon: "crown",
+    color: "#f59e0b",
+    url:
+      "data:image/svg+xml;utf8," +
+      encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" width="160" height="120">
+        <rect width="160" height="120" rx="16" fill="#090a16"/>
+        <defs>
+          <linearGradient id="crownGold" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#fde047"/>
+            <stop offset="50%" stop-color="#eab308"/>
+            <stop offset="100%" stop-color="#ca8a04"/>
+          </linearGradient>
+        </defs>
+        <path d="M50 42 L60 22 L80 34 L100 22 L110 42 Z" fill="url(#crownGold)" stroke="#fbbf24" stroke-width="1.5"/>
+        <circle cx="60" cy="20" r="3" fill="#fbbf24"/>
+        <circle cx="80" cy="32" r="3" fill="#ef4444"/>
+        <circle cx="100" cy="20" r="3" fill="#fbbf24"/>
+        <text x="80" y="66" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="18" fill="#fde047" text-anchor="middle" letter-spacing="1">CROWNIX</text>
+        <path d="M48 77 L58 77" stroke="#ef4444" stroke-width="2"/>
+        <text x="80" y="82" font-family="Arial Black, Impact, sans-serif" font-weight="900" font-size="13" fill="#ef4444" text-anchor="middle" letter-spacing="2">BET</text>
+        <path d="M102 77 L112 77" stroke="#ef4444" stroke-width="2"/>
+        <text x="56" y="100" font-size="11" fill="#fde047">♠</text>
+        <text x="72" y="100" font-size="11" fill="#ef4444">♥</text>
+        <text x="88" y="100" font-size="11" fill="#ef4444">♦</text>
+        <text x="104" y="100" font-size="11" fill="#fde047">♣</text>
+      </svg>
+    `),
+  },
+  {
     name: "WhatsApp",
     icon: "wa",
     color: "#25D366",

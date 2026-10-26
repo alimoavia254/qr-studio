@@ -33,6 +33,14 @@ import {
   Printer,
   Share2,
   Zap,
+  Menu,
+  Link2,
+  X,
+  ChevronDown,
+  Home,
+  LayoutGrid,
+  Clock,
+  Settings,
 } from "lucide-react";
 import { QRDesignConfig, QRContentType, ThemeCategory, PosterTemplatePreset } from "@/types/qr";
 import { formatQRData } from "@/lib/qrDataFormatters";
@@ -48,7 +56,7 @@ import type {
 
 const INITIAL_CONFIG: QRDesignConfig = {
   contentType: "url",
-  url: "https://mybrand.com",
+  url: "https://crownixbet.com/",
   text: "Hello from QR Vibe (qrvibe.online)!",
   wifi: {
     ssid: "Office_5G",
@@ -83,20 +91,20 @@ const INITIAL_CONFIG: QRDesignConfig = {
   cornerSquareType: "extra-rounded",
   cornerDotType: "dot",
   colorType: "gradient",
-  dotsColor: "#4f46e5",
-  gradientColor1: "#4f46e5",
-  gradientColor2: "#9333ea",
+  dotsColor: "#f59e0b",
+  gradientColor1: "#f59e0b",
+  gradientColor2: "#ef4444",
   gradientType: "linear",
   gradientRotation: 45,
   customEyeColor: true,
-  cornerSquareColor: "#4338ca",
-  cornerDotColor: "#7e22ce",
-  bgColor: "#ffffff",
+  cornerSquareColor: "#fbbf24",
+  cornerDotColor: "#ef4444",
+  bgColor: "#090a16",
   isTransparentBg: false,
-  logoUrl: null,
-  logoSize: 0.28,
+  logoUrl: SAMPLE_LOGOS[0].url,
+  logoSize: 0.25,
   logoMargin: 6,
-  hideBehindLogo: true,
+  hideBehindLogo: false,
   errorCorrectionLevel: "H",
   frame: {
     enabled: false,
@@ -157,6 +165,20 @@ export function QRStudio({
     match: true,
     latencyMs: 0,
   });
+
+  const [isMobileScreen, setIsMobileScreen] = useState<boolean>(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState<boolean>(false);
+  const [mobileBottomTab, setMobileBottomTab] = useState<"home" | "templates" | "history" | "settings">("home");
+  const [downloadDropdownOpen, setDownloadDropdownOpen] = useState<boolean>(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobileScreen(window.innerWidth < 1024);
+    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const qrContainerRef = useRef<HTMLDivElement>(null);
   const qrCodeInstanceRef = useRef<any>(null);
@@ -250,15 +272,16 @@ export function QRStudio({
 
       if (!isMounted) return;
 
-      const options = getQROptions(320);
+      const qrSize = isMobileScreen ? 270 : 320;
+      const options = getQROptions(qrSize);
 
       if (!qrCodeInstanceRef.current) {
         qrCodeInstanceRef.current = new QRCodeStyling(options);
-        qrContainerRef.current.innerHTML = "";
-        qrCodeInstanceRef.current.append(qrContainerRef.current);
       } else {
         qrCodeInstanceRef.current.update(options);
       }
+      qrContainerRef.current.innerHTML = "";
+      qrCodeInstanceRef.current.append(qrContainerRef.current);
     }
 
     initQR();
@@ -266,7 +289,7 @@ export function QRStudio({
     return () => {
       isMounted = false;
     };
-  }, [config, qrData]);
+  }, [config, qrData, isMobileScreen]);
 
   // Real Hardware QR Decoder Engine Test (jsQR)
   useEffect(() => {
@@ -776,8 +799,1126 @@ export function QRStudio({
   ];
 
   return (
-    <div id="generator" className="py-6 sm:py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 lg:pb-10">
-      {/* Studio Top Hero Subtitle */}
+    <div id="generator" className="py-0 sm:py-10 max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pb-20 lg:pb-10">
+      {/* Hidden file input for logo uploads */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleLogoUpload}
+        accept="image/png,image/jpeg,image/svg+xml,image/webp"
+        className="hidden"
+      />
+
+      {/* ======================================================== */}
+      {/* DEDICATED MOBILE APP VIEW (< 1024px) - EXACT MOCKUP UI */}
+      {/* ======================================================== */}
+      <div className="block lg:hidden min-h-screen bg-[#060714] text-slate-100 pb-20">
+        {/* 1. TOP APP HEADER */}
+        <div className="sticky top-0 z-30 bg-[#090a16]/95 backdrop-blur-xl border-b border-purple-950/40 px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {/* QR Vibe Logo Icon */}
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500 via-fuchsia-500 to-indigo-600 p-[2px] shadow-lg shadow-purple-600/30">
+              <div className="w-full h-full bg-[#0d0f24] rounded-[14px] flex items-center justify-center p-2">
+                <div className="grid grid-cols-2 gap-1 w-full h-full">
+                  <div className="border border-purple-400 rounded-sm flex items-center justify-center p-0.5">
+                    <div className="w-full h-full bg-purple-400 rounded-[1px]" />
+                  </div>
+                  <div className="border border-purple-400 rounded-sm flex items-center justify-center p-0.5">
+                    <div className="w-full h-full bg-purple-400 rounded-[1px]" />
+                  </div>
+                  <div className="border border-purple-400 rounded-sm flex items-center justify-center p-0.5">
+                    <div className="w-full h-full bg-purple-400 rounded-[1px]" />
+                  </div>
+                  <div className="border border-pink-400/60 rounded-sm flex items-center justify-center p-0.5">
+                    <div className="w-1.5 h-1.5 bg-pink-400 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-black text-white tracking-tight leading-none">QR Vibe</h1>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-600 text-white shadow-md shadow-purple-600/50">
+                  PRO
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 font-medium leading-none mt-1">
+                Vibrant &amp; Scannable QR Codes
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setMobileDrawerOpen(true)}
+            className="w-10 h-10 rounded-xl bg-[#12142e] border border-purple-900/40 hover:border-purple-600/60 flex items-center justify-center text-slate-300 hover:text-white transition-colors"
+            aria-label="Open studio menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* 2. QR TYPE PILLS ROW */}
+        <div className="px-4 py-3 overflow-x-auto no-scrollbar scroll-smooth flex items-center gap-2.5">
+          {[
+            { id: "url", label: "URL", icon: Globe },
+            { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+            { id: "wifi", label: "Wi-Fi", icon: Wifi },
+            { id: "vcard", label: "vCard", icon: Contact },
+            { id: "email", label: "Email", icon: Mail },
+            { id: "text", label: "Text", icon: FileText },
+          ].map((t) => {
+            const isActive = config.contentType === t.id;
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => {
+                  setConfig((prev) => ({ ...prev, contentType: t.id as QRContentType }));
+                  if (t.id !== "url") {
+                    setMobileDrawerOpen(true);
+                  }
+                }}
+                className={`shrink-0 flex flex-col items-center justify-center min-w-[64px] h-[66px] rounded-2xl px-2.5 py-2 transition-all ${
+                  isActive
+                    ? "bg-purple-600 text-white shadow-lg shadow-purple-600/40 ring-2 ring-purple-400/60"
+                    : "bg-[#0f1126] border border-slate-800/80 text-slate-400 hover:text-white"
+                }`}
+              >
+                <Icon className="w-5 h-5 mb-1" />
+                <span className="text-[11px] font-bold tracking-tight">{t.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* 3. WEBSITE URL CARD */}
+        <div className="mx-4 mb-3 p-4 rounded-2xl bg-[#0f1126] border border-slate-800/80 shadow-md">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-bold text-white">
+              {config.contentType === "url" ? "Website URL" : `${config.contentType.toUpperCase()} Content`}
+            </span>
+            {config.contentType !== "url" && (
+              <button
+                type="button"
+                onClick={() => setMobileDrawerOpen(true)}
+                className="text-xs text-purple-400 font-semibold hover:text-purple-300"
+              >
+                Edit Details
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-[#080916] border border-slate-800 focus-within:border-purple-500 transition-colors">
+            <Link2 className="w-4 h-4 text-slate-400 shrink-0" />
+            <input
+              type="text"
+              value={config.contentType === "url" ? config.url : qrData}
+              onChange={(e) => {
+                if (config.contentType === "url") {
+                  setConfig((prev) => ({ ...prev, url: e.target.value }));
+                }
+              }}
+              placeholder="https://crownixbet.com/"
+              className="bg-transparent w-full text-xs sm:text-sm text-white placeholder-slate-500 outline-none font-medium truncate"
+            />
+            {(config.contentType === "url" ? config.url : qrData) && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (config.contentType === "url") {
+                    setConfig((prev) => ({ ...prev, url: "" }));
+                  }
+                }}
+                className="text-slate-400 hover:text-white p-1"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto no-scrollbar">
+            <span className="text-[11px] text-slate-400 shrink-0 font-medium">Quick links:</span>
+            {[
+              { label: "https://", val: "https://" },
+              { label: "https://instagram.com/", val: "https://instagram.com/" },
+              { label: "https://wa.me/", val: "https://wa.me/" },
+            ].map((ql) => (
+              <button
+                key={ql.label}
+                type="button"
+                onClick={() => setConfig((prev) => ({ ...prev, contentType: "url", url: ql.val }))}
+                className="shrink-0 px-2.5 py-1 rounded-lg bg-[#151833] hover:bg-[#1d2146] border border-slate-700/60 text-[11px] text-slate-300 font-mono transition-colors"
+              >
+                {ql.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 4. ADD LOGO (OPTIONAL) CARD */}
+        <div className="mx-4 mb-3 p-4 rounded-2xl bg-[#0f1126] border border-slate-800/80 shadow-md">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-bold text-white">Add Logo (Optional)</span>
+            {config.logoUrl && (
+              <button
+                type="button"
+                onClick={() => setConfig((prev) => ({ ...prev, logoUrl: null }))}
+                className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-semibold"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Remove</span>
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-4">
+            {/* Checkered preview box */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="relative w-28 h-20 rounded-xl border border-slate-800 bg-[#080916] flex items-center justify-center p-2 cursor-pointer overflow-hidden group hover:border-purple-500/60 shrink-0 transition-colors"
+              style={{
+                backgroundImage: "radial-gradient(#1e2238 1.5px, transparent 1.5px)",
+                backgroundSize: "8px 8px",
+              }}
+              title="Tap to change logo"
+            >
+              {config.logoUrl ? (
+                <img
+                  src={config.logoUrl}
+                  alt="Brand Logo"
+                  className="max-h-full max-w-full object-contain filter drop-shadow"
+                />
+              ) : (
+                <div className="text-center text-slate-500 text-[11px]">
+                  <Upload className="w-4 h-4 mx-auto mb-1 text-slate-400" />
+                  <span>Upload</span>
+                </div>
+              )}
+            </div>
+
+            {/* Sliders & Toggles */}
+            <div className="flex-1 space-y-2.5">
+              <div>
+                <div className="flex items-center justify-between text-xs mb-1">
+                  <span className="text-slate-300 font-medium">Logo Size</span>
+                  <span className="text-white font-bold">{Math.round(config.logoSize * 100)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={0.15}
+                  max={0.35}
+                  step={0.01}
+                  value={config.logoSize}
+                  onChange={(e) => setConfig((prev) => ({ ...prev, logoSize: parseFloat(e.target.value) }))}
+                  className="w-full accent-purple-500 h-1.5 bg-[#181a38] rounded-lg cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-300 font-medium">White Background</span>
+                <button
+                  type="button"
+                  onClick={() => setConfig((prev) => ({ ...prev, hideBehindLogo: !prev.hideBehindLogo }))}
+                  className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
+                    config.hideBehindLogo ? "bg-purple-600 justify-end" : "bg-[#181a38] border border-slate-700 justify-start"
+                  }`}
+                >
+                  <span className="w-4 h-4 rounded-full bg-white shadow-md transform transition-transform" />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-300 font-medium">Add Padding</span>
+                <button
+                  type="button"
+                  onClick={() => setConfig((prev) => ({ ...prev, logoMargin: prev.logoMargin > 0 ? 0 : 8 }))}
+                  className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
+                    config.logoMargin > 0 ? "bg-purple-600 justify-end" : "bg-[#181a38] border border-slate-700 justify-start"
+                  }`}
+                >
+                  <span className="w-4 h-4 rounded-full bg-white shadow-md transform transition-transform" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 5. QR CODE PREVIEW CARD */}
+        <div className="mx-4 mb-3 p-4 rounded-2xl bg-[#0f1126] border border-slate-800/80 shadow-md">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-bold text-white">QR Code Preview</span>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-[11px] font-semibold text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>High Quality • Scannable</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowScanModal(true)}
+              className="px-2.5 py-1 rounded-lg border border-purple-500/80 bg-purple-600/10 hover:bg-purple-600/20 text-purple-300 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <Scan className="w-3.5 h-3.5" />
+              <span>Test Scan</span>
+            </button>
+          </div>
+
+          {/* Centered QR Box */}
+          <div className="flex items-center justify-center p-3 bg-[#080916] rounded-xl border border-slate-800/80 shadow-inner min-h-[280px]">
+            {isMobileScreen && (
+              <div
+                ref={qrContainerRef}
+                className="flex items-center justify-center overflow-hidden transition-transform duration-300"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* 6. STYLE SECTION */}
+        <div className="mx-4 mb-3">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-sm font-bold text-white">Style</span>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("style");
+                setMobileDrawerOpen(true);
+              }}
+              className="text-xs text-purple-400 font-semibold hover:text-purple-300"
+            >
+              View All
+            </button>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2.5">
+            {[
+              {
+                id: "square",
+                name: "Classic",
+                icon: (
+                  <div className="w-7 h-7 grid grid-cols-2 gap-1 p-0.5">
+                    <div className="border border-current rounded-none" />
+                    <div className="border border-current rounded-none" />
+                    <div className="border border-current rounded-none" />
+                    <div className="border border-current rounded-none" />
+                  </div>
+                ),
+                apply: () =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    dotType: "square",
+                    cornerSquareType: "square",
+                    cornerDotType: "square",
+                  })),
+                active: config.dotType === "square",
+              },
+              {
+                id: "rounded",
+                name: "Rounded",
+                icon: (
+                  <div className="w-7 h-7 grid grid-cols-2 gap-1 p-0.5">
+                    <div className="w-full h-full bg-current rounded-full" />
+                    <div className="w-full h-full bg-current rounded-full" />
+                    <div className="w-full h-full bg-current rounded-full" />
+                    <div className="w-full h-full bg-current rounded-full" />
+                  </div>
+                ),
+                apply: () =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    dotType: "rounded",
+                    cornerSquareType: "extra-rounded",
+                    cornerDotType: "dot",
+                  })),
+                active: config.dotType === "rounded",
+              },
+              {
+                id: "dots",
+                name: "Dots",
+                icon: (
+                  <div className="w-7 h-7 grid grid-cols-3 gap-0.5 p-0.5 items-center justify-center">
+                    {Array.from({ length: 9 }).map((_, i) => (
+                      <div key={i} className="w-1.5 h-1.5 bg-current rounded-full mx-auto" />
+                    ))}
+                  </div>
+                ),
+                apply: () =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    dotType: "dots",
+                    cornerSquareType: "extra-rounded",
+                    cornerDotType: "dot",
+                  })),
+                active: config.dotType === "dots",
+              },
+              {
+                id: "classy",
+                name: "Square",
+                icon: (
+                  <div className="w-7 h-7 flex items-center justify-center border-2 border-current rounded-lg p-1">
+                    <div className="w-2.5 h-2.5 bg-current rounded-sm" />
+                  </div>
+                ),
+                apply: () =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    dotType: "classy",
+                    cornerSquareType: "square",
+                    cornerDotType: "square",
+                  })),
+                active: config.dotType === "classy",
+              },
+            ].map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={s.apply}
+                className={`flex flex-col items-center justify-center py-3 px-2 rounded-2xl transition-all ${
+                  s.active
+                    ? "bg-[#181438] border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.35)] text-white"
+                    : "bg-[#0f1126] border border-slate-800/80 text-slate-400 hover:text-white"
+                }`}
+              >
+                <div className="w-8 h-8 flex items-center justify-center mb-1 text-current">
+                  {s.icon}
+                </div>
+                <span className="text-[11px] font-bold">{s.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 7. COLOR SCHEME SECTION */}
+        <div className="mx-4 mb-3">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-sm font-bold text-white">Color Scheme</span>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab("style");
+                setMobileDrawerOpen(true);
+              }}
+              className="text-xs text-purple-400 font-semibold hover:text-purple-300"
+            >
+              View All
+            </button>
+          </div>
+
+          <div className="grid grid-cols-6 gap-2">
+            {[
+              {
+                id: "gold-red",
+                name: "Gold & Red",
+                active: config.gradientColor1 === "#f59e0b" && config.gradientColor2 === "#ef4444",
+                style: {
+                  background: "linear-gradient(135deg, #f59e0b 50%, #ef4444 50%)",
+                },
+                apply: () =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    colorType: "gradient",
+                    dotsColor: "#f59e0b",
+                    gradientColor1: "#f59e0b",
+                    gradientColor2: "#ef4444",
+                    cornerSquareColor: "#fbbf24",
+                    cornerDotColor: "#ef4444",
+                    customEyeColor: true,
+                  })),
+              },
+              {
+                id: "purple",
+                name: "Purple",
+                active: config.gradientColor1 === "#9333ea" && config.gradientColor2 === "#c084fc",
+                style: {
+                  background: "linear-gradient(135deg, #9333ea, #c084fc)",
+                },
+                apply: () =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    colorType: "gradient",
+                    dotsColor: "#a855f7",
+                    gradientColor1: "#9333ea",
+                    gradientColor2: "#c084fc",
+                    cornerSquareColor: "#a855f7",
+                    cornerDotColor: "#c084fc",
+                    customEyeColor: true,
+                  })),
+              },
+              {
+                id: "blue",
+                name: "Blue",
+                active: config.gradientColor1 === "#0284c7" && config.gradientColor2 === "#38bdf8",
+                style: {
+                  background: "linear-gradient(135deg, #0284c7, #38bdf8)",
+                },
+                apply: () =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    colorType: "gradient",
+                    dotsColor: "#0284c7",
+                    gradientColor1: "#0284c7",
+                    gradientColor2: "#38bdf8",
+                    cornerSquareColor: "#0284c7",
+                    cornerDotColor: "#38bdf8",
+                    customEyeColor: true,
+                  })),
+              },
+              {
+                id: "green",
+                name: "Green",
+                active: config.gradientColor1 === "#059669" && config.gradientColor2 === "#34d399",
+                style: {
+                  background: "linear-gradient(135deg, #059669, #34d399)",
+                },
+                apply: () =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    colorType: "gradient",
+                    dotsColor: "#059669",
+                    gradientColor1: "#059669",
+                    gradientColor2: "#34d399",
+                    cornerSquareColor: "#059669",
+                    cornerDotColor: "#34d399",
+                    customEyeColor: true,
+                  })),
+              },
+              {
+                id: "black",
+                name: "Black",
+                active: config.colorType === "single" && config.dotsColor === "#0f172a",
+                style: {
+                  background: "#0f172a",
+                },
+                apply: () =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    colorType: "single",
+                    dotsColor: "#0f172a",
+                    cornerSquareColor: "#0f172a",
+                    cornerDotColor: "#0f172a",
+                  })),
+              },
+              {
+                id: "custom",
+                name: "Custom",
+                active: false,
+                style: {
+                  background: "conic-gradient(from 180deg, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000)",
+                },
+                apply: () => {
+                  setActiveTab("style");
+                  setMobileDrawerOpen(true);
+                },
+              },
+            ].map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={c.apply}
+                className="flex flex-col items-center gap-1.5 focus:outline-none"
+              >
+                <div
+                  className={`w-11 h-11 rounded-full p-0.5 transition-all flex items-center justify-center ${
+                    c.active
+                      ? "ring-2 ring-purple-500 ring-offset-2 ring-offset-[#090a16] shadow-lg shadow-purple-500/50 scale-105"
+                      : "border border-slate-700/60 hover:scale-105"
+                  }`}
+                >
+                  <div className="w-full h-full rounded-full" style={c.style} />
+                </div>
+                <span className="text-[10px] font-semibold text-slate-300 text-center leading-none">
+                  {c.name}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 8. BACKGROUND SECTION */}
+        <div className="mx-4 mb-4">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-sm font-bold text-white">Background</span>
+          </div>
+
+          <div className="grid grid-cols-4 gap-2.5">
+            {[
+              {
+                id: "white",
+                name: "White",
+                active: config.bgColor === "#ffffff" && !config.isTransparentBg,
+                icon: <div className="w-6 h-6 rounded-full bg-white shadow-sm border border-slate-300" />,
+                apply: () => setConfig((prev) => ({ ...prev, bgColor: "#ffffff", isTransparentBg: false })),
+              },
+              {
+                id: "black",
+                name: "Black",
+                active: config.bgColor === "#090a16" && !config.isTransparentBg,
+                icon: <div className="w-6 h-6 rounded-full bg-[#090a16] border border-slate-700" />,
+                apply: () => setConfig((prev) => ({ ...prev, bgColor: "#090a16", isTransparentBg: false })),
+              },
+              {
+                id: "gradient",
+                name: "Gradient",
+                active: config.bgColor === "#1a1236" && !config.isTransparentBg,
+                icon: <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-900 to-indigo-900 border border-purple-500/50" />,
+                apply: () => setConfig((prev) => ({ ...prev, bgColor: "#1a1236", isTransparentBg: false })),
+              },
+              {
+                id: "image",
+                name: "Image",
+                active: false,
+                icon: <ImageIcon className="w-5 h-5 text-purple-300" />,
+                apply: () => {
+                  setActiveTab("presets");
+                  setMobileDrawerOpen(true);
+                },
+              },
+            ].map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={b.apply}
+                className={`flex items-center justify-center gap-2 py-2.5 px-2 rounded-2xl transition-all ${
+                  b.active
+                    ? "bg-[#181438] border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.35)] text-white"
+                    : "bg-[#0f1126] border border-slate-800/80 text-slate-300 hover:text-white"
+                }`}
+              >
+                {b.icon}
+                <span className="text-xs font-bold">{b.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 9. ACTION BUTTONS */}
+        <div className="mx-4 mb-24 space-y-2.5">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => downloadQR("png")}
+              className="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-purple-600/35 flex items-center justify-between active:scale-[0.99] transition-all"
+            >
+              <div className="flex items-center gap-2 mx-auto">
+                <Download className="w-5 h-5" />
+                <span className="text-base tracking-tight">Download QR Code</span>
+              </div>
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDownloadDropdownOpen(!downloadDropdownOpen);
+                }}
+                className="p-1 hover:bg-white/10 rounded-lg -mr-1 transition-colors"
+              >
+                <ChevronDown className="w-5 h-5" />
+              </div>
+            </button>
+
+            {/* Dropdown Options */}
+            {downloadDropdownOpen && (
+              <div className="absolute bottom-full left-0 right-0 mb-2 p-2 bg-[#12142e] border border-purple-900/60 rounded-2xl shadow-2xl z-40 space-y-1 backdrop-blur-xl">
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadQR("png");
+                    setDownloadDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs font-bold text-white hover:bg-purple-600/20 rounded-xl flex items-center justify-between"
+                >
+                  <span>PNG Image (HD 1024px)</span>
+                  <span className="text-purple-400 text-[10px]">Instant</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadQR("svg");
+                    setDownloadDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs font-bold text-white hover:bg-purple-600/20 rounded-xl flex items-center justify-between"
+                >
+                  <span>SVG Vector (Infinitely Scalable)</span>
+                  <span className="text-emerald-400 text-[10px]">Print HD</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadQR("jpeg");
+                    setDownloadDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-xs font-bold text-white hover:bg-purple-600/20 rounded-xl flex items-center justify-between"
+                >
+                  <span>JPEG Image (Universal)</span>
+                  <span className="text-slate-400 text-[10px]">Ultra Compressed</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowScanModal(true)}
+            className="w-full py-3.5 px-4 rounded-2xl bg-[#0f1126] border border-purple-500/70 hover:border-purple-400 text-purple-300 font-bold text-sm flex items-center justify-center gap-2 transition-all active:scale-[0.99] shadow-md shadow-purple-950/40"
+          >
+            <Scan className="w-4 h-4 text-purple-400" />
+            <span>Simulate Phone Scan</span>
+          </button>
+        </div>
+
+        {/* 10. BOTTOM MOBILE DOCK */}
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#080918]/95 backdrop-blur-xl border-t border-purple-900/40 py-2.5 px-6 flex items-center justify-around shadow-2xl">
+          <button
+            type="button"
+            onClick={() => {
+              setMobileBottomTab("home");
+              setMobileDrawerOpen(false);
+            }}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              mobileBottomTab === "home" && !mobileDrawerOpen ? "text-purple-400" : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-[10px] font-bold">Home</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMobileBottomTab("templates");
+              setActiveTab("presets");
+              setMobileDrawerOpen(true);
+            }}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              mobileBottomTab === "templates" || (mobileDrawerOpen && activeTab === "presets")
+                ? "text-purple-400"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <LayoutGrid className="w-5 h-5" />
+            <span className="text-[10px] font-bold">Templates</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMobileBottomTab("history");
+              setActiveTab("frame");
+              setMobileDrawerOpen(true);
+            }}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              mobileBottomTab === "history" || (mobileDrawerOpen && activeTab === "frame")
+                ? "text-purple-400"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Clock className="w-5 h-5" />
+            <span className="text-[10px] font-bold">Posters</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMobileBottomTab("settings");
+              setActiveTab("style");
+              setMobileDrawerOpen(true);
+            }}
+            className={`flex flex-col items-center gap-1 transition-colors ${
+              mobileBottomTab === "settings" || (mobileDrawerOpen && activeTab === "style")
+                ? "text-purple-400"
+                : "text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Settings className="w-5 h-5" />
+            <span className="text-[10px] font-bold">Settings</span>
+          </button>
+        </div>
+
+        {/* 11. MOBILE DRAWER MODAL */}
+        {mobileDrawerOpen && (
+          <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/80 backdrop-blur-md animate-fadeIn">
+            <div className="relative w-full max-h-[85vh] bg-[#0c0e22] border-t border-purple-500/40 rounded-t-[32px] p-5 shadow-2xl flex flex-col overflow-hidden">
+              {/* Drawer Handle */}
+              <div className="w-12 h-1 bg-slate-700 rounded-full mx-auto mb-4 shrink-0" />
+
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800 shrink-0">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-purple-400" />
+                  <span className="font-bold text-white text-sm">QR Vibe Controls</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="w-8 h-8 rounded-full bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Drawer Tab Pills */}
+              <div className="flex items-center gap-1.5 py-3 overflow-x-auto no-scrollbar shrink-0">
+                {[
+                  { id: "content", label: "Content", icon: Globe },
+                  { id: "logo", label: "Logo", icon: ImageIcon },
+                  { id: "style", label: "Styling", icon: Palette },
+                  { id: "frame", label: "Posters", icon: LayoutTemplate },
+                  { id: "presets", label: "Presets", icon: LayoutGrid },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setActiveTab(tab.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                      activeTab === tab.id
+                        ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
+                        : "bg-[#14162e] text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    <tab.icon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Drawer Body Scrollable Content */}
+              <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 py-2">
+                {/* CONTENT TAB */}
+                {activeTab === "content" && (
+                  <div className="space-y-4">
+                    {config.contentType === "whatsapp" && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs text-slate-400 font-medium block mb-1">WhatsApp Phone Number</label>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={config.whatsapp.countryCode}
+                              onChange={(e) => setConfig((prev) => ({ ...prev, whatsapp: { ...prev.whatsapp, countryCode: e.target.value } }))}
+                              className="w-20 px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs text-center"
+                              placeholder="+92"
+                            />
+                            <input
+                              type="text"
+                              value={config.whatsapp.phone}
+                              onChange={(e) => setConfig((prev) => ({ ...prev, whatsapp: { ...prev.whatsapp, phone: e.target.value } }))}
+                              className="flex-1 px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs"
+                              placeholder="3001234567"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-xs text-slate-400 font-medium block mb-1">Pre-filled Chat Message</label>
+                          <textarea
+                            rows={3}
+                            value={config.whatsapp.message}
+                            onChange={(e) => setConfig((prev) => ({ ...prev, whatsapp: { ...prev.whatsapp, message: e.target.value } }))}
+                            className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs outline-none focus:border-purple-500"
+                            placeholder="Hello, I want to inquire..."
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {config.contentType === "wifi" && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs text-slate-400 font-medium block mb-1">Network Name (SSID)</label>
+                          <input
+                            type="text"
+                            value={config.wifi.ssid}
+                            onChange={(e) => setConfig((prev) => ({ ...prev, wifi: { ...prev.wifi, ssid: e.target.value } }))}
+                            className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs"
+                            placeholder="Office_5G"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-slate-400 font-medium block mb-1">Password</label>
+                          <div className="relative">
+                            <input
+                              type={wifiShowPass ? "text" : "password"}
+                              value={config.wifi.password}
+                              onChange={(e) => setConfig((prev) => ({ ...prev, wifi: { ...prev.wifi, password: e.target.value } }))}
+                              className="w-full px-3 py-2 pr-10 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs"
+                              placeholder="Enter password"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setWifiShowPass(!wifiShowPass)}
+                              className="absolute right-3 top-2.5 text-slate-400 text-xs hover:text-white"
+                            >
+                              {wifiShowPass ? "Hide" : "Show"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {config.contentType === "email" && (
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-xs text-slate-400 font-medium block mb-1">Send Email To</label>
+                          <input
+                            type="email"
+                            value={config.email.email}
+                            onChange={(e) => setConfig((prev) => ({ ...prev, email: { ...prev.email, email: e.target.value } }))}
+                            className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs"
+                            placeholder="contact@brand.com"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-slate-400 font-medium block mb-1">Subject Line</label>
+                          <input
+                            type="text"
+                            value={config.email.subject}
+                            onChange={(e) => setConfig((prev) => ({ ...prev, email: { ...prev.email, subject: e.target.value } }))}
+                            className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs"
+                            placeholder="Business Inquiry"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-slate-400 font-medium block mb-1">Body Text</label>
+                          <textarea
+                            rows={3}
+                            value={config.email.body}
+                            onChange={(e) => setConfig((prev) => ({ ...prev, email: { ...prev.email, body: e.target.value } }))}
+                            className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs outline-none focus:border-purple-500"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {config.contentType === "text" && (
+                      <div>
+                        <label className="text-xs text-slate-400 font-medium block mb-1">Plain Text Content</label>
+                        <textarea
+                          rows={4}
+                          value={config.text}
+                          onChange={(e) => setConfig((prev) => ({ ...prev, text: e.target.value }))}
+                          className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs outline-none focus:border-purple-500"
+                        />
+                      </div>
+                    )}
+
+                    {config.contentType === "vcard" && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs text-slate-400 font-medium block mb-1">First Name</label>
+                          <input
+                            type="text"
+                            value={config.vcard.firstName}
+                            onChange={(e) => setConfig((prev) => ({ ...prev, vcard: { ...prev.vcard, firstName: e.target.value } }))}
+                            className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-slate-400 font-medium block mb-1">Last Name</label>
+                          <input
+                            type="text"
+                            value={config.vcard.lastName}
+                            onChange={(e) => setConfig((prev) => ({ ...prev, vcard: { ...prev.vcard, lastName: e.target.value } }))}
+                            className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="text-xs text-slate-400 font-medium block mb-1">Phone</label>
+                          <input
+                            type="text"
+                            value={config.vcard.phone}
+                            onChange={(e) => setConfig((prev) => ({ ...prev, vcard: { ...prev.vcard, phone: e.target.value } }))}
+                            className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs"
+                          />
+                        </div>
+                        <div className="col-span-2">
+                          <label className="text-xs text-slate-400 font-medium block mb-1">Email</label>
+                          <input
+                            type="email"
+                            value={config.vcard.email}
+                            onChange={(e) => setConfig((prev) => ({ ...prev, vcard: { ...prev.vcard, email: e.target.value } }))}
+                            className="w-full px-3 py-2 rounded-xl bg-[#14162e] border border-slate-700 text-white text-xs"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* LOGO TAB */}
+                {activeTab === "logo" && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex-1 py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        <span>Upload Custom Logo</span>
+                      </button>
+                      {config.logoUrl && (
+                        <button
+                          type="button"
+                          onClick={removeLogo}
+                          className="py-3 px-4 rounded-xl bg-red-950/40 border border-red-500/30 text-red-400 font-semibold text-xs"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    <div>
+                      <span className="text-xs font-bold text-white block mb-2">Preset Brand Logos</span>
+                      <div className="grid grid-cols-4 gap-2">
+                        {SAMPLE_LOGOS.map((l) => (
+                          <button
+                            key={l.name}
+                            type="button"
+                            onClick={() => setConfig((prev) => ({ ...prev, logoUrl: l.url }))}
+                            className="p-2 rounded-xl bg-[#14162e] border border-slate-700 hover:border-purple-500 flex flex-col items-center justify-center gap-1"
+                          >
+                            <img src={l.url} alt={l.name} className="w-6 h-6 object-contain" />
+                            <span className="text-[10px] text-slate-300 font-medium truncate w-full text-center">{l.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* STYLING TAB */}
+                {activeTab === "style" && (
+                  <div className="space-y-4">
+                    <div>
+                      <span className="text-xs font-bold text-white block mb-2">Corner Eyes Shape</span>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: "extra-rounded", name: "Soft Rounded" },
+                          { id: "square", name: "Classic Square" },
+                          { id: "dot", name: "Circular Dot" },
+                        ].map((item) => (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setConfig((prev) => ({ ...prev, cornerSquareType: item.id as any }))}
+                            className={`py-2 px-3 rounded-xl text-xs font-semibold ${
+                              config.cornerSquareType === item.id
+                                ? "bg-purple-600 text-white"
+                                : "bg-[#14162e] text-slate-300 border border-slate-700"
+                            }`}
+                          >
+                            {item.name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <span className="text-xs font-bold text-white block mb-2">Gradient Angle</span>
+                      <div className="flex gap-2">
+                        {[0, 45, 90, 135].map((deg) => (
+                          <button
+                            key={deg}
+                            type="button"
+                            onClick={() => setConfig((prev) => ({ ...prev, gradientRotation: deg }))}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold ${
+                              config.gradientRotation === deg
+                                ? "bg-purple-600 text-white"
+                                : "bg-[#14162e] text-slate-400"
+                            }`}
+                          >
+                            {deg}°
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* POSTERS TAB */}
+                {activeTab === "frame" && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-white">Enable Poster Template</span>
+                      <button
+                        type="button"
+                        onClick={() => setConfig((prev) => ({ ...prev, frame: { ...prev.frame, enabled: !prev.frame.enabled } }))}
+                        className={`w-10 h-5 flex items-center rounded-full p-0.5 ${
+                          config.frame.enabled ? "bg-purple-600 justify-end" : "bg-slate-800 justify-start"
+                        }`}
+                      >
+                        <span className="w-4 h-4 rounded-full bg-white shadow-md" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      {POSTER_TEMPLATES.slice(0, 6).map((tpl) => (
+                        <button
+                          key={tpl.id}
+                          type="button"
+                          onClick={() => applyPosterTemplate(tpl)}
+                          className="p-3 rounded-xl bg-[#14162e] border border-slate-700 hover:border-purple-500 text-left"
+                        >
+                          <div className="text-xs font-bold text-white">{tpl.name}</div>
+                          <div className="text-[10px] text-slate-400">{tpl.category}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* PRESETS TAB */}
+                {activeTab === "presets" && (
+                  <div className="space-y-3">
+                    <span className="text-xs font-bold text-white block">Ready-to-Use 1-Click Themes</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {QR_PRESETS.slice(0, 10).map((preset) => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => {
+                            applyPreset(preset);
+                            setMobileDrawerOpen(false);
+                          }}
+                          className="p-2.5 rounded-xl bg-[#14162e] border border-slate-700 hover:border-purple-500 text-left flex items-center gap-2"
+                        >
+                          <div
+                            className="w-5 h-5 rounded-full shrink-0"
+                            style={{
+                              background:
+                                preset.colorType === "gradient"
+                                ? `linear-gradient(135deg, ${preset.gradientColor1}, ${preset.gradientColor2})`
+                                : preset.dotsColor,
+                            }}
+                          />
+                          <div className="truncate">
+                            <div className="text-xs font-bold text-white truncate">{preset.name}</div>
+                            <div className="text-[9px] text-slate-400 capitalize">{preset.category}</div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Apply / Close Button */}
+              <div className="pt-3 border-t border-slate-800 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setMobileDrawerOpen(false)}
+                  className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-lg shadow-purple-600/30"
+                >
+                  Apply &amp; Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ======================================================== */}
+      {/* DESKTOP STUDIO VIEW (>= 1024px)                          */}
+      {/* ======================================================== */}
+      <div className="hidden lg:block">
+        {/* Studio Top Hero Subtitle */}
       <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold mb-3 shadow-inner">
           <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
@@ -3142,7 +4283,7 @@ export function QRStudio({
                 )}
 
                 <div
-                  ref={qrContainerRef}
+                  ref={!isMobileScreen ? qrContainerRef : undefined}
                   className="flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]"
                 />
               </div>
@@ -3492,6 +4633,7 @@ export function QRStudio({
           </div>
         </div>
       </div>
+      </div> {/* Closes DESKTOP STUDIO VIEW */}
 
       {/* SCAN SIMULATOR MODAL */}
       {showScanModal && (
