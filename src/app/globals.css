@@ -46,3 +46,17 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #334155;
 }
+
+/* Hide horizontal scrollbars on chip rows */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent the iOS tap flash on buttons */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
