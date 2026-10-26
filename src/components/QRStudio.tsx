@@ -1248,136 +1248,391 @@ export function QRStudio() {
           {/* TAB 3: STYLING & COLORS */}
           {activeTab === "style" && (
             <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl space-y-6">
-              {/* Dot Patterns */}
+              {/* SECTION 1: 1-CLICK DESIGNER PALETTES */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2.5">
-                  Dot Pattern Style
-                </label>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Instant Designer Color Palettes</span>
+                  </label>
+                  <span className="text-[11px] text-indigo-400 font-medium">1-Click Auto-Style</span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {[
-                    { id: "rounded", label: "Rounded" },
-                    { id: "dots", label: "Circular" },
-                    { id: "classy", label: "Classy" },
-                    { id: "classy-rounded", label: "Classy Curve" },
-                    { id: "square", label: "Square" },
-                    { id: "extra-rounded", label: "Smooth" },
-                  ].map((dot) => (
-                    <button
-                      key={dot.id}
-                      type="button"
-                      onClick={() =>
-                        setConfig((prev) => ({ ...prev, dotType: dot.id as DotType }))
-                      }
-                      className={`p-2.5 rounded-xl border text-center text-xs font-medium transition-all ${
-                        config.dotType === dot.id
-                          ? "bg-indigo-600/20 border-indigo-500 text-white font-bold"
-                          : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      {dot.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                    {
+                      name: "Electric Violet",
+                      c1: "#4f46e5",
+                      c2: "#9333ea",
+                      type: "gradient" as const,
+                      bg: "#ffffff",
+                    },
+                    {
+                      name: "Cyber Neon",
+                      c1: "#06b6d4",
+                      c2: "#a855f7",
+                      type: "gradient" as const,
+                      bg: "#090d16",
+                    },
+                    {
+                      name: "Emerald Luxury",
+                      c1: "#059669",
+                      c2: "#10b981",
+                      type: "gradient" as const,
+                      bg: "#ffffff",
+                    },
+                    {
+                      name: "Sunset Flame",
+                      c1: "#f43f5e",
+                      c2: "#f59e0b",
+                      type: "gradient" as const,
+                      bg: "#ffffff",
+                    },
+                    {
+                      name: "Ocean Breeze",
+                      c1: "#2563eb",
+                      c2: "#06b6d4",
+                      type: "gradient" as const,
+                      bg: "#ffffff",
+                    },
+                    {
+                      name: "Royal Amber",
+                      c1: "#b45309",
+                      c2: "#f59e0b",
+                      type: "gradient" as const,
+                      bg: "#ffffff",
+                    },
+                    {
+                      name: "Pitch Black",
+                      c1: "#0f172a",
+                      c2: "#0f172a",
+                      type: "single" as const,
+                      bg: "#ffffff",
+                    },
+                    {
+                      name: "Crimson Rose",
+                      c1: "#e11d48",
+                      c2: "#be185d",
+                      type: "gradient" as const,
+                      bg: "#ffffff",
+                    },
+                  ].map((pal) => {
+                    const isSelected =
+                      config.colorType === pal.type &&
+                      (pal.type === "single"
+                        ? config.dotsColor === pal.c1
+                        : config.gradientColor1 === pal.c1 && config.gradientColor2 === pal.c2);
 
-              {/* Corner Styles */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-2">
-                    Corner Frame (Outer Eye)
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { id: "extra-rounded", label: "Curved" },
-                      { id: "dot", label: "Pill" },
-                      { id: "square", label: "Square" },
-                    ].map((c) => (
+                    return (
                       <button
-                        key={c.id}
+                        key={pal.name}
                         type="button"
                         onClick={() =>
                           setConfig((prev) => ({
                             ...prev,
-                            cornerSquareType: c.id as CornerSquareType,
+                            colorType: pal.type,
+                            dotsColor: pal.c1,
+                            gradientColor1: pal.c1,
+                            gradientColor2: pal.c2,
+                            bgColor: pal.bg,
+                            isTransparentBg: false,
+                            customEyeColor: true,
+                            cornerSquareColor: pal.c1,
+                            cornerDotColor: pal.c2,
                           }))
                         }
-                        className={`p-2 rounded-lg border text-center text-xs transition-colors ${
-                          config.cornerSquareType === c.id
-                            ? "bg-indigo-600/20 border-indigo-500 text-white font-bold"
-                            : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
+                        className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all ${
+                          isSelected
+                            ? "bg-indigo-600/25 border-indigo-500 shadow-md shadow-indigo-500/20 scale-[1.02]"
+                            : "bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900"
                         }`}
                       >
-                        {c.label}
+                        <div
+                          className="w-7 h-7 rounded-lg shrink-0 border border-white/20 shadow-sm"
+                          style={{
+                            background:
+                              pal.type === "gradient"
+                                ? `linear-gradient(135deg, ${pal.c1}, ${pal.c2})`
+                                : pal.c1,
+                          }}
+                        />
+                        <div className="overflow-hidden">
+                          <p className="text-xs font-bold text-white truncate">{pal.name}</p>
+                          <p className="text-[10px] text-slate-400 capitalize">
+                            {pal.type === "gradient" ? "Gradient" : "Solid"}
+                          </p>
+                        </div>
                       </button>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-2">
-                    Corner Dot (Inner Eye)
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { id: "dot", label: "Dot" },
-                      { id: "square", label: "Square" },
-                    ].map((c) => (
+              {/* SECTION 2: DOT PATTERN STYLE (With Visual SVG previews) */}
+              <div className="pt-4 border-t border-slate-800">
+                <label className="block text-xs font-bold text-white uppercase tracking-wider mb-2.5">
+                  1. Body Dot Pattern
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                  {[
+                    {
+                      id: "rounded",
+                      label: "Rounded Pill",
+                      sub: "Smooth modern pills",
+                      svg: (
+                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                          <rect x="4" y="4" width="6" height="6" rx="2" />
+                          <rect x="14" y="4" width="6" height="6" rx="2" />
+                          <rect x="4" y="14" width="6" height="6" rx="2" />
+                          <rect x="14" y="14" width="6" height="6" rx="2" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: "dots",
+                      label: "Circular Dots",
+                      sub: "Minimalist circles",
+                      svg: (
+                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                          <circle cx="7" cy="7" r="3.2" />
+                          <circle cx="17" cy="7" r="3.2" />
+                          <circle cx="7" cy="17" r="3.2" />
+                          <circle cx="17" cy="17" r="3.2" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: "classy",
+                      label: "Classy Diamond",
+                      sub: "Faceted diamond corners",
+                      svg: (
+                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                          <polygon points="7,3 11,7 7,11 3,7" />
+                          <polygon points="17,3 21,7 17,11 13,7" />
+                          <polygon points="7,13 11,17 7,21 3,17" />
+                          <polygon points="17,13 21,17 17,21 13,17" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: "classy-rounded",
+                      label: "Classy Wave",
+                      sub: "Organic leaf curve",
+                      svg: (
+                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M4 4h4a3 3 0 0 1 3 3v4H7a3 3 0 0 1-3-3V4z" />
+                          <path d="M14 4h4a3 3 0 0 1 3 3v4h-4a3 3 0 0 1-3-3V4z" />
+                          <path d="M4 14h4a3 3 0 0 1 3 3v4H7a3 3 0 0 1-3-3v-4z" />
+                          <path d="M14 14h4a3 3 0 0 1 3 3v4h-4a3 3 0 0 1-3-3v-4z" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: "extra-rounded",
+                      label: "Extra Smooth",
+                      sub: "Ultra soft squircles",
+                      svg: (
+                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                          <rect x="4" y="4" width="6" height="6" rx="3" />
+                          <rect x="14" y="4" width="6" height="6" rx="3" />
+                          <rect x="4" y="14" width="6" height="6" rx="3" />
+                          <rect x="14" y="14" width="6" height="6" rx="3" />
+                        </svg>
+                      ),
+                    },
+                    {
+                      id: "square",
+                      label: "Classic Square",
+                      sub: "Standard industrial",
+                      svg: (
+                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                          <rect x="4" y="4" width="6" height="6" />
+                          <rect x="14" y="4" width="6" height="6" />
+                          <rect x="4" y="14" width="6" height="6" />
+                          <rect x="14" y="14" width="6" height="6" />
+                        </svg>
+                      ),
+                    },
+                  ].map((dot) => {
+                    const isSelected = config.dotType === dot.id;
+                    return (
                       <button
-                        key={c.id}
+                        key={dot.id}
                         type="button"
                         onClick={() =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            cornerDotType: c.id as CornerDotType,
-                          }))
+                          setConfig((prev) => ({ ...prev, dotType: dot.id as DotType }))
                         }
-                        className={`p-2 rounded-lg border text-center text-xs transition-colors ${
-                          config.cornerDotType === c.id
-                            ? "bg-indigo-600/20 border-indigo-500 text-white font-bold"
-                            : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
+                        className={`p-3 rounded-xl border text-left flex items-start gap-3 transition-all ${
+                          isSelected
+                            ? "bg-indigo-600/20 border-indigo-500 shadow-md shadow-indigo-500/20"
+                            : "bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900"
                         }`}
                       >
-                        {c.label}
+                        <div
+                          className={`p-1.5 rounded-lg border ${
+                            isSelected
+                              ? "bg-indigo-600/30 border-indigo-500/50"
+                              : "bg-slate-900 border-slate-800"
+                          }`}
+                        >
+                          {dot.svg}
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-white">{dot.label}</p>
+                          <p className="text-[10px] text-slate-400 mt-0.5">{dot.sub}</p>
+                        </div>
                       </button>
-                    ))}
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* SECTION 3: CORNER EYES STYLING */}
+              <div className="pt-4 border-t border-slate-800 space-y-4">
+                <label className="block text-xs font-bold text-white uppercase tracking-wider">
+                  2. Corner Eyes (Finder Patterns)
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Outer Eye Frame */}
+                  <div>
+                    <span className="block text-[11px] font-semibold text-slate-300 mb-2">
+                      Outer Frame Shape
+                    </span>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        {
+                          id: "extra-rounded",
+                          label: "Curved",
+                          svg: (
+                            <svg className="w-5 h-5 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="3" width="18" height="18" rx="6" />
+                            </svg>
+                          ),
+                        },
+                        {
+                          id: "dot",
+                          label: "Circle",
+                          svg: (
+                            <svg className="w-5 h-5 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <circle cx="12" cy="12" r="9" />
+                            </svg>
+                          ),
+                        },
+                        {
+                          id: "square",
+                          label: "Square",
+                          svg: (
+                            <svg className="w-5 h-5 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="3" width="18" height="18" />
+                            </svg>
+                          ),
+                        },
+                      ].map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              cornerSquareType: c.id as CornerSquareType,
+                            }))
+                          }
+                          className={`p-2.5 rounded-xl border text-center transition-all ${
+                            config.cornerSquareType === c.id
+                              ? "bg-indigo-600/25 border-indigo-500 text-white font-bold"
+                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <div className="mb-1 text-indigo-400">{c.svg}</div>
+                          <span className="text-xs">{c.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Inner Eye Center */}
+                  <div>
+                    <span className="block text-[11px] font-semibold text-slate-300 mb-2">
+                      Inner Center Dot
+                    </span>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        {
+                          id: "dot",
+                          label: "Round Dot",
+                          svg: (
+                            <svg className="w-5 h-5 mx-auto text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                              <circle cx="12" cy="12" r="6" />
+                            </svg>
+                          ),
+                        },
+                        {
+                          id: "square",
+                          label: "Sharp Square",
+                          svg: (
+                            <svg className="w-5 h-5 mx-auto text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
+                              <rect x="6" y="6" width="12" height="12" />
+                            </svg>
+                          ),
+                        },
+                      ].map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              cornerDotType: c.id as CornerDotType,
+                            }))
+                          }
+                          className={`p-2.5 rounded-xl border text-center transition-all ${
+                            config.cornerDotType === c.id
+                              ? "bg-indigo-600/25 border-indigo-500 text-white font-bold"
+                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <div className="mb-1">{c.svg}</div>
+                          <span className="text-xs">{c.label}</span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Color Controls */}
+              {/* SECTION 4: COLOR ENGINE (Single vs Gradient + Angle) */}
               <div className="pt-4 border-t border-slate-800 space-y-4">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                    QR Color Palette
+                  <label className="text-xs font-bold text-white uppercase tracking-wider">
+                    3. Custom Color Engine
                   </label>
-                  <div className="flex items-center gap-1 p-1 bg-slate-950 rounded-lg border border-slate-800 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => setConfig((prev) => ({ ...prev, colorType: "single" }))}
-                      className={`px-2.5 py-1 rounded ${
-                        config.colorType === "single"
-                          ? "bg-indigo-600 text-white font-semibold"
-                          : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      Solid
-                    </button>
+                  <div className="flex items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs">
                     <button
                       type="button"
                       onClick={() => setConfig((prev) => ({ ...prev, colorType: "gradient" }))}
-                      className={`px-2.5 py-1 rounded ${
+                      className={`px-3 py-1 rounded-lg transition-all ${
                         config.colorType === "gradient"
-                          ? "bg-indigo-600 text-white font-semibold"
+                          ? "bg-indigo-600 text-white font-bold shadow-sm"
                           : "text-slate-400 hover:text-white"
                       }`}
                     >
                       Gradient
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfig((prev) => ({ ...prev, colorType: "single" }))}
+                      className={`px-3 py-1 rounded-lg transition-all ${
+                        config.colorType === "single"
+                          ? "bg-indigo-600 text-white font-bold shadow-sm"
+                          : "text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      Solid Color
+                    </button>
                   </div>
                 </div>
 
                 {config.colorType === "single" ? (
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950/70 border border-slate-800">
                     <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-slate-700 shrink-0">
                       <input
                         type="color"
@@ -1394,15 +1649,17 @@ export function QRStudio() {
                       onChange={(e) =>
                         setConfig((prev) => ({ ...prev, dotsColor: e.target.value }))
                       }
-                      className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs font-mono w-28 uppercase"
+                      className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs font-mono w-28 uppercase"
                     />
-                    <span className="text-xs text-slate-400">Dot and frame color</span>
+                    <span className="text-xs text-slate-400">All dots &amp; elements color</span>
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <span className="block text-[11px] text-slate-400 mb-1">Color 1 (Start)</span>
+                        <span className="block text-[11px] font-semibold text-slate-300 mb-1">
+                          Gradient Color 1 (Start)
+                        </span>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -1424,13 +1681,15 @@ export function QRStudio() {
                                 gradientColor1: e.target.value,
                               }))
                             }
-                            className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono w-full uppercase"
+                            className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono w-full uppercase"
                           />
                         </div>
                       </div>
 
                       <div>
-                        <span className="block text-[11px] text-slate-400 mb-1">Color 2 (End)</span>
+                        <span className="block text-[11px] font-semibold text-slate-300 mb-1">
+                          Gradient Color 2 (End)
+                        </span>
                         <div className="flex items-center gap-2">
                           <input
                             type="color"
@@ -1452,102 +1711,160 @@ export function QRStudio() {
                                 gradientColor2: e.target.value,
                               }))
                             }
-                            className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono w-full uppercase"
+                            className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono w-full uppercase"
                           />
                         </div>
                       </div>
                     </div>
 
-                    {/* Gradient Angle */}
+                    {/* Quick Angle Buttons */}
                     <div>
-                      <div className="flex justify-between text-xs text-slate-300 mb-1">
-                        <span>Gradient Angle</span>
-                        <span>{config.gradientRotation}°</span>
+                      <div className="flex justify-between text-xs text-slate-300 mb-1.5">
+                        <span>Gradient Direction</span>
+                        <span className="font-mono text-indigo-400 font-bold">
+                          {config.gradientRotation}°
+                        </span>
                       </div>
-                      <input
-                        type="range"
-                        min={0}
-                        max={360}
-                        step={15}
-                        value={config.gradientRotation}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            gradientRotation: parseInt(e.target.value, 10),
-                          }))
-                        }
-                        className="w-full accent-indigo-500 cursor-pointer"
-                      />
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { deg: 45, label: "↗ 45° (Diagonal)" },
+                          { deg: 90, label: "➔ 90° (Vertical)" },
+                          { deg: 135, label: "↘ 135° (Reverse)" },
+                          { deg: 180, label: "↓ 180° (Horizontal)" },
+                        ].map((ang) => (
+                          <button
+                            key={ang.deg}
+                            type="button"
+                            onClick={() =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                gradientRotation: ang.deg,
+                              }))
+                            }
+                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all ${
+                              config.gradientRotation === ang.deg
+                                ? "bg-indigo-600 text-white border-indigo-500"
+                                : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                            }`}
+                          >
+                            {ang.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* Background Color */}
+              {/* SECTION 5: BACKGROUND & CONTRAST */}
               <div className="pt-4 border-t border-slate-800 space-y-3">
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                  Background
+                <label className="block text-xs font-bold text-white uppercase tracking-wider">
+                  4. Background Style
                 </label>
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="flex items-center gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    {
+                      label: "Pure White",
+                      bg: "#ffffff",
+                      trans: false,
+                      desc: "Maximum Contrast",
+                    },
+                    {
+                      label: "Dark Obsidian",
+                      bg: "#090d16",
+                      trans: false,
+                      desc: "Dark Mode Style",
+                    },
+                    {
+                      label: "Transparent",
+                      bg: "#ffffff",
+                      trans: true,
+                      desc: "Lossless PNG/SVG",
+                    },
+                    {
+                      label: "Custom Color",
+                      bg: config.bgColor,
+                      trans: false,
+                      desc: "Custom Hex",
+                    },
+                  ].map((b, i) => {
+                    const isSelected =
+                      b.trans === config.isTransparentBg &&
+                      (b.trans || (b.label === "Custom Color" ? true : config.bgColor === b.bg));
+
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() =>
+                          setConfig((prev) => ({
+                            ...prev,
+                            bgColor: b.bg,
+                            isTransparentBg: b.trans,
+                          }))
+                        }
+                        className={`p-2.5 rounded-xl border text-left transition-all ${
+                          isSelected
+                            ? "bg-indigo-600/20 border-indigo-500 text-white"
+                            : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        <p className="text-xs font-bold text-white">{b.label}</p>
+                        <p className="text-[10px] text-slate-400 mt-0.5">{b.desc}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {!config.isTransparentBg && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="text-[11px] text-slate-400">Custom background color:</span>
                     <input
                       type="color"
-                      disabled={config.isTransparentBg}
                       value={config.bgColor}
                       onChange={(e) =>
                         setConfig((prev) => ({ ...prev, bgColor: e.target.value }))
                       }
-                      className="w-9 h-9 rounded-lg cursor-pointer disabled:opacity-30"
+                      className="w-7 h-7 rounded cursor-pointer"
                     />
                     <input
                       type="text"
-                      disabled={config.isTransparentBg}
                       value={config.bgColor}
                       onChange={(e) =>
                         setConfig((prev) => ({ ...prev, bgColor: e.target.value }))
                       }
-                      className="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs font-mono w-28 uppercase disabled:opacity-30"
+                      className="px-2 py-1 rounded bg-slate-950 border border-slate-800 text-white text-xs font-mono w-24 uppercase"
                     />
                   </div>
+                )}
+              </div>
 
-                  <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer bg-slate-950 px-3 py-2 rounded-xl border border-slate-800">
+              {/* SECTION 6: INDEPENDENT EYE COLORS (Optional Accent) */}
+              <div className="pt-4 border-t border-slate-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-wider cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={config.isTransparentBg}
+                      checked={config.customEyeColor}
                       onChange={(e) =>
                         setConfig((prev) => ({
                           ...prev,
-                          isTransparentBg: e.target.checked,
+                          customEyeColor: e.target.checked,
                         }))
                       }
                       className="rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-0"
                     />
-                    <span>Transparent Background (PNG/SVG)</span>
+                    <span>Independent Eye Accent Colors</span>
                   </label>
+                  <span className="text-[11px] text-slate-400">Contrast Eyes</span>
                 </div>
-              </div>
-
-              {/* Custom Eye Colors */}
-              <div className="pt-4 border-t border-slate-800 space-y-3">
-                <label className="flex items-center gap-2 text-xs font-bold text-slate-300 uppercase tracking-wider cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={config.customEyeColor}
-                    onChange={(e) =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        customEyeColor: e.target.checked,
-                      }))
-                    }
-                    className="rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-0"
-                  />
-                  <span>Independent Eye Colors</span>
-                </label>
 
                 {config.customEyeColor && (
-                  <div className="grid grid-cols-2 gap-4 pt-1">
+                  <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-950/70 border border-slate-800">
                     <div>
-                      <span className="block text-[11px] text-slate-400 mb-1">Outer Eye Frame</span>
+                      <span className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Outer Eye Frame Color
+                      </span>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
@@ -1569,13 +1886,15 @@ export function QRStudio() {
                               cornerSquareColor: e.target.value,
                             }))
                           }
-                          className="px-2 py-1 rounded bg-slate-950 border border-slate-800 text-white text-xs font-mono w-full uppercase"
+                          className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-white text-xs font-mono w-full uppercase"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <span className="block text-[11px] text-slate-400 mb-1">Inner Eye Center</span>
+                      <span className="block text-[11px] font-semibold text-slate-300 mb-1">
+                        Inner Eye Center Color
+                      </span>
                       <div className="flex items-center gap-2">
                         <input
                           type="color"
@@ -1597,7 +1916,7 @@ export function QRStudio() {
                               cornerDotColor: e.target.value,
                             }))
                           }
-                          className="px-2 py-1 rounded bg-slate-950 border border-slate-800 text-white text-xs font-mono w-full uppercase"
+                          className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-white text-xs font-mono w-full uppercase"
                         />
                       </div>
                     </div>
