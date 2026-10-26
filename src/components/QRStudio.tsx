@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import confetti from "canvas-confetti";
 import {
   Globe,
@@ -15,38 +15,26 @@ import {
   Copy,
   Check,
   Sparkles,
-  ShieldCheck,
   AlertTriangle,
   Eye,
+  EyeOff,
   RefreshCw,
   Palette,
-  Sliders,
   Image as ImageIcon,
   ExternalLink,
-  Lock,
-  Layers,
   LayoutTemplate,
-  Tag,
-  Type,
-  Scan,
-  Shield,
-  Printer,
   Share2,
-  Zap,
-  Menu,
-  Link2,
   X,
-  ChevronDown,
-  Home,
-  LayoutGrid,
-  Clock,
-  Settings,
+  Loader2,
+  CheckCircle2,
+  ChevronUp,
 } from "lucide-react";
 import { QRDesignConfig, QRContentType, ThemeCategory, PosterTemplatePreset } from "@/types/qr";
 import { formatQRData } from "@/lib/qrDataFormatters";
 import { evaluateScannability } from "@/lib/colorUtils";
 import { QR_PRESETS, SAMPLE_LOGOS } from "@/lib/qrPresets";
 import { POSTER_TEMPLATES } from "@/lib/posterTemplates";
+import type QRCodeStylingType from "qr-code-styling";
 import type {
   DotType,
   CornerSquareType,
@@ -127,9 +115,364 @@ const INITIAL_CONFIG: QRDesignConfig = {
   },
 };
 
+type StudioTab = "content" | "logo" | "style" | "frame" | "presets";
+type ExportFormat = "png" | "jpeg" | "svg";
+
+const PREVIEW_SIZE = 300;
+const STEPS_TEXT = "1. Open Camera   •   2. Point at QR   •   3. Tap Link";
+
+const TABS: { id: StudioTab; label: string; icon: React.ElementType }[] = [
+  { id: "content", label: "Content", icon: Globe },
+  { id: "logo", label: "Logo", icon: ImageIcon },
+  { id: "style", label: "Style", icon: Palette },
+  { id: "frame", label: "Poster", icon: LayoutTemplate },
+  { id: "presets", label: "Themes", icon: Sparkles },
+];
+
+const CONTENT_TYPES: { id: QRContentType; label: string; icon: React.ElementType }[] = [
+  { id: "url", label: "Website", icon: Globe },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
+  { id: "wifi", label: "Wi-Fi", icon: Wifi },
+  { id: "vcard", label: "Contact", icon: Contact },
+  { id: "email", label: "Email", icon: Mail },
+  { id: "text", label: "Text", icon: FileText },
+];
+
+const THEME_CATEGORIES: { id: "all" | ThemeCategory; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "vibrant", label: "Vibrant" },
+  { id: "corporate", label: "Corporate" },
+  { id: "social", label: "Social" },
+  { id: "pastel", label: "Pastel" },
+  { id: "dark", label: "Dark" },
+];
+
+const PALETTES = [
+  { name: "Violet", c1: "#4f46e5", c2: "#9333ea", type: "gradient" as const, bg: "#ffffff" },
+  { name: "Neon", c1: "#06b6d4", c2: "#a855f7", type: "gradient" as const, bg: "#090d16" },
+  { name: "Emerald", c1: "#059669", c2: "#10b981", type: "gradient" as const, bg: "#ffffff" },
+  { name: "Sunset", c1: "#f43f5e", c2: "#f59e0b", type: "gradient" as const, bg: "#ffffff" },
+  { name: "Ocean", c1: "#2563eb", c2: "#06b6d4", type: "gradient" as const, bg: "#ffffff" },
+  { name: "Gold", c1: "#f59e0b", c2: "#ef4444", type: "gradient" as const, bg: "#090a16" },
+  { name: "Black", c1: "#0f172a", c2: "#0f172a", type: "single" as const, bg: "#ffffff" },
+  { name: "Crimson", c1: "#e11d48", c2: "#be185d", type: "gradient" as const, bg: "#ffffff" },
+];
+
+const DOT_STYLES: { id: DotType; label: string; icon: React.ReactNode }[] = [
+  {
+    id: "square",
+    label: "Square",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+        <rect x="4" y="4" width="7" height="7" />
+        <rect x="13" y="4" width="7" height="7" />
+        <rect x="4" y="13" width="7" height="7" />
+        <rect x="13" y="13" width="7" height="7" />
+      </svg>
+    ),
+  },
+  {
+    id: "rounded",
+    label: "Rounded",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+        <rect x="4" y="4" width="7" height="7" rx="2.5" />
+        <rect x="13" y="4" width="7" height="7" rx="2.5" />
+        <rect x="4" y="13" width="7" height="7" rx="2.5" />
+        <rect x="13" y="13" width="7" height="7" rx="2.5" />
+      </svg>
+    ),
+  },
+  {
+    id: "dots",
+    label: "Dots",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+        <circle cx="7.5" cy="7.5" r="3.5" />
+        <circle cx="16.5" cy="7.5" r="3.5" />
+        <circle cx="7.5" cy="16.5" r="3.5" />
+        <circle cx="16.5" cy="16.5" r="3.5" />
+      </svg>
+    ),
+  },
+  {
+    id: "classy",
+    label: "Classy",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+        <path d="M4 4h7v4.5A2.5 2.5 0 0 1 8.5 11H4z" />
+        <path d="M13 4h4.5A2.5 2.5 0 0 1 20 6.5V11h-7z" />
+        <path d="M4 13h4.5a2.5 2.5 0 0 1 2.5 2.5V20H4z" />
+        <path d="M13 13h7v7h-4.5a2.5 2.5 0 0 1-2.5-2.5z" />
+      </svg>
+    ),
+  },
+  {
+    id: "classy-rounded",
+    label: "Wave",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+        <path d="M4 7.5A3.5 3.5 0 0 1 7.5 4H11v7H4z" />
+        <path d="M13 4h3.5A3.5 3.5 0 0 1 20 7.5V11h-7z" />
+        <path d="M4 13h7v7H7.5A3.5 3.5 0 0 1 4 16.5z" />
+        <path d="M13 13h7v3.5a3.5 3.5 0 0 1-3.5 3.5H13z" />
+      </svg>
+    ),
+  },
+  {
+    id: "extra-rounded",
+    label: "Smooth",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+        <rect x="4" y="4" width="7" height="7" rx="3.5" />
+        <rect x="13" y="4" width="7" height="7" rx="3.5" />
+        <rect x="4" y="13" width="16" height="7" rx="3.5" />
+      </svg>
+    ),
+  },
+];
+
+const EYE_FRAMES: { id: CornerSquareType; label: string }[] = [
+  { id: "extra-rounded", label: "Curved" },
+  { id: "dot", label: "Circle" },
+  { id: "square", label: "Square" },
+];
+
+const EYE_CENTERS: { id: CornerDotType; label: string }[] = [
+  { id: "dot", label: "Dot" },
+  { id: "square", label: "Square" },
+];
+
+const WHATSAPP_TEMPLATES = [
+  { label: "Business inquiry", msg: "Hello! I am interested in your services and would like more details." },
+  { label: "Order", msg: "Hi! I would like to inquire about product pricing and availability." },
+  { label: "Price quote", msg: "Hello! Could you please share a price quotation for your services?" },
+  { label: "Booking", msg: "Hi, I would like to schedule an appointment/meeting with your team." },
+  { label: "Support", msg: "Hello Support, I need some assistance with my order/account." },
+];
+
+const EMAIL_TEMPLATES = [
+  { label: "Business inquiry", sub: "Business & Project Inquiry", body: "Hi team,\n\nI would like to inquire about your services." },
+  { label: "Support", sub: "Support Request - [Order / Account #]", body: "Hello Support,\n\nI need assistance with the following issue:\n" },
+  { label: "Quote", sub: "Price Quote Request", body: "Hello,\n\nPlease provide a quote for the following requirements:\n" },
+  { label: "Feedback", sub: "Customer Feedback & Review", body: "Hi there,\n\nI would love to share some feedback regarding:\n" },
+];
+
+const COUNTRY_CODES = ["+92", "+971", "+966", "+44", "+1", "+91"];
+
+/* ------------------------------------------------------------------ */
+/* Small shared UI pieces so every panel looks and behaves the same    */
+/* ------------------------------------------------------------------ */
+
+const inputCls =
+  "w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors";
+
+function Section({
+  title,
+  hint,
+  action,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-sm font-bold text-white">{title}</h3>
+          {hint && <p className="text-xs text-slate-400 mt-0.5">{hint}</p>}
+        </div>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-xs font-semibold text-slate-300 mb-1.5">{label}</span>
+      {children}
+    </label>
+  );
+}
+
+function Chip({
+  active,
+  onClick,
+  children,
+}: {
+  active?: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+        active
+          ? "bg-indigo-600 border-indigo-500 text-white"
+          : "bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-600 hover:text-white"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Segmented<T extends string | number>({
+  options,
+  value,
+  onChange,
+  size = "md",
+}: {
+  options: { value: T; label: string }[];
+  value: T;
+  onChange: (v: T) => void;
+  size?: "sm" | "md";
+}) {
+  return (
+    <div className="flex p-1 rounded-xl bg-slate-950 border border-slate-800">
+      {options.map((o) => (
+        <button
+          key={String(o.value)}
+          type="button"
+          onClick={() => onChange(o.value)}
+          className={`flex-1 rounded-lg font-semibold transition-colors ${
+            size === "sm" ? "py-1.5 text-[11px]" : "py-2 text-xs"
+          } ${value === o.value ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-white"}`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Toggle({
+  checked,
+  onChange,
+  label,
+  hint,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  label: string;
+  hint?: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={() => onChange(!checked)}
+      className="w-full flex items-center justify-between gap-4 py-1 text-left"
+    >
+      <span>
+        <span className="block text-sm font-semibold text-white">{label}</span>
+        {hint && <span className="block text-xs text-slate-400 mt-0.5">{hint}</span>}
+      </span>
+      <span
+        className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${
+          checked ? "bg-indigo-600" : "bg-slate-700"
+        }`}
+      >
+        <span
+          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+            checked ? "translate-x-5" : ""
+          }`}
+        />
+      </span>
+    </button>
+  );
+}
+
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div>
+      <span className="block text-xs font-semibold text-slate-300 mb-1.5">{label}</span>
+      <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-950 border border-slate-800 focus-within:border-indigo-500">
+        <span className="relative w-8 h-8 rounded-lg overflow-hidden border border-slate-700 shrink-0">
+          <input
+            type="color"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute -inset-2 w-12 h-12 cursor-pointer"
+            aria-label={label}
+          />
+        </span>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full min-w-0 bg-transparent text-base sm:text-sm font-mono text-white outline-none uppercase"
+          spellCheck={false}
+        />
+      </div>
+    </div>
+  );
+}
+
+function OptionTile({
+  active,
+  onClick,
+  children,
+  className = "",
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`rounded-xl border transition-all active:scale-[0.97] ${
+        active
+          ? "bg-indigo-600/15 border-indigo-500 text-white ring-1 ring-indigo-500/40"
+          : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600 hover:text-white"
+      } ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/* Shrinks the font until the text fits the given width (used for poster export). */
+function fitText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  weight: string,
+  startSize: number,
+  maxWidth: number
+) {
+  let size = startSize;
+  ctx.font = `${weight} ${size}px sans-serif`;
+  while (size > 8 && ctx.measureText(text).width > maxWidth) {
+    size -= 1;
+    ctx.font = `${weight} ${size}px sans-serif`;
+  }
+  return size;
+}
+
 export interface QRStudioProps {
   initialContentType?: QRContentType;
-  initialTab?: "content" | "logo" | "style" | "frame" | "presets";
+  initialTab?: StudioTab;
   initialLogoUrl?: string | null;
 }
 
@@ -143,77 +486,85 @@ export function QRStudio({
     contentType: initialContentType,
     logoUrl: initialLogoUrl,
   }));
+  const [activeTab, setActiveTab] = useState<StudioTab>(initialTab);
   const [exportRes, setExportRes] = useState<number>(1024);
-  const [isDownloading, setIsDownloading] = useState<boolean>(false);
-  const [copied, setCopied] = useState<boolean>(false);
-  const [activeTab, setActiveTab] = useState<"content" | "logo" | "style" | "frame" | "presets">(initialTab);
-  const [selectedCategory, setSelectedCategory] = useState<"all" | ThemeCategory>("all");
-  const [showScanModal, setShowScanModal] = useState<boolean>(false);
-  const [wifiShowPass, setWifiShowPass] = useState<boolean>(false);
-  const [isDraggingLogo, setIsDraggingLogo] = useState<boolean>(false);
-  const [decoderResult, setDecoderResult] = useState<{
-    isVerifying: boolean;
-    isScannable: boolean;
-    decodedData: string | null;
-    match: boolean;
-    latencyMs: number;
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("png");
+  const [busy, setBusy] = useState<null | "download" | "share" | "copy">(null);
+  const [copied, setCopied] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+  const [themeCategory, setThemeCategory] = useState<"all" | ThemeCategory>("all");
+  const [wifiShowPass, setWifiShowPass] = useState(false);
+  const [isDraggingLogo, setIsDraggingLogo] = useState(false);
+  const [studioInView, setStudioInView] = useState(true);
+  const [previewInView, setPreviewInView] = useState(true);
+  // `design` changes identity on every edit; a result for an older design means "still checking"
+  const design = useMemo(() => ({ config }), [config]);
+  const [scanResult, setScanResult] = useState<{
+    design: object | null;
+    ok: boolean;
     reason?: string;
-  }>({
-    isVerifying: true,
-    isScannable: true,
-    decodedData: null,
-    match: true,
-    latencyMs: 0,
-  });
+  }>({ design: null, ok: true });
+  const decoder = { checking: scanResult.design !== design, ok: scanResult.ok, reason: scanResult.reason };
 
-  const [isMobileScreen, setIsMobileScreen] = useState<boolean>(false);
-  const [mobileTab, setMobileTab] = useState<"design" | "templates" | "posters">("design");
-  const [mobileThemeCat, setMobileThemeCat] = useState<"all" | ThemeCategory>("all");
-  const [mobileExportFormat, setMobileExportFormat] = useState<"png" | "svg" | "jpeg">("png");
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileScreen(window.innerWidth < 1024);
-    };
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
+  const studioRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
   const qrContainerRef = useRef<HTMLDivElement>(null);
-  const qrCodeInstanceRef = useRef<any>(null);
+  const qrCodeInstanceRef = useRef<QRCodeStylingType | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const previewSectionRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
-  // Formatted data payload string
+  const update = useCallback(
+    <K extends keyof QRDesignConfig>(key: K, value: QRDesignConfig[K]) =>
+      setConfig((prev) => ({ ...prev, [key]: value })),
+    []
+  );
+  const updateFrame = useCallback(
+    (patch: Partial<QRDesignConfig["frame"]>) =>
+      setConfig((prev) => ({ ...prev, frame: { ...prev.frame, ...patch } })),
+    []
+  );
+
   const qrData = useMemo(() => formatQRData(config), [config]);
+  const testableLink = /^(https?:|mailto:)/i.test(qrData) ? qrData : null;
 
-  // Scannability score
   const scannability = useMemo(() => {
     const fg = config.colorType === "gradient" ? config.gradientColor1 : config.dotsColor;
     const bg = config.isTransparentBg ? "#ffffff" : config.bgColor;
-    return evaluateScannability(
-      fg,
-      bg,
-      Boolean(config.logoUrl),
-      config.logoSize,
-      config.errorCorrectionLevel
-    );
+    return evaluateScannability(fg, bg, Boolean(config.logoUrl), config.logoSize, config.errorCorrectionLevel);
   }, [config]);
 
-  // Build qr-code-styling options object
-  const getQROptions = (size: number) => {
-    const isGradient = config.colorType === "gradient";
-    const bg = config.isTransparentBg ? "transparent" : config.bgColor;
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2600);
+  };
 
+  // Track whether the studio / preview are on screen (drives the mobile action bar)
+  useEffect(() => {
+    if (typeof IntersectionObserver === "undefined") return;
+    const studioObs = new IntersectionObserver(([e]) => setStudioInView(e.isIntersecting), {
+      rootMargin: "0px 0px -120px 0px",
+    });
+    const previewObs = new IntersectionObserver(([e]) => setPreviewInView(e.isIntersecting), {
+      threshold: 0.35,
+    });
+    if (studioRef.current) studioObs.observe(studioRef.current);
+    if (previewRef.current) previewObs.observe(previewRef.current);
+    return () => {
+      studioObs.disconnect();
+      previewObs.disconnect();
+    };
+  }, []);
+
+  const getQROptions = (size: number, type: "canvas" | "svg" = "canvas") => {
+    const isGradient = config.colorType === "gradient";
     return {
       width: size,
       height: size,
-      type: "canvas" as const,
+      type,
       data: qrData,
       image: config.logoUrl || undefined,
       shape: config.shape,
-      margin: 16,
+      margin: Math.round(size * 0.05),
       qrOptions: {
         typeNumber: 0 as const,
         mode: "Byte" as const,
@@ -256,25 +607,19 @@ export function QRStudio({
           : config.gradientColor2,
       },
       backgroundOptions: {
-        color: bg,
+        color: config.isTransparentBg ? "transparent" : config.bgColor,
       },
     };
   };
 
-  // Initialize and update QR code
+  // Live preview render
   useEffect(() => {
     let isMounted = true;
-
-    async function initQR() {
-      if (typeof window === "undefined" || !qrContainerRef.current) return;
-
+    (async () => {
+      if (!qrContainerRef.current) return;
       const { default: QRCodeStyling } = await import("qr-code-styling");
-
-      if (!isMounted) return;
-
-      const qrSize = isMobileScreen ? 270 : 320;
-      const options = getQROptions(qrSize);
-
+      if (!isMounted || !qrContainerRef.current) return;
+      const options = getQROptions(PREVIEW_SIZE);
       if (!qrCodeInstanceRef.current) {
         qrCodeInstanceRef.current = new QRCodeStyling(options);
       } else {
@@ -282,112 +627,75 @@ export function QRStudio({
       }
       qrContainerRef.current.innerHTML = "";
       qrCodeInstanceRef.current.append(qrContainerRef.current);
-    }
-
-    initQR();
-
+    })();
     return () => {
       isMounted = false;
     };
-  }, [config, qrData, isMobileScreen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, qrData]);
 
-  // Real Hardware QR Decoder Engine Test (jsQR)
+  // Real scan check: decode the rendered preview with jsQR
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    let isCancelled = false;
-
-    async function runDecoderTest() {
-      if (typeof window === "undefined" || !qrContainerRef.current) return;
-
-      timer = setTimeout(async () => {
-        try {
-          const canvas = qrContainerRef.current?.querySelector("canvas");
-          if (!canvas) return;
-
-          const ctx = canvas.getContext("2d", { willReadFrequently: true });
-          if (!ctx) return;
-
-          const { default: jsQR } = await import("jsqr");
-          if (isCancelled) return;
-
-          const startTime = performance.now();
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "attemptBoth",
-          });
-          const latency = Math.round(performance.now() - startTime);
-
-          if (isCancelled) return;
-
-          if (code && code.data) {
-            setDecoderResult({
-              isVerifying: false,
-              isScannable: true,
-              decodedData: code.data,
-              match: code.data === qrData,
-              latencyMs: latency,
-            });
-          } else {
-            let reason = "QR modules could not be parsed by camera decoder.";
-            if (config.logoUrl && config.logoSize > 0.30) {
-              reason = `Logo size (${Math.round(config.logoSize * 100)}%) is too large, covering error-correction parity modules. Reduce logo scale below 30%.`;
-            } else if (scannability.score < 55) {
-              reason = `Color contrast ratio (${scannability.contrastRatio}:1) is too low for standard camera sensors. Use darker dots or white background.`;
-            }
-            setDecoderResult({
-              isVerifying: false,
-              isScannable: false,
-              decodedData: null,
-              match: false,
-              latencyMs: latency,
-              reason,
-            });
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const canvas = qrContainerRef.current?.querySelector("canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (!ctx) return;
+        const { default: jsQR } = await import("jsqr");
+        if (cancelled) return;
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(img.data, img.width, img.height, { inversionAttempts: "attemptBoth" });
+        if (cancelled) return;
+        if (code?.data && code.data === qrData) {
+          setScanResult({ design, ok: true });
+        } else {
+          let reason = "Phone cameras may struggle to read this design.";
+          if (config.logoUrl && config.logoSize > 0.3) {
+            reason = `Logo is too big (${Math.round(config.logoSize * 100)}%). Keep it under 30%.`;
+          } else if (scannability.score < 55) {
+            reason = `Contrast is too low (${scannability.contrastRatio}:1). Use darker dots or a lighter background.`;
           }
-        } catch (err) {
-          console.error("Decoder error:", err);
+          setScanResult({ design, ok: false, reason });
         }
-      }, 140);
-    }
-
-    runDecoderTest();
-
+      } catch (err) {
+        console.error("Decoder error:", err);
+      }
+    }, 350);
     return () => {
-      isCancelled = true;
+      cancelled = true;
       clearTimeout(timer);
     };
-  }, [config, qrData, scannability]);
+  }, [design, config, qrData, scannability]);
 
-  // Handle Logo Upload
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > 4 * 1024 * 1024) {
-      alert("Please upload a logo file under 4MB for optimal performance.");
+  /* ---------------- Logo ---------------- */
+  const readLogoFile = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      showToast("Please choose an image file (PNG, JPG, SVG or WebP).");
       return;
     }
-
+    if (file.size > 4 * 1024 * 1024) {
+      showToast("Logo must be under 4 MB.");
+      return;
+    }
     const reader = new FileReader();
     reader.onload = (event) => {
-      const result = event.target?.result as string;
       setConfig((prev) => ({
         ...prev,
-        logoUrl: result,
-        errorCorrectionLevel: "H", // Auto ensure highest fault tolerance
+        logoUrl: event.target?.result as string,
+        errorCorrectionLevel: "H",
       }));
     };
     reader.readAsDataURL(file);
   };
 
-  // Remove Logo
   const removeLogo = () => {
-    setConfig((prev) => ({ ...prev, logoUrl: null }));
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    update("logoUrl", null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // Apply Preset
+  /* ---------------- Presets ---------------- */
   const applyPreset = (preset: (typeof QR_PRESETS)[0]) => {
     setConfig((prev) => ({
       ...prev,
@@ -407,7 +715,14 @@ export function QRStudio({
     }));
   };
 
-  // Apply Poster Template Preset
+  const isPresetActive = (p: (typeof QR_PRESETS)[0]) =>
+    config.dotType === p.dotType &&
+    config.colorType === p.colorType &&
+    config.bgColor === p.bgColor &&
+    (p.colorType === "single"
+      ? config.dotsColor === p.dotsColor
+      : config.gradientColor1 === p.gradientColor1 && config.gradientColor2 === p.gradientColor2);
+
   const applyPosterTemplate = (tpl: PosterTemplatePreset) => {
     setConfig((prev) => ({
       ...prev,
@@ -426,7 +741,6 @@ export function QRStudio({
         accentColor: tpl.accentColor,
         style: "poster",
       },
-      // Apply recommended styling for maximum aesthetic harmony
       dotsColor: tpl.dotsColor,
       colorType: tpl.gradientColor1 ? "gradient" : "single",
       gradientColor1: tpl.gradientColor1 || tpl.dotsColor,
@@ -442,4111 +756,1295 @@ export function QRStudio({
     }));
   };
 
-  // High-Resolution Export
-  const downloadQR = async (format: "png" | "svg" | "jpeg") => {
-    if (typeof window === "undefined") return;
-    setIsDownloading(true);
+  const autoFixScannability = () => {
+    setConfig((prev) => ({
+      ...prev,
+      logoSize: Math.min(prev.logoSize, 0.24),
+      errorCorrectionLevel: "H",
+      bgColor: "#ffffff",
+      isTransparentBg: false,
+      colorType: "single",
+      dotsColor: "#0f172a",
+      customEyeColor: false,
+    }));
+  };
 
+  /* ---------------- Export ---------------- */
+  // Produces the final image (plain QR or full poster) as a Blob.
+  const renderBlob = async (format: ExportFormat, size: number): Promise<Blob | null> => {
+    const { default: QRCodeStyling } = await import("qr-code-styling");
+
+    if (format === "svg" || !config.frame.enabled) {
+      const exporter = new QRCodeStyling(getQROptions(size, format === "svg" ? "svg" : "canvas"));
+      return (await exporter.getRawData(format)) as Blob | null;
+    }
+
+    const exporter = new QRCodeStyling(getQROptions(size));
+    const rawBlob = (await exporter.getRawData("png")) as Blob | null;
+    if (!rawBlob) return null;
+
+    const img = new Image();
+    const imgUrl = URL.createObjectURL(rawBlob);
+    await new Promise((res, rej) => {
+      img.onload = res;
+      img.onerror = rej;
+      img.src = imgUrl;
+    });
+
+    const f = config.frame;
+    const W = size;
+    const H = Math.round(size * 1.42);
+    const canvas = document.createElement("canvas");
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+
+    const isDarkText = f.cardTextColor !== "#ffffff";
+    const radius = Math.round(W * 0.04);
+    const roundRect = (x: number, y: number, w: number, h: number, r: number) => {
+      ctx.beginPath();
+      if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+      else ctx.rect(x, y, w, h);
+    };
+
+    // JPEG has no transparency, so fill the corners
+    if (format === "jpeg") {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // Card
+    ctx.fillStyle = f.cardBgColor || "#ffffff";
+    roundRect(0, 0, W, H, radius);
+    ctx.fill();
+    ctx.strokeStyle = isDarkText ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.12)";
+    ctx.lineWidth = Math.round(W * 0.005);
+    roundRect(0, 0, W, H, radius);
+    ctx.stroke();
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const maxText = W * 0.86;
+
+    const topY = Math.round(H * 0.11);
+    if (f.brandName) {
+      ctx.fillStyle = f.accentColor || "#4f46e5";
+      fitText(ctx, f.brandName.toUpperCase(), "bold", Math.round(W * 0.028), maxText);
+      ctx.fillText(f.brandName.toUpperCase(), W / 2, topY);
+    }
+
+    const titleY = topY + Math.round(H * 0.07);
+    const title = (f.text || "SCAN HERE").toUpperCase();
+    ctx.fillStyle = f.cardTextColor || "#0f172a";
+    fitText(ctx, title, "900", Math.round(W * 0.068), maxText);
+    ctx.fillText(title, W / 2, titleY);
+
+    let subY = titleY;
+    if (f.subtext) {
+      subY = titleY + Math.round(H * 0.045);
+      ctx.fillStyle = isDarkText ? "rgba(15,23,42,0.65)" : "rgba(255,255,255,0.75)";
+      fitText(ctx, f.subtext, "500", Math.round(W * 0.03), maxText);
+      ctx.fillText(f.subtext, W / 2, subY);
+    }
+
+    const qrSize = Math.round(W * 0.58);
+    const qrX = (W - qrSize) / 2;
+    const qrY = subY + Math.round(H * 0.08);
+    const pad = Math.round(qrSize * 0.05);
+
+    ctx.fillStyle = "#ffffff";
+    roundRect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, Math.round(qrSize * 0.06));
+    ctx.fill();
+
+    if (f.showViewfinder) {
+      const vfPad = Math.round(qrSize * 0.08);
+      const x0 = qrX - vfPad;
+      const y0 = qrY - vfPad;
+      const x1 = qrX + qrSize + vfPad;
+      const y1 = qrY + qrSize + vfPad;
+      const arm = Math.round(qrSize * 0.16);
+      ctx.strokeStyle = f.accentColor || "#4f46e5";
+      ctx.lineWidth = Math.round(W * 0.012);
+      ctx.lineCap = "round";
+      const corner = (pts: [number, number][]) => {
+        ctx.beginPath();
+        ctx.moveTo(...pts[0]);
+        ctx.lineTo(...pts[1]);
+        ctx.lineTo(...pts[2]);
+        ctx.stroke();
+      };
+      corner([[x0, y0 + arm], [x0, y0], [x0 + arm, y0]]);
+      corner([[x1 - arm, y0], [x1, y0], [x1, y0 + arm]]);
+      corner([[x0, y1 - arm], [x0, y1], [x0 + arm, y1]]);
+      corner([[x1 - arm, y1], [x1, y1], [x1, y1 - arm]]);
+    }
+
+    ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
+    URL.revokeObjectURL(imgUrl);
+
+    let footY = qrY + qrSize + pad + Math.round(H * 0.06);
+    if (f.showStepsBadge) {
+      const bw = Math.round(W * 0.82);
+      const bh = Math.round(H * 0.048);
+      ctx.fillStyle = f.accentColor || "#4f46e5";
+      roundRect((W - bw) / 2, footY, bw, bh, Math.round(bh / 2));
+      ctx.fill();
+      ctx.fillStyle = "#ffffff";
+      fitText(ctx, STEPS_TEXT, "bold", Math.round(W * 0.026), bw * 0.92);
+      ctx.fillText(STEPS_TEXT, W / 2, footY + bh / 2);
+      footY += bh + Math.round(H * 0.04);
+    }
+
+    if (f.footerNote) {
+      ctx.fillStyle = isDarkText ? "rgba(15,23,42,0.6)" : "rgba(255,255,255,0.7)";
+      fitText(ctx, f.footerNote, "500", Math.round(W * 0.026), maxText);
+      ctx.fillText(f.footerNote, W / 2, footY);
+    }
+
+    return await new Promise<Blob | null>((res) =>
+      canvas.toBlob((b) => res(b), format === "jpeg" ? "image/jpeg" : "image/png", 0.95)
+    );
+  };
+
+  const fileName = (format: ExportFormat) =>
+    `qrvibe-${config.frame.enabled && format !== "svg" ? "poster-" : ""}${config.contentType}-${exportRes}px.${
+      format === "jpeg" ? "jpg" : format
+    }`;
+
+  const downloadQR = async () => {
+    setBusy("download");
     try {
-      const { default: QRCodeStyling } = await import("qr-code-styling");
-      const highResOptions = getQROptions(exportRes);
-      const exporter = new QRCodeStyling(highResOptions);
-
-      if (config.frame.enabled && (format === "png" || format === "jpeg")) {
-        const rawBlob = await exporter.getRawData("png");
-        if (rawBlob) {
-          const img = new Image();
-          const imgUrl = URL.createObjectURL(rawBlob as Blob);
-          await new Promise((res, rej) => {
-            img.onload = () => res(true);
-            img.onerror = rej;
-            img.src = imgUrl;
-          });
-
-          // Proportions: 1 : 1.42 printable poster ratio
-          const posterW = exportRes;
-          const posterH = Math.round(exportRes * 1.42);
-          const canvas = document.createElement("canvas");
-          canvas.width = posterW;
-          canvas.height = posterH;
-          const ctx = canvas.getContext("2d");
-
-          if (ctx) {
-            // 1. Draw Card Background
-            ctx.fillStyle = config.frame.cardBgColor || "#ffffff";
-            if (ctx.roundRect) {
-              ctx.beginPath();
-              ctx.roundRect(0, 0, posterW, posterH, Math.round(posterW * 0.04));
-              ctx.fill();
-            } else {
-              ctx.fillRect(0, 0, posterW, posterH);
-            }
-
-            // 2. Draw Card Border
-            ctx.strokeStyle = config.frame.cardTextColor === "#ffffff" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.08)";
-            ctx.lineWidth = Math.round(posterW * 0.005);
-            if (ctx.roundRect) {
-              ctx.beginPath();
-              ctx.roundRect(0, 0, posterW, posterH, Math.round(posterW * 0.04));
-              ctx.stroke();
-            }
-
-            // 3. Top Brand Tag
-            const topY = Math.round(posterH * 0.08);
-            if (config.frame.brandName) {
-              ctx.fillStyle = config.frame.accentColor || "#4f46e5";
-              ctx.font = `bold ${Math.round(posterW * 0.028)}px sans-serif`;
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(config.frame.brandName.toUpperCase(), posterW / 2, topY);
-            }
-
-            // 4. Main Headline
-            const titleY = topY + Math.round(posterH * 0.065);
-            ctx.fillStyle = config.frame.cardTextColor || "#0f172a";
-            ctx.font = `900 ${Math.round(posterW * 0.068)}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(config.frame.text.toUpperCase(), posterW / 2, titleY);
-
-            // 5. Subtitle
-            let subY = titleY;
-            if (config.frame.subtext) {
-              subY = titleY + Math.round(posterH * 0.04);
-              ctx.fillStyle = config.frame.cardTextColor === "#ffffff" ? "rgba(255,255,255,0.75)" : "rgba(15,23,42,0.65)";
-              ctx.font = `500 ${Math.round(posterW * 0.03)}px sans-serif`;
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(config.frame.subtext, posterW / 2, subY);
-            }
-
-            // 6. QR Code Area Centered
-            const qrSize = Math.round(posterW * 0.58);
-            const qrX = (posterW - qrSize) / 2;
-            const qrY = subY + Math.round(posterH * 0.05);
-
-            // White backing pad
-            const pad = Math.round(qrSize * 0.05);
-            ctx.fillStyle = "#ffffff";
-            if (ctx.roundRect) {
-              ctx.beginPath();
-              ctx.roundRect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, Math.round(qrSize * 0.06));
-              ctx.fill();
-            } else {
-              ctx.fillRect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2);
-            }
-
-            // 7. Viewfinder Corner Brackets [   ]
-            if (config.frame.showViewfinder) {
-              const vfPad = Math.round(qrSize * 0.08);
-              const vfX = qrX - vfPad;
-              const vfY = qrY - vfPad;
-              const vfW = qrSize + vfPad * 2;
-              const vfH = qrSize + vfPad * 2;
-              const arm = Math.round(qrSize * 0.16);
-              const lw = Math.round(posterW * 0.012);
-
-              ctx.strokeStyle = config.frame.accentColor || "#4f46e5";
-              ctx.lineWidth = lw;
-              ctx.lineCap = "round";
-
-              // Top-Left
-              ctx.beginPath();
-              ctx.moveTo(vfX, vfY + arm);
-              ctx.lineTo(vfX, vfY);
-              ctx.lineTo(vfX + arm, vfY);
-              ctx.stroke();
-
-              // Top-Right
-              ctx.beginPath();
-              ctx.moveTo(vfX + vfW - arm, vfY);
-              ctx.lineTo(vfX + vfW, vfY);
-              ctx.lineTo(vfX + vfW, vfY + arm);
-              ctx.stroke();
-
-              // Bottom-Left
-              ctx.beginPath();
-              ctx.moveTo(vfX, vfY + vfH - arm);
-              ctx.lineTo(vfX, vfY + vfH);
-              ctx.lineTo(vfX + arm, vfY + vfH);
-              ctx.stroke();
-
-              // Bottom-Right
-              ctx.beginPath();
-              ctx.moveTo(vfX + vfW - arm, vfY + vfH);
-              ctx.lineTo(vfX + vfW, vfY + vfH);
-              ctx.lineTo(vfX + vfW, vfY + vfH - arm);
-              ctx.stroke();
-            }
-
-            // Draw QR image
-            ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
-
-            // 8. Steps Badge
-            let footerAreaY = qrY + qrSize + pad + Math.round(posterH * 0.04);
-            if (config.frame.showStepsBadge) {
-              const badgeText = "1. Open Camera   •   2. Point at QR   •   3. Tap Link";
-              const bw = Math.round(posterW * 0.82);
-              const bh = Math.round(posterH * 0.048);
-              const bx = (posterW - bw) / 2;
-
-              ctx.fillStyle = config.frame.accentColor || "#4f46e5";
-              if (ctx.roundRect) {
-                ctx.beginPath();
-                ctx.roundRect(bx, footerAreaY, bw, bh, Math.round(bh / 2));
-                ctx.fill();
-              } else {
-                ctx.fillRect(bx, footerAreaY, bw, bh);
-              }
-
-              ctx.fillStyle = "#ffffff";
-              ctx.font = `bold ${Math.round(posterW * 0.026)}px sans-serif`;
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(badgeText, posterW / 2, footerAreaY + bh / 2);
-
-              footerAreaY += bh + Math.round(posterH * 0.03);
-            }
-
-            // 9. Footer Note
-            if (config.frame.footerNote) {
-              ctx.fillStyle = config.frame.cardTextColor === "#ffffff" ? "rgba(255,255,255,0.7)" : "rgba(15,23,42,0.6)";
-              ctx.font = `500 ${Math.round(posterW * 0.026)}px sans-serif`;
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(config.frame.footerNote, posterW / 2, footerAreaY);
-            }
-
-            URL.revokeObjectURL(imgUrl);
-
-            canvas.toBlob((blob) => {
-              if (blob) {
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blob);
-                a.download = `qrvibe-poster-${config.contentType}-${exportRes}px.${format}`;
-                a.click();
-              }
-            }, `image/${format}`);
-
-            confetti({ particleCount: 90, spread: 70, origin: { y: 0.8 } });
-            setIsDownloading(false);
-            return;
-          }
-        }
-      }
-
-      await exporter.download({
-        name: `qrvibe-${config.contentType}-${exportRes}px`,
-        extension: format,
-      });
-
-      // Confetti burst
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { y: 0.8 },
-      });
+      const blob = await renderBlob(exportFormat, exportRes);
+      if (!blob) throw new Error("Empty export");
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = fileName(exportFormat);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      confetti({ particleCount: 80, spread: 60, origin: { y: 0.85 } });
     } catch (err) {
       console.error("Export error:", err);
+      showToast("Download failed. Please try again.");
     } finally {
-      setIsDownloading(false);
+      setBusy(null);
     }
   };
 
-  // Copy PNG to Clipboard
   const copyToClipboard = async () => {
-    if (typeof window === "undefined") return;
+    if (!navigator.clipboard || typeof window.ClipboardItem === "undefined") {
+      showToast("Your browser can't copy images. Use Download instead.");
+      return;
+    }
+    setBusy("copy");
     try {
-      const { default: QRCodeStyling } = await import("qr-code-styling");
-      const tempOptions = getQROptions(1024);
-      const exporter = new QRCodeStyling(tempOptions);
-      const rawBlob = await exporter.getRawData("png");
-
-      if (rawBlob && navigator.clipboard && window.ClipboardItem) {
-        await navigator.clipboard.write([
-          new ClipboardItem({ "image/png": rawBlob as Blob }),
-        ]);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2500);
-      } else {
-        alert("Clipboard copying is not supported on this browser.");
-      }
+      const blob = await renderBlob("png", 1024);
+      if (!blob) throw new Error("Empty export");
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
     } catch (err) {
       console.error("Copy failed:", err);
+      showToast("Copy failed. Use Download instead.");
+    } finally {
+      setBusy(null);
     }
   };
 
-  // Native Mobile Web Share (Direct to WhatsApp / Photos / AirDrop)
+  const canShareFiles = () => typeof navigator !== "undefined" && typeof navigator.share === "function";
+
   const shareQR = async () => {
-    if (typeof window === "undefined") return;
+    if (!canShareFiles()) {
+      await downloadQR();
+      return;
+    }
+    setBusy("share");
     try {
-      const { default: QRCodeStyling } = await import("qr-code-styling");
-      const tempOptions = getQROptions(1024);
-      const exporter = new QRCodeStyling(tempOptions);
-      const rawBlob = await exporter.getRawData("png");
-      if (rawBlob && navigator.share) {
-        const file = new File([rawBlob as Blob], `qrvibe-${config.contentType}.png`, {
-          type: "image/png",
-        });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            files: [file],
-            title: "My Custom QR Code",
-            text: "Generated with QR Vibe (qrvibe.online)",
-          });
-          return;
-        } else {
-          await navigator.share({
-            title: "My Custom QR Code",
-            text: "Scan my custom brand QR code",
-            url: window.location.href,
-          });
-          return;
-        }
+      const blob = await renderBlob("png", 1024);
+      if (!blob) throw new Error("Empty export");
+      const file = new File([blob], fileName("png"), { type: "image/png" });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: "My QR Code" });
+      } else {
+        await navigator.share({ title: "My QR Code", url: window.location.href });
       }
-      // Fallback: direct download
-      await downloadQR("png");
     } catch (err) {
-      console.log("Share dismissed or not supported", err);
+      // User closed the share sheet
+      if ((err as Error)?.name !== "AbortError") console.error("Share failed:", err);
+    } finally {
+      setBusy(null);
     }
   };
 
-  const quickMobileStyles = [
-    {
-      id: "violet-flow",
-      name: "Violet",
-      dotType: "rounded" as DotType,
-      cornerSquareType: "extra-rounded" as CornerSquareType,
-      cornerDotType: "dot" as CornerDotType,
-      colorType: "gradient" as const,
-      gradientColor1: "#6366f1",
-      gradientColor2: "#a855f7",
-      dotsColor: "#6366f1",
-      cornerSquareColor: "#4f46e5",
-      cornerDotColor: "#9333ea",
-      bgColor: "#ffffff",
-      dotColor: "#6366f1",
-    },
-    {
-      id: "emerald-chat",
-      name: "WhatsApp",
-      dotType: "dots" as DotType,
-      cornerSquareType: "extra-rounded" as CornerSquareType,
-      cornerDotType: "dot" as CornerDotType,
-      colorType: "gradient" as const,
-      gradientColor1: "#059669",
-      gradientColor2: "#10b981",
-      dotsColor: "#059669",
-      cornerSquareColor: "#047857",
-      cornerDotColor: "#059669",
-      bgColor: "#ffffff",
-      dotColor: "#059669",
-    },
-    {
-      id: "ocean-breeze",
-      name: "Ocean",
-      dotType: "classy-rounded" as DotType,
-      cornerSquareType: "extra-rounded" as CornerSquareType,
-      cornerDotType: "dot" as CornerDotType,
-      colorType: "gradient" as const,
-      gradientColor1: "#0284c7",
-      gradientColor2: "#06b6d4",
-      dotsColor: "#0284c7",
-      cornerSquareColor: "#0369a1",
-      cornerDotColor: "#0891b2",
-      bgColor: "#ffffff",
-      dotColor: "#0284c7",
-    },
-    {
-      id: "sunset-glow",
-      name: "Amber",
-      dotType: "classy" as DotType,
-      cornerSquareType: "extra-rounded" as CornerSquareType,
-      cornerDotType: "dot" as CornerDotType,
-      colorType: "gradient" as const,
-      gradientColor1: "#d97706",
-      gradientColor2: "#ea580c",
-      dotsColor: "#d97706",
-      cornerSquareColor: "#b45309",
-      cornerDotColor: "#c2410c",
-      bgColor: "#ffffff",
-      dotColor: "#d97706",
-    },
-    {
-      id: "midnight-cyber",
-      name: "Dark",
-      dotType: "rounded" as DotType,
-      cornerSquareType: "square" as CornerSquareType,
-      cornerDotType: "dot" as CornerDotType,
-      colorType: "gradient" as const,
-      gradientColor1: "#818cf8",
-      gradientColor2: "#c084fc",
-      dotsColor: "#818cf8",
-      cornerSquareColor: "#6366f1",
-      cornerDotColor: "#a855f7",
-      bgColor: "#090d16",
-      dotColor: "#818cf8",
-    },
-  ];
+  const scrollToPreview = () => {
+    previewRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
-  const contentTypes: { id: QRContentType; label: string; icon: React.ElementType }[] = [
-    { id: "url", label: "Website URL", icon: Globe },
-    { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
-    { id: "wifi", label: "Wi-Fi", icon: Wifi },
-    { id: "vcard", label: "vCard Card", icon: Contact },
-    { id: "email", label: "Email", icon: Mail },
-    { id: "text", label: "Plain Text", icon: FileText },
-  ];
+  const selectTab = (id: StudioTab) => {
+    setActiveTab(id);
+    // If the panel's top is hidden under the sticky tab bar, bring it back into view
+    requestAnimationFrame(() => {
+      const bar = document.getElementById("studio-tabs");
+      const panel = panelRef.current;
+      if (!bar || !panel) return;
+      const gap = panel.getBoundingClientRect().top - bar.getBoundingClientRect().bottom;
+      if (gap < 0) window.scrollBy({ top: gap - 8, behavior: "smooth" });
+    });
+  };
 
-  return (
-    <div id="generator" className="py-0 sm:py-10 max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pb-20 lg:pb-10">
-      {/* Hidden file input for logo uploads */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={handleLogoUpload}
-        accept="image/png,image/jpeg,image/svg+xml,image/webp"
-        className="hidden"
-      />
+  /* ================================================================ */
+  /* Panels                                                           */
+  /* ================================================================ */
 
-      {/* ======================================================== */}
-      {/* DEDICATED MOBILE APP VIEW (< 1024px) - SEAMLESS & INLINE */}
-      {/* ======================================================== */}
-      <div className="block lg:hidden min-h-screen bg-[#060714] text-slate-100 pb-28">
-        {/* 1. TOP APP HEADER */}
-        <div className="sticky top-0 z-30 bg-[#090a16]/95 backdrop-blur-xl border-b border-purple-950/40 px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* QR Vibe Logo Icon */}
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 via-fuchsia-500 to-indigo-600 p-[2px] shadow-lg shadow-purple-600/30">
-              <div className="w-full h-full bg-[#0d0f24] rounded-[14px] flex items-center justify-center p-2">
-                <div className="grid grid-cols-2 gap-1 w-full h-full">
-                  <div className="border border-purple-400 rounded-sm flex items-center justify-center p-0.5">
-                    <div className="w-full h-full bg-purple-400 rounded-[1px]" />
-                  </div>
-                  <div className="border border-purple-400 rounded-sm flex items-center justify-center p-0.5">
-                    <div className="w-full h-full bg-purple-400 rounded-[1px]" />
-                  </div>
-                  <div className="border border-purple-400 rounded-sm flex items-center justify-center p-0.5">
-                    <div className="w-full h-full bg-purple-400 rounded-[1px]" />
-                  </div>
-                  <div className="border border-pink-400/60 rounded-sm flex items-center justify-center p-0.5">
-                    <div className="w-1.5 h-1.5 bg-pink-400 rounded-full" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-base font-black text-white tracking-tight leading-none">QR Vibe</h1>
-                <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-purple-600 text-white shadow-sm shadow-purple-600/50">
-                  PRO
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 font-medium leading-none mt-1">
-                Vibrant &amp; Scannable QR Codes
-              </p>
-            </div>
-          </div>
-
-          {/* Quick Header Actions */}
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={copyToClipboard}
-              className="p-2 rounded-xl bg-[#14162e] border border-slate-800 text-slate-300 hover:text-white active:scale-95 transition-all"
-              title="Copy QR to Clipboard"
-            >
-              {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowScanModal(true)}
-              className="p-2 rounded-xl bg-purple-600/20 border border-purple-500/50 text-purple-300 hover:text-white active:scale-95 transition-all flex items-center gap-1.5 text-xs font-bold"
-              title="Camera Scan Test"
-            >
-              <Scan className="w-4 h-4" />
-              <span>Scan</span>
-            </button>
-          </div>
-        </div>
-
-        {/* 2. QR TYPE PILLS ROW (INLINE SWITCHER) */}
-        <div className="px-4 py-3 overflow-x-auto no-scrollbar scroll-smooth flex items-center gap-2">
-          {[
-            { id: "url", label: "URL", icon: Globe },
-            { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
-            { id: "wifi", label: "Wi-Fi", icon: Wifi },
-            { id: "vcard", label: "vCard", icon: Contact },
-            { id: "email", label: "Email", icon: Mail },
-            { id: "text", label: "Text", icon: FileText },
-          ].map((t) => {
-            const isActive = config.contentType === t.id;
+  const contentPanel = (
+    <div className="space-y-6">
+      <Section title="What should the QR open?">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          {CONTENT_TYPES.map((t) => {
             const Icon = t.icon;
             return (
-              <button
+              <OptionTile
                 key={t.id}
+                active={config.contentType === t.id}
+                onClick={() => update("contentType", t.id)}
+                className="flex flex-col items-center justify-center gap-1.5 py-3"
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-xs font-semibold">{t.label}</span>
+              </OptionTile>
+            );
+          })}
+        </div>
+      </Section>
+
+      <div className="h-px bg-slate-800" />
+
+      {config.contentType === "url" && (
+        <Section title="Website link" hint="Paste any link: website, Instagram, YouTube, Google Maps…">
+          <div className="relative">
+            <input
+              type="url"
+              inputMode="url"
+              autoCapitalize="off"
+              autoCorrect="off"
+              value={config.url}
+              onChange={(e) => update("url", e.target.value)}
+              placeholder="https://example.com"
+              className={`${inputCls} pr-10`}
+            />
+            {config.url && (
+              <button
                 type="button"
-                onClick={() => setConfig((prev) => ({ ...prev, contentType: t.id as QRContentType }))}
-                className={`shrink-0 flex flex-col items-center justify-center min-w-[62px] h-[60px] rounded-2xl px-2 py-1.5 transition-all ${
-                  isActive
-                    ? "bg-purple-600 text-white shadow-lg shadow-purple-600/40 ring-2 ring-purple-400/60 scale-[1.02]"
-                    : "bg-[#0f1126] border border-slate-800/80 text-slate-400 hover:text-white"
+                onClick={() => update("url", "")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+                aria-label="Clear link"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+            {["https://", "https://instagram.com/", "https://wa.me/", "https://youtube.com/"].map((p) => (
+              <Chip key={p} onClick={() => update("url", p)}>
+                {p.replace("https://", "") || "https://"}
+              </Chip>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {config.contentType === "whatsapp" && (
+        <Section title="WhatsApp chat" hint="People scan and a chat opens with your number and message.">
+          <div className="grid grid-cols-[96px_1fr] gap-2">
+            <Field label="Code">
+              <input
+                type="tel"
+                value={config.whatsapp.countryCode}
+                onChange={(e) => update("whatsapp", { ...config.whatsapp, countryCode: e.target.value })}
+                placeholder="+92"
+                className={`${inputCls} text-center`}
+              />
+            </Field>
+            <Field label="Phone number">
+              <input
+                type="tel"
+                inputMode="tel"
+                value={config.whatsapp.phone}
+                onChange={(e) => update("whatsapp", { ...config.whatsapp, phone: e.target.value })}
+                placeholder="3001234567"
+                className={inputCls}
+              />
+            </Field>
+          </div>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+            {COUNTRY_CODES.map((c) => (
+              <Chip
+                key={c}
+                active={config.whatsapp.countryCode === c}
+                onClick={() => update("whatsapp", { ...config.whatsapp, countryCode: c })}
+              >
+                {c}
+              </Chip>
+            ))}
+          </div>
+          <Field label="Message (optional)">
+            <textarea
+              rows={2}
+              value={config.whatsapp.message}
+              onChange={(e) => update("whatsapp", { ...config.whatsapp, message: e.target.value })}
+              placeholder="Hello, I want to ask about…"
+              className={inputCls}
+            />
+          </Field>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+            {WHATSAPP_TEMPLATES.map((t) => (
+              <Chip
+                key={t.label}
+                active={config.whatsapp.message === t.msg}
+                onClick={() => update("whatsapp", { ...config.whatsapp, message: t.msg })}
+              >
+                {t.label}
+              </Chip>
+            ))}
+          </div>
+          <Field label="Link type">
+            <Segmented
+              value={config.whatsapp.linkStyle || "api"}
+              onChange={(v) => update("whatsapp", { ...config.whatsapp, linkStyle: v })}
+              options={[
+                { value: "api", label: "Standard" },
+                { value: "wame", label: "wa.me" },
+                { value: "intent", label: "App link" },
+              ]}
+            />
+          </Field>
+        </Section>
+      )}
+
+      {config.contentType === "wifi" && (
+        <Section title="Wi-Fi network" hint="Guests scan and join without typing the password.">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Field label="Network name (SSID)">
+              <input
+                type="text"
+                autoCapitalize="off"
+                value={config.wifi.ssid}
+                onChange={(e) => update("wifi", { ...config.wifi, ssid: e.target.value })}
+                placeholder="Office_WiFi"
+                className={inputCls}
+              />
+            </Field>
+            <Field label="Security">
+              <select
+                value={config.wifi.encryption}
+                onChange={(e) =>
+                  update("wifi", { ...config.wifi, encryption: e.target.value as QRDesignConfig["wifi"]["encryption"] })
+                }
+                className={inputCls}
+              >
+                <option value="WPA">WPA / WPA2 / WPA3</option>
+                <option value="WEP">WEP (old)</option>
+                <option value="nopass">No password</option>
+              </select>
+            </Field>
+          </div>
+          {config.wifi.encryption !== "nopass" && (
+            <Field label="Password">
+              <div className="relative">
+                <input
+                  type={wifiShowPass ? "text" : "password"}
+                  autoCapitalize="off"
+                  value={config.wifi.password}
+                  onChange={(e) => update("wifi", { ...config.wifi, password: e.target.value })}
+                  placeholder="Network password"
+                  className={`${inputCls} pr-11`}
+                />
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setWifiShowPass((s) => !s);
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-white"
+                  aria-label={wifiShowPass ? "Hide password" : "Show password"}
+                >
+                  {wifiShowPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </Field>
+          )}
+          <Toggle
+            checked={config.wifi.hidden}
+            onChange={(v) => update("wifi", { ...config.wifi, hidden: v })}
+            label="Hidden network"
+            hint="Turn on only if your Wi-Fi name is hidden."
+          />
+        </Section>
+      )}
+
+      {config.contentType === "vcard" && (
+        <Section title="Contact card" hint="People scan and save your contact in one tap.">
+          <div className="grid grid-cols-2 gap-3">
+            {(
+              [
+                ["firstName", "First name", "text"],
+                ["lastName", "Last name", "text"],
+                ["phone", "Phone", "tel"],
+                ["email", "Email", "email"],
+                ["company", "Company", "text"],
+                ["title", "Job title", "text"],
+              ] as const
+            ).map(([key, label, type]) => (
+              <Field key={key} label={label}>
+                <input
+                  type={type}
+                  value={config.vcard[key]}
+                  onChange={(e) => update("vcard", { ...config.vcard, [key]: e.target.value })}
+                  className={inputCls}
+                />
+              </Field>
+            ))}
+          </div>
+          <Field label="Website">
+            <input
+              type="url"
+              inputMode="url"
+              autoCapitalize="off"
+              value={config.vcard.website}
+              onChange={(e) => update("vcard", { ...config.vcard, website: e.target.value })}
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Address">
+            <input
+              type="text"
+              value={config.vcard.address}
+              onChange={(e) => update("vcard", { ...config.vcard, address: e.target.value })}
+              className={inputCls}
+            />
+          </Field>
+        </Section>
+      )}
+
+      {config.contentType === "email" && (
+        <Section title="Email" hint="Opens a ready-to-send email in the scanner's mail app.">
+          <Field label="Send to">
+            <input
+              type="email"
+              inputMode="email"
+              autoCapitalize="off"
+              value={config.email.email}
+              onChange={(e) => update("email", { ...config.email, email: e.target.value })}
+              placeholder="hello@example.com"
+              className={inputCls}
+            />
+          </Field>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+            {EMAIL_TEMPLATES.map((t) => (
+              <Chip
+                key={t.label}
+                active={config.email.subject === t.sub}
+                onClick={() => update("email", { ...config.email, subject: t.sub, body: t.body })}
+              >
+                {t.label}
+              </Chip>
+            ))}
+          </div>
+          <Field label="Subject">
+            <input
+              type="text"
+              value={config.email.subject}
+              onChange={(e) => update("email", { ...config.email, subject: e.target.value })}
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Message">
+            <textarea
+              rows={3}
+              value={config.email.body}
+              onChange={(e) => update("email", { ...config.email, body: e.target.value })}
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Format">
+            <Segmented
+              value={config.email.format === "matmsg" ? "matmsg" : "mailto"}
+              onChange={(v) => update("email", { ...config.email, format: v })}
+              options={[
+                { value: "mailto", label: "Standard (mailto)" },
+                { value: "matmsg", label: "Android (MATMSG)" },
+              ]}
+            />
+          </Field>
+        </Section>
+      )}
+
+      {config.contentType === "text" && (
+        <Section title="Plain text" hint="Shows this text when scanned.">
+          <textarea
+            rows={4}
+            value={config.text}
+            onChange={(e) => update("text", e.target.value)}
+            placeholder="Write your message…"
+            className={inputCls}
+          />
+          <p className="text-xs text-slate-500 text-right">{config.text.length} characters</p>
+        </Section>
+      )}
+    </div>
+  );
+
+  const logoPanel = (
+    <div className="space-y-6">
+      <Section
+        title="Logo in the middle"
+        hint="PNG, JPG, SVG or WebP. Stays on your device, never uploaded."
+        action={
+          config.logoUrl ? (
+            <button
+              type="button"
+              onClick={removeLogo}
+              className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-rose-300 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Remove
+            </button>
+          ) : undefined
+        }
+      >
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => fileInputRef.current?.click()}
+          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && fileInputRef.current?.click()}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDraggingLogo(true);
+          }}
+          onDragLeave={() => setIsDraggingLogo(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setIsDraggingLogo(false);
+            const file = e.dataTransfer.files?.[0];
+            if (file) readLogoFile(file);
+          }}
+          className={`flex items-center gap-4 p-4 rounded-2xl border-2 border-dashed cursor-pointer transition-colors ${
+            isDraggingLogo
+              ? "border-indigo-400 bg-indigo-500/10"
+              : "border-slate-700 hover:border-indigo-500 bg-slate-950/50"
+          }`}
+        >
+          <div className="w-16 h-16 rounded-xl bg-white/95 border border-slate-700 flex items-center justify-center shrink-0 overflow-hidden p-1.5">
+            {config.logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={config.logoUrl} alt="Your logo" className="max-w-full max-h-full object-contain" />
+            ) : (
+              <Upload className="w-6 h-6 text-slate-500" />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white">
+              {config.logoUrl ? "Tap to change logo" : isDraggingLogo ? "Drop it here" : "Tap to upload your logo"}
+            </p>
+            <p className="text-xs text-slate-400 mt-0.5">Square logos with a transparent background look best.</p>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Or use a sample icon">
+        <div className="flex flex-wrap gap-2">
+          {SAMPLE_LOGOS.map((s) => (
+            <button
+              key={s.name}
+              type="button"
+              onClick={() => setConfig((prev) => ({ ...prev, logoUrl: s.url, errorCorrectionLevel: "H" }))}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
+                config.logoUrl === s.url
+                  ? "bg-indigo-600 border-indigo-500 text-white"
+                  : "bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-600"
+              }`}
+            >
+              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: s.color }} />
+              {s.name}
+            </button>
+          ))}
+        </div>
+      </Section>
+
+      {config.logoUrl && (
+        <Section title="Logo settings">
+          <div>
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="font-semibold text-slate-300">Size</span>
+              <span
+                className={`font-bold ${
+                  config.logoSize <= 0.28 ? "text-emerald-400" : config.logoSize <= 0.32 ? "text-amber-400" : "text-rose-400"
                 }`}
               >
-                <Icon className="w-4 h-4 mb-1" />
-                <span className="text-[10px] font-bold tracking-tight">{t.label}</span>
+                {Math.round(config.logoSize * 100)}% ·{" "}
+                {config.logoSize <= 0.28 ? "Safe" : config.logoSize <= 0.32 ? "Careful" : "Too big"}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0.16}
+              max={0.38}
+              step={0.01}
+              value={config.logoSize}
+              onChange={(e) => update("logoSize", parseFloat(e.target.value))}
+              className="w-full accent-indigo-500 h-2 cursor-pointer"
+            />
+          </div>
+          <div>
+            <div className="flex items-center justify-between text-xs mb-2">
+              <span className="font-semibold text-slate-300">Space around logo</span>
+              <span className="font-bold text-white">{config.logoMargin}px</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={14}
+              step={1}
+              value={config.logoMargin}
+              onChange={(e) => update("logoMargin", parseInt(e.target.value, 10))}
+              className="w-full accent-indigo-500 h-2 cursor-pointer"
+            />
+          </div>
+          <Toggle
+            checked={config.hideBehindLogo}
+            onChange={(v) => update("hideBehindLogo", v)}
+            label="Clear dots behind logo"
+            hint="Makes the logo cleaner and easier to see."
+          />
+        </Section>
+      )}
+    </div>
+  );
+
+  const stylePanel = (
+    <div className="space-y-6">
+      <Section title="Quick colors">
+        <div className="grid grid-cols-4 sm:grid-cols-8 gap-2">
+          {PALETTES.map((p) => {
+            const active =
+              config.colorType === p.type &&
+              config.bgColor === p.bg &&
+              (p.type === "single"
+                ? config.dotsColor === p.c1
+                : config.gradientColor1 === p.c1 && config.gradientColor2 === p.c2);
+            return (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() =>
+                  setConfig((prev) => ({
+                    ...prev,
+                    colorType: p.type,
+                    dotsColor: p.c1,
+                    gradientColor1: p.c1,
+                    gradientColor2: p.c2,
+                    bgColor: p.bg,
+                    isTransparentBg: false,
+                    customEyeColor: true,
+                    cornerSquareColor: p.c1,
+                    cornerDotColor: p.c2,
+                  }))
+                }
+                className="flex flex-col items-center gap-1.5"
+                aria-pressed={active}
+              >
+                <span
+                  className={`w-11 h-11 rounded-full grid place-items-center transition-all ${
+                    active ? "ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-900" : "ring-1 ring-slate-700"
+                  }`}
+                  style={{ background: p.bg }}
+                >
+                  <span
+                    className="w-7 h-7 rounded-full"
+                    style={{ background: p.type === "gradient" ? `linear-gradient(135deg, ${p.c1}, ${p.c2})` : p.c1 }}
+                  />
+                </span>
+                <span className={`text-[11px] font-semibold ${active ? "text-white" : "text-slate-400"}`}>{p.name}</span>
               </button>
             );
           })}
         </div>
+      </Section>
 
-        {/* 3. DYNAMIC CONTENT INPUT CARD (100% INLINE, NO POPUP!) */}
-        <div className="mx-4 mb-3 p-4 rounded-2xl bg-[#0f1126] border border-slate-800/80 shadow-md">
-          {/* Website URL Input */}
-          {config.contentType === "url" && (
-            <div>
-              <span className="text-sm font-bold text-white block mb-2">Website URL</span>
-              <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-[#080916] border border-slate-800 focus-within:border-purple-500 transition-colors">
-                <Link2 className="w-4 h-4 text-slate-400 shrink-0" />
-                <input
-                  type="text"
-                  value={config.url}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, url: e.target.value }))}
-                  placeholder="https://crownixbet.com/"
-                  className="bg-transparent w-full text-xs sm:text-sm text-white placeholder-slate-500 outline-none font-medium truncate"
-                />
-                {config.url && (
-                  <button
-                    type="button"
-                    onClick={() => setConfig((prev) => ({ ...prev, url: "" }))}
-                    className="text-slate-400 hover:text-white p-1"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 mt-2.5 overflow-x-auto no-scrollbar">
-                <span className="text-[11px] text-slate-400 shrink-0 font-medium">Quick links:</span>
-                {[
-                  { label: "https://", val: "https://" },
-                  { label: "https://instagram.com/", val: "https://instagram.com/" },
-                  { label: "https://wa.me/", val: "https://wa.me/" },
-                ].map((ql) => (
-                  <button
-                    key={ql.label}
-                    type="button"
-                    onClick={() => setConfig((prev) => ({ ...prev, url: ql.val }))}
-                    className="shrink-0 px-2.5 py-1 rounded-lg bg-[#151833] hover:bg-[#1d2146] border border-slate-700/60 text-[11px] text-slate-300 font-mono transition-colors"
-                  >
-                    {ql.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* WhatsApp Direct Inline */}
-          {config.contentType === "whatsapp" && (
-            <div className="space-y-3">
-              <span className="text-sm font-bold text-white block">WhatsApp Number &amp; Message</span>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={config.whatsapp.countryCode}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, whatsapp: { ...prev.whatsapp, countryCode: e.target.value } }))}
-                  className="w-20 px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs text-center font-bold"
-                  placeholder="+92"
-                />
-                <input
-                  type="text"
-                  value={config.whatsapp.phone}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, whatsapp: { ...prev.whatsapp, phone: e.target.value } }))}
-                  className="flex-1 px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs outline-none focus:border-purple-500"
-                  placeholder="3001234567"
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  value={config.whatsapp.message}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, whatsapp: { ...prev.whatsapp, message: e.target.value } }))}
-                  className="w-full px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs outline-none focus:border-purple-500"
-                  placeholder="Pre-filled chat message (Optional)"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Wi-Fi Direct Inline */}
-          {config.contentType === "wifi" && (
-            <div className="space-y-3">
-              <span className="text-sm font-bold text-white block">Wi-Fi Network Credentials</span>
-              <input
-                type="text"
-                value={config.wifi.ssid}
-                onChange={(e) => setConfig((prev) => ({ ...prev, wifi: { ...prev.wifi, ssid: e.target.value } }))}
-                className="w-full px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs outline-none focus:border-purple-500"
-                placeholder="Network Name (SSID)"
-              />
-              <div className="relative">
-                <input
-                  type={wifiShowPass ? "text" : "password"}
-                  value={config.wifi.password}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, wifi: { ...prev.wifi, password: e.target.value } }))}
-                  className="w-full px-3 py-2 pr-12 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs outline-none focus:border-purple-500"
-                  placeholder="Wi-Fi Password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setWifiShowPass(!wifiShowPass)}
-                  className="absolute right-3 top-2 text-[11px] font-bold text-purple-400"
-                >
-                  {wifiShowPass ? "HIDE" : "SHOW"}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* vCard Direct Inline */}
-          {config.contentType === "vcard" && (
-            <div className="space-y-2.5">
-              <span className="text-sm font-bold text-white block">Digital Contact Card (vCard)</span>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  value={config.vcard.firstName}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, vcard: { ...prev.vcard, firstName: e.target.value } }))}
-                  className="px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs"
-                  placeholder="First Name"
-                />
-                <input
-                  type="text"
-                  value={config.vcard.lastName}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, vcard: { ...prev.vcard, lastName: e.target.value } }))}
-                  className="px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs"
-                  placeholder="Last Name"
-                />
-              </div>
-              <input
-                type="text"
-                value={config.vcard.phone}
-                onChange={(e) => setConfig((prev) => ({ ...prev, vcard: { ...prev.vcard, phone: e.target.value } }))}
-                className="w-full px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs"
-                placeholder="Phone Number"
-              />
-              <input
-                type="email"
-                value={config.vcard.email}
-                onChange={(e) => setConfig((prev) => ({ ...prev, vcard: { ...prev.vcard, email: e.target.value } }))}
-                className="w-full px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs"
-                placeholder="Email Address"
-              />
-            </div>
-          )}
-
-          {/* Email Direct Inline */}
-          {config.contentType === "email" && (
-            <div className="space-y-2.5">
-              <span className="text-sm font-bold text-white block">Send Email Details</span>
-              <input
-                type="email"
-                value={config.email.email}
-                onChange={(e) => setConfig((prev) => ({ ...prev, email: { ...prev.email, email: e.target.value } }))}
-                className="w-full px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs"
-                placeholder="Recipient Email (contact@brand.com)"
-              />
-              <input
-                type="text"
-                value={config.email.subject}
-                onChange={(e) => setConfig((prev) => ({ ...prev, email: { ...prev.email, subject: e.target.value } }))}
-                className="w-full px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs"
-                placeholder="Subject Line"
-              />
-            </div>
-          )}
-
-          {/* Text Direct Inline */}
-          {config.contentType === "text" && (
-            <div>
-              <span className="text-sm font-bold text-white block mb-2">Plain Text Content</span>
-              <textarea
-                rows={3}
-                value={config.text}
-                onChange={(e) => setConfig((prev) => ({ ...prev, text: e.target.value }))}
-                className="w-full px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs outline-none focus:border-purple-500"
-                placeholder="Enter text or message..."
-              />
-            </div>
-          )}
-        </div>
-
-        {/* 4. ADD LOGO (OPTIONAL) CARD */}
-        <div className="mx-4 mb-3 p-4 rounded-2xl bg-[#0f1126] border border-slate-800/80 shadow-md">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-bold text-white">Add Logo (Optional)</span>
-            {config.logoUrl && (
-              <button
-                type="button"
-                onClick={() => setConfig((prev) => ({ ...prev, logoUrl: null }))}
-                className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 font-semibold"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>Remove</span>
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-4">
-            {/* Checkered preview box */}
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="relative w-28 h-20 rounded-xl border border-slate-800 bg-[#080916] flex items-center justify-center p-2 cursor-pointer overflow-hidden group hover:border-purple-500/60 shrink-0 transition-colors"
-              style={{
-                backgroundImage: "radial-gradient(#1e2238 1.5px, transparent 1.5px)",
-                backgroundSize: "8px 8px",
-              }}
-              title="Tap to change logo"
+      <Section title="Dot pattern">
+        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+          {DOT_STYLES.map((d) => (
+            <OptionTile
+              key={d.id}
+              active={config.dotType === d.id}
+              onClick={() => update("dotType", d.id)}
+              className="flex flex-col items-center gap-1.5 py-3"
             >
-              {config.logoUrl ? (
-                <img
-                  src={config.logoUrl}
-                  alt="Brand Logo"
-                  className="max-h-full max-w-full object-contain filter drop-shadow"
-                />
-              ) : (
-                <div className="text-center text-slate-500 text-[11px]">
-                  <Upload className="w-4 h-4 mx-auto mb-1 text-slate-400" />
-                  <span>Upload</span>
-                </div>
-              )}
-            </div>
-
-            {/* Sliders & Toggles */}
-            <div className="flex-1 space-y-2.5">
-              <div>
-                <div className="flex items-center justify-between text-xs mb-1">
-                  <span className="text-slate-300 font-medium">Logo Size</span>
-                  <span className="text-white font-bold">{Math.round(config.logoSize * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min={0.15}
-                  max={0.35}
-                  step={0.01}
-                  value={config.logoSize}
-                  onChange={(e) => setConfig((prev) => ({ ...prev, logoSize: parseFloat(e.target.value) }))}
-                  className="w-full accent-purple-500 h-1.5 bg-[#181a38] rounded-lg cursor-pointer"
-                />
-              </div>
-
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-300 font-medium">White Background</span>
-                <button
-                  type="button"
-                  onClick={() => setConfig((prev) => ({ ...prev, hideBehindLogo: !prev.hideBehindLogo }))}
-                  className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-                    config.hideBehindLogo ? "bg-purple-600 justify-end" : "bg-[#181a38] border border-slate-700 justify-start"
-                  }`}
-                >
-                  <span className="w-4 h-4 rounded-full bg-white shadow-md transform transition-transform" />
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-300 font-medium">Add Padding</span>
-                <button
-                  type="button"
-                  onClick={() => setConfig((prev) => ({ ...prev, logoMargin: prev.logoMargin > 0 ? 0 : 8 }))}
-                  className={`w-10 h-5 flex items-center rounded-full p-0.5 transition-colors ${
-                    config.logoMargin > 0 ? "bg-purple-600 justify-end" : "bg-[#181a38] border border-slate-700 justify-start"
-                  }`}
-                >
-                  <span className="w-4 h-4 rounded-full bg-white shadow-md transform transition-transform" />
-                </button>
-              </div>
-            </div>
-          </div>
+              {d.icon}
+              <span className="text-xs font-semibold">{d.label}</span>
+            </OptionTile>
+          ))}
         </div>
+      </Section>
 
-        {/* 5. LIVE QR CODE PREVIEW CARD (ALWAYS VISIBLE & CENTRAL) */}
-        <div className="mx-4 mb-3 p-4 rounded-2xl bg-[#0f1126] border border-slate-800/80 shadow-md">
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-bold text-white">QR Code Preview</span>
-            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/60 border border-emerald-500/30 text-[11px] font-semibold text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>High Quality • Scannable</span>
+      <Section title="Corner eyes">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Field label="Outer frame">
+            <Segmented
+              value={config.cornerSquareType}
+              onChange={(v) => update("cornerSquareType", v)}
+              options={EYE_FRAMES.map((e) => ({ value: e.id, label: e.label }))}
+            />
+          </Field>
+          <Field label="Inner dot">
+            <Segmented
+              value={config.cornerDotType}
+              onChange={(v) => update("cornerDotType", v)}
+              options={EYE_CENTERS.map((e) => ({ value: e.id, label: e.label }))}
+            />
+          </Field>
+        </div>
+      </Section>
+
+      <Section title="Dot color">
+        <Segmented
+          value={config.colorType}
+          onChange={(v) => update("colorType", v)}
+          options={[
+            { value: "single", label: "Solid" },
+            { value: "gradient", label: "Gradient" },
+          ]}
+        />
+        {config.colorType === "single" ? (
+          <ColorField label="Color" value={config.dotsColor} onChange={(v) => update("dotsColor", v)} />
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-3">
+              <ColorField label="Start" value={config.gradientColor1} onChange={(v) => update("gradientColor1", v)} />
+              <ColorField label="End" value={config.gradientColor2} onChange={(v) => update("gradientColor2", v)} />
             </div>
-            <button
-              type="button"
-              onClick={() => setShowScanModal(true)}
-              className="px-2.5 py-1 rounded-lg border border-purple-500/80 bg-purple-600/10 hover:bg-purple-600/20 text-purple-300 text-xs font-semibold flex items-center gap-1.5 transition-colors"
-            >
-              <Scan className="w-3.5 h-3.5" />
-              <span>Test</span>
-            </button>
-          </div>
-
-          {/* Centered QR Box */}
-          <div className="flex items-center justify-center p-3 bg-[#080916] rounded-xl border border-slate-800/80 shadow-inner min-h-[270px]">
-            {isMobileScreen && (
-              <div
-                ref={qrContainerRef}
-                className="flex items-center justify-center overflow-hidden transition-transform duration-300"
+            <Field label="Direction">
+              <Segmented
+                size="sm"
+                value={config.gradientType === "radial" ? -1 : config.gradientRotation}
+                onChange={(v) =>
+                  setConfig((prev) =>
+                    v === -1
+                      ? { ...prev, gradientType: "radial" }
+                      : { ...prev, gradientType: "linear", gradientRotation: v }
+                  )
+                }
+                options={[
+                  { value: 0, label: "→" },
+                  { value: 45, label: "↘" },
+                  { value: 90, label: "↓" },
+                  { value: 135, label: "↙" },
+                  { value: -1, label: "◎" },
+                ]}
               />
-            )}
-          </div>
+            </Field>
+          </>
+        )}
+      </Section>
 
-          {/* Quick 1-Tap Export Format Pills */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-800/80">
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] text-slate-400 font-medium">Format:</span>
-              {(["png", "svg", "jpeg"] as const).map((fmt) => (
-                <button
-                  key={fmt}
-                  type="button"
-                  onClick={() => setMobileExportFormat(fmt)}
-                  className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase transition-all ${
-                    mobileExportFormat === fmt
-                      ? "bg-purple-600 text-white shadow-sm"
-                      : "bg-[#14162e] text-slate-400 hover:text-white"
-                  }`}
-                >
-                  {fmt}
-                </button>
-              ))}
-            </div>
+      <Section title="Background">
+        <Segmented
+          value={config.isTransparentBg ? "transparent" : config.bgColor === "#ffffff" ? "white" : config.bgColor === "#090a16" ? "dark" : "custom"}
+          onChange={(v) =>
+            setConfig((prev) =>
+              v === "transparent"
+                ? { ...prev, isTransparentBg: true }
+                : v === "white"
+                ? { ...prev, isTransparentBg: false, bgColor: "#ffffff" }
+                : v === "dark"
+                ? { ...prev, isTransparentBg: false, bgColor: "#090a16" }
+                : { ...prev, isTransparentBg: false }
+            )
+          }
+          options={[
+            { value: "white", label: "White" },
+            { value: "dark", label: "Dark" },
+            { value: "transparent", label: "None" },
+            { value: "custom", label: "Custom" },
+          ]}
+        />
+        {!config.isTransparentBg && (
+          <ColorField label="Background color" value={config.bgColor} onChange={(v) => update("bgColor", v)} />
+        )}
+      </Section>
 
-            <button
-              type="button"
-              onClick={() => downloadQR(mobileExportFormat)}
-              className="flex items-center gap-1 text-xs text-purple-400 hover:text-purple-300 font-bold"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download {mobileExportFormat.toUpperCase()}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* 6. INLINE SEGMENTED TABS: [Design] | [Themes (35+)] | [Posters] */}
-        <div className="mx-4 mb-3 p-1 rounded-2xl bg-[#0a0c1e] border border-purple-950/60 flex items-center gap-1">
-          <button
-            type="button"
-            onClick={() => setMobileTab("design")}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              mobileTab === "design"
-                ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            <Sliders className="w-3.5 h-3.5" />
-            <span>Design</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileTab("templates")}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              mobileTab === "templates"
-                ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            <LayoutGrid className="w-3.5 h-3.5" />
-            <span>35+ Themes</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMobileTab("posters")}
-            className={`flex-1 py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
-              mobileTab === "posters"
-                ? "bg-purple-600 text-white shadow-lg shadow-purple-600/30"
-                : "text-slate-400 hover:text-white"
-            }`}
-          >
-            <LayoutTemplate className="w-3.5 h-3.5" />
-            <span>Posters</span>
-          </button>
-        </div>
-
-        {/* 7. TAB CONTENT: INLINE SECTIONS WITHOUT ANY JARRING POPUP */}
-        {/* TAB A: DESIGN CONTROLS */}
-        {mobileTab === "design" && (
-          <div className="space-y-3">
-            {/* Style Section */}
-            <div className="mx-4">
-              <div className="flex items-center justify-between mb-2 px-1">
-                <span className="text-sm font-bold text-white">QR Style</span>
-                <span className="text-[11px] text-purple-400 font-semibold">Active: {config.dotType}</span>
-              </div>
-
-              <div className="grid grid-cols-4 gap-2.5">
-                {[
-                  {
-                    id: "square",
-                    name: "Classic",
-                    icon: (
-                      <div className="w-7 h-7 grid grid-cols-2 gap-1 p-0.5">
-                        <div className="border border-current rounded-none" />
-                        <div className="border border-current rounded-none" />
-                        <div className="border border-current rounded-none" />
-                        <div className="border border-current rounded-none" />
-                      </div>
-                    ),
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        dotType: "square",
-                        cornerSquareType: "square",
-                        cornerDotType: "square",
-                      })),
-                    active: config.dotType === "square",
-                  },
-                  {
-                    id: "rounded",
-                    name: "Rounded",
-                    icon: (
-                      <div className="w-7 h-7 grid grid-cols-2 gap-1 p-0.5">
-                        <div className="w-full h-full bg-current rounded-full" />
-                        <div className="w-full h-full bg-current rounded-full" />
-                        <div className="w-full h-full bg-current rounded-full" />
-                        <div className="w-full h-full bg-current rounded-full" />
-                      </div>
-                    ),
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        dotType: "rounded",
-                        cornerSquareType: "extra-rounded",
-                        cornerDotType: "dot",
-                      })),
-                    active: config.dotType === "rounded",
-                  },
-                  {
-                    id: "dots",
-                    name: "Dots",
-                    icon: (
-                      <div className="w-7 h-7 grid grid-cols-3 gap-0.5 p-0.5 items-center justify-center">
-                        {Array.from({ length: 9 }).map((_, i) => (
-                          <div key={i} className="w-1.5 h-1.5 bg-current rounded-full mx-auto" />
-                        ))}
-                      </div>
-                    ),
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        dotType: "dots",
-                        cornerSquareType: "extra-rounded",
-                        cornerDotType: "dot",
-                      })),
-                    active: config.dotType === "dots",
-                  },
-                  {
-                    id: "classy",
-                    name: "Square",
-                    icon: (
-                      <div className="w-7 h-7 flex items-center justify-center border-2 border-current rounded-lg p-1">
-                        <div className="w-2.5 h-2.5 bg-current rounded-sm" />
-                      </div>
-                    ),
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        dotType: "classy",
-                        cornerSquareType: "square",
-                        cornerDotType: "square",
-                      })),
-                    active: config.dotType === "classy",
-                  },
-                ].map((s) => (
-                  <button
-                    key={s.id}
-                    type="button"
-                    onClick={s.apply}
-                    className={`flex flex-col items-center justify-center py-3 px-2 rounded-2xl transition-all ${
-                      s.active
-                        ? "bg-[#181438] border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.35)] text-white"
-                        : "bg-[#0f1126] border border-slate-800/80 text-slate-400 hover:text-white"
-                    }`}
-                  >
-                    <div className="w-8 h-8 flex items-center justify-center mb-1 text-current">
-                      {s.icon}
-                    </div>
-                    <span className="text-[11px] font-bold">{s.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Color Scheme Section */}
-            <div className="mx-4">
-              <div className="flex items-center justify-between mb-2 px-1">
-                <span className="text-sm font-bold text-white">Color Scheme</span>
-              </div>
-
-              <div className="grid grid-cols-6 gap-2">
-                {[
-                  {
-                    id: "gold-red",
-                    name: "Gold & Red",
-                    active: config.gradientColor1 === "#f59e0b" && config.gradientColor2 === "#ef4444",
-                    style: {
-                      background: "linear-gradient(135deg, #f59e0b 50%, #ef4444 50%)",
-                    },
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        colorType: "gradient",
-                        dotsColor: "#f59e0b",
-                        gradientColor1: "#f59e0b",
-                        gradientColor2: "#ef4444",
-                        cornerSquareColor: "#fbbf24",
-                        cornerDotColor: "#ef4444",
-                        customEyeColor: true,
-                      })),
-                  },
-                  {
-                    id: "purple",
-                    name: "Purple",
-                    active: config.gradientColor1 === "#9333ea" && config.gradientColor2 === "#c084fc",
-                    style: {
-                      background: "linear-gradient(135deg, #9333ea, #c084fc)",
-                    },
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        colorType: "gradient",
-                        dotsColor: "#a855f7",
-                        gradientColor1: "#9333ea",
-                        gradientColor2: "#c084fc",
-                        cornerSquareColor: "#a855f7",
-                        cornerDotColor: "#c084fc",
-                        customEyeColor: true,
-                      })),
-                  },
-                  {
-                    id: "blue",
-                    name: "Blue",
-                    active: config.gradientColor1 === "#0284c7" && config.gradientColor2 === "#38bdf8",
-                    style: {
-                      background: "linear-gradient(135deg, #0284c7, #38bdf8)",
-                    },
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        colorType: "gradient",
-                        dotsColor: "#0284c7",
-                        gradientColor1: "#0284c7",
-                        gradientColor2: "#38bdf8",
-                        cornerSquareColor: "#0284c7",
-                        cornerDotColor: "#38bdf8",
-                        customEyeColor: true,
-                      })),
-                  },
-                  {
-                    id: "green",
-                    name: "Green",
-                    active: config.gradientColor1 === "#059669" && config.gradientColor2 === "#34d399",
-                    style: {
-                      background: "linear-gradient(135deg, #059669, #34d399)",
-                    },
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        colorType: "gradient",
-                        dotsColor: "#059669",
-                        gradientColor1: "#059669",
-                        gradientColor2: "#34d399",
-                        cornerSquareColor: "#059669",
-                        cornerDotColor: "#34d399",
-                        customEyeColor: true,
-                      })),
-                  },
-                  {
-                    id: "black",
-                    name: "Black",
-                    active: config.colorType === "single" && config.dotsColor === "#0f172a",
-                    style: {
-                      background: "#0f172a",
-                    },
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        colorType: "single",
-                        dotsColor: "#0f172a",
-                        cornerSquareColor: "#0f172a",
-                        cornerDotColor: "#0f172a",
-                      })),
-                  },
-                  {
-                    id: "custom",
-                    name: "Sunset",
-                    active: config.gradientColor1 === "#f97316" && config.gradientColor2 === "#ec4899",
-                    style: {
-                      background: "linear-gradient(135deg, #f97316, #ec4899)",
-                    },
-                    apply: () =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        colorType: "gradient",
-                        dotsColor: "#f97316",
-                        gradientColor1: "#f97316",
-                        gradientColor2: "#ec4899",
-                        cornerSquareColor: "#f97316",
-                        cornerDotColor: "#ec4899",
-                        customEyeColor: true,
-                      })),
-                  },
-                ].map((c) => (
-                  <button
-                    key={c.id}
-                    type="button"
-                    onClick={c.apply}
-                    className="flex flex-col items-center gap-1.5 focus:outline-none"
-                  >
-                    <div
-                      className={`w-11 h-11 rounded-full p-0.5 transition-all flex items-center justify-center ${
-                        c.active
-                          ? "ring-2 ring-purple-500 ring-offset-2 ring-offset-[#090a16] shadow-lg shadow-purple-500/50 scale-105"
-                          : "border border-slate-700/60 hover:scale-105"
-                      }`}
-                    >
-                      <div className="w-full h-full rounded-full" style={c.style} />
-                    </div>
-                    <span className="text-[10px] font-semibold text-slate-300 text-center leading-none">
-                      {c.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Background Section */}
-            <div className="mx-4">
-              <div className="flex items-center justify-between mb-2 px-1">
-                <span className="text-sm font-bold text-white">Background</span>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2.5">
-                {[
-                  {
-                    id: "white",
-                    name: "White",
-                    active: config.bgColor === "#ffffff" && !config.isTransparentBg,
-                    icon: <div className="w-5 h-5 rounded-full bg-white shadow-sm border border-slate-300" />,
-                    apply: () => setConfig((prev) => ({ ...prev, bgColor: "#ffffff", isTransparentBg: false })),
-                  },
-                  {
-                    id: "black",
-                    name: "Black",
-                    active: config.bgColor === "#090a16" && !config.isTransparentBg,
-                    icon: <div className="w-5 h-5 rounded-full bg-[#090a16] border border-slate-700" />,
-                    apply: () => setConfig((prev) => ({ ...prev, bgColor: "#090a16", isTransparentBg: false })),
-                  },
-                  {
-                    id: "gradient",
-                    name: "Gradient",
-                    active: config.bgColor === "#1a1236" && !config.isTransparentBg,
-                    icon: <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-purple-900 to-indigo-900 border border-purple-500/50" />,
-                    apply: () => setConfig((prev) => ({ ...prev, bgColor: "#1a1236", isTransparentBg: false })),
-                  },
-                ].map((b) => (
-                  <button
-                    key={b.id}
-                    type="button"
-                    onClick={b.apply}
-                    className={`flex items-center justify-center gap-2 py-2.5 px-2 rounded-2xl transition-all ${
-                      b.active
-                        ? "bg-[#181438] border-2 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.35)] text-white"
-                        : "bg-[#0f1126] border border-slate-800/80 text-slate-300 hover:text-white"
-                    }`}
-                  >
-                    {b.icon}
-                    <span className="text-xs font-bold">{b.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+      <Section title="Eye colors">
+        <Toggle
+          checked={config.customEyeColor}
+          onChange={(v) => update("customEyeColor", v)}
+          label="Different color for corners"
+          hint="Off = corners use the dot color."
+        />
+        {config.customEyeColor && (
+          <div className="grid grid-cols-2 gap-3">
+            <ColorField label="Outer" value={config.cornerSquareColor} onChange={(v) => update("cornerSquareColor", v)} />
+            <ColorField label="Inner" value={config.cornerDotColor} onChange={(v) => update("cornerDotColor", v)} />
           </div>
         )}
+      </Section>
+    </div>
+  );
 
-        {/* TAB B: 35+ THEMES & PRESETS GALLERY (100% INLINE) */}
-        {mobileTab === "templates" && (
-          <div className="mx-4 space-y-3 animate-fadeIn">
-            <div className="flex items-center justify-between px-1">
-              <span className="text-sm font-bold text-white">1-Click Pro Themes</span>
-              <span className="text-[11px] text-purple-400 font-semibold">{QR_PRESETS.length} Available</span>
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
-              {[
-                { id: "all", label: "All" },
-                { id: "vibrant", label: "Vibrant" },
-                { id: "minimal", label: "Minimal" },
-                { id: "social", label: "Social" },
-                { id: "luxury", label: "Luxury" },
-                { id: "business", label: "Business" },
-              ].map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setMobileThemeCat(cat.id as any)}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                    mobileThemeCat === cat.id
-                      ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
-                      : "bg-[#12142e] text-slate-400 hover:text-white"
-                  }`}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Theme Cards Grid */}
-            <div className="grid grid-cols-2 gap-2.5">
-              {QR_PRESETS.filter(
-                (p) => mobileThemeCat === "all" || p.category === mobileThemeCat
-              ).map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => applyPreset(preset)}
-                  className="p-3 rounded-2xl bg-[#0f1126] border border-slate-800 hover:border-purple-500/80 text-left transition-all active:scale-95 group flex flex-col justify-between h-24"
-                >
-                  <div className="flex items-center justify-between">
-                    <div
-                      className="w-7 h-7 rounded-xl shadow-md border border-white/10"
-                      style={{
-                        background:
-                          preset.colorType === "gradient"
-                            ? `linear-gradient(135deg, ${preset.gradientColor1}, ${preset.gradientColor2})`
-                            : preset.dotsColor,
-                      }}
-                    />
-                    <span className="text-[9px] font-bold uppercase tracking-wider text-purple-400/80 bg-purple-950/60 px-1.5 py-0.5 rounded">
-                      {preset.category}
-                    </span>
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-white group-hover:text-purple-300 transition-colors truncate">
-                      {preset.name}
-                    </div>
-                    <div className="text-[10px] text-slate-400 truncate">Tap to Apply</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* TAB C: POSTERS & FRAMES (100% INLINE) */}
-        {mobileTab === "posters" && (
-          <div className="mx-4 space-y-3 animate-fadeIn">
-            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-[#0f1126] border border-slate-800">
-              <div>
-                <span className="text-xs font-bold text-white block">Printable Poster Mode</span>
-                <span className="text-[10px] text-slate-400">Adds frame, headline, and scan guide</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setConfig((prev) => ({ ...prev, frame: { ...prev.frame, enabled: !prev.frame.enabled } }))}
-                className={`w-11 h-6 flex items-center rounded-full p-0.5 transition-colors ${
-                  config.frame.enabled ? "bg-purple-600 justify-end" : "bg-[#181a38] border border-slate-700 justify-start"
-                }`}
-              >
-                <span className="w-5 h-5 rounded-full bg-white shadow-md transform transition-transform" />
-              </button>
-            </div>
-
-            {config.frame.enabled && (
-              <div className="space-y-3 p-3.5 rounded-2xl bg-[#0f1126] border border-purple-500/30">
-                <div>
-                  <label className="text-[11px] text-slate-400 font-medium block mb-1">Headline Text</label>
-                  <input
-                    type="text"
-                    value={config.frame.text}
-                    onChange={(e) => setConfig((prev) => ({ ...prev, frame: { ...prev.frame, text: e.target.value } }))}
-                    className="w-full px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs outline-none focus:border-purple-500 font-bold"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] text-slate-400 font-medium block mb-1">Subtitle Instruction</label>
-                  <input
-                    type="text"
-                    value={config.frame.subtext}
-                    onChange={(e) => setConfig((prev) => ({ ...prev, frame: { ...prev.frame, subtext: e.target.value } }))}
-                    className="w-full px-3 py-2 rounded-xl bg-[#080916] border border-slate-800 text-white text-xs outline-none focus:border-purple-500"
-                  />
-                </div>
-              </div>
-            )}
-
-            <span className="text-xs font-bold text-white block px-1">Choose Poster Template</span>
-            <div className="grid grid-cols-2 gap-2.5">
-              {POSTER_TEMPLATES.map((tpl) => (
-                <button
-                  key={tpl.id}
-                  type="button"
-                  onClick={() => applyPosterTemplate(tpl)}
-                  className={`p-3 rounded-2xl text-left border transition-all active:scale-95 ${
-                    config.frame.templateId === tpl.id && config.frame.enabled
-                      ? "bg-[#181438] border-purple-500 shadow-md shadow-purple-600/30 text-white"
-                      : "bg-[#0f1126] border-slate-800 text-slate-300 hover:border-slate-700"
-                  }`}
-                >
-                  <div className="text-xs font-bold truncate">{tpl.name}</div>
-                  <div className="text-[10px] text-slate-400 capitalize truncate mt-0.5">{tpl.category}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* 8. BOTTOM THUMB-ZONE CONTROL DOCK */}
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#08091a]/95 backdrop-blur-2xl border-t border-purple-900/40 px-3 py-2.5 flex items-center justify-between gap-1.5 shadow-[0_-12px_35px_rgba(0,0,0,0.8)]">
-          {/* Tab 1: Design */}
-          <button
-            type="button"
-            onClick={() => setMobileTab("design")}
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all ${
-              mobileTab === "design"
-                ? "bg-purple-600/25 text-purple-300 border border-purple-500/50 shadow-[0_0_12px_rgba(168,85,247,0.3)]"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <Sliders className="w-4 h-4" />
-            <span className="text-[10px] font-bold mt-0.5">Design</span>
-          </button>
-
-          {/* Tab 2: Themes */}
-          <button
-            type="button"
-            onClick={() => setMobileTab("templates")}
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all ${
-              mobileTab === "templates"
-                ? "bg-purple-600/25 text-purple-300 border border-purple-500/50 shadow-[0_0_12px_rgba(168,85,247,0.3)]"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            <span className="text-[10px] font-bold mt-0.5">Themes</span>
-          </button>
-
-          {/* Tab 3: Posters */}
-          <button
-            type="button"
-            onClick={() => setMobileTab("posters")}
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 px-1 rounded-xl transition-all ${
-              mobileTab === "posters"
-                ? "bg-purple-600/25 text-purple-300 border border-purple-500/50 shadow-[0_0_12px_rgba(168,85,247,0.3)]"
-                : "text-slate-400 hover:text-slate-200"
-            }`}
-          >
-            <LayoutTemplate className="w-4 h-4" />
-            <span className="text-[10px] font-bold mt-0.5">Posters</span>
-          </button>
-
-          {/* Tab 4: 1-Tap HD Download Button (Thumb-Zone) */}
-          <button
-            type="button"
-            onClick={() => downloadQR(mobileExportFormat)}
-            className="flex-[1.6] flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-fuchsia-600 text-white font-bold text-xs shadow-lg shadow-purple-600/40 active:scale-95 transition-all"
-          >
-            <Download className="w-4 h-4" />
-            <span>Save HD</span>
-          </button>
-        </div>
+  const posterPanel = (
+    <div className="space-y-6">
+      <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800">
+        <Toggle
+          checked={config.frame.enabled}
+          onChange={(v) => updateFrame({ enabled: v })}
+          label="Printable poster"
+          hint="Adds a heading, scan guide and frame around your QR (PNG/JPG)."
+        />
       </div>
 
-      {/* ======================================================== */}
-      {/* DESKTOP STUDIO VIEW (>= 1024px)                          */}
-      {/* ======================================================== */}
-      <div className="hidden lg:block">
-        {/* Studio Top Hero Subtitle */}
-      <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold mb-3 shadow-inner">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-          <span>Interactive QR Vibe Studio</span>
+      <Section title="Poster templates" hint="Tap one to apply its colors and text.">
+        <div className="grid grid-cols-2 gap-2">
+          {POSTER_TEMPLATES.map((tpl) => {
+            const active = config.frame.enabled && config.frame.templateId === tpl.id;
+            return (
+              <OptionTile
+                key={tpl.id}
+                active={active}
+                onClick={() => applyPosterTemplate(tpl)}
+                className="flex items-center gap-3 p-2.5 text-left"
+              >
+                <span
+                  className="w-10 h-14 rounded-lg shrink-0 flex flex-col items-center justify-center gap-1 border border-white/10"
+                  style={{ background: tpl.cardBgColor }}
+                >
+                  <span className="w-6 h-1 rounded-full" style={{ background: tpl.accentColor }} />
+                  <span className="w-6 h-6 rounded bg-white grid place-items-center">
+                    <span className="w-4 h-4 rounded-sm" style={{ background: tpl.dotsColor }} />
+                  </span>
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-xs font-bold text-white leading-snug line-clamp-2">{tpl.name}</span>
+                  <span className="block text-[11px] text-slate-400 mt-0.5">{tpl.category}</span>
+                </span>
+              </OptionTile>
+            );
+          })}
         </div>
-        <h1 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-tight">
-          Create Beautiful,{" "}
-          <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Scannable Brand QR Codes
-          </span>
-        </h1>
-        <p className="mt-2 sm:mt-3 text-slate-400 text-xs sm:text-base">
-          Embed your logo, style dots and gradients, and verify instant scannability before downloading in ultra-high resolution.
-        </p>
-      </div>
+      </Section>
 
-      {/* Main Grid: Left Controls (order-2 on mobile) / Right Sticky Preview (order-1 on mobile) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
-        {/* Left Column (7 cols): Studio Controls */}
-        <div className="order-2 lg:order-1 lg:col-span-7 space-y-6">
-          {/* Main Navigation Tabs */}
-          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl overflow-x-auto no-scrollbar scroll-smooth">
-            <button
-              type="button"
-              onClick={() => setActiveTab("content")}
-              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
-                activeTab === "content"
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>1. Content</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("logo")}
-              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative whitespace-nowrap ${
-                activeTab === "logo"
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-              }`}
-            >
-              <ImageIcon className="w-3.5 h-3.5" />
-              <span>2. Brand Logo</span>
-              {config.logoUrl && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 right-2 animate-pulse" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("style")}
-              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
-                activeTab === "style"
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-              }`}
-            >
-              <Palette className="w-3.5 h-3.5" />
-              <span>3. Styling</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("frame")}
-              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative whitespace-nowrap ${
-                activeTab === "frame"
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-              }`}
-            >
-              <LayoutTemplate className="w-3.5 h-3.5" />
-              <span>4. Posters</span>
-              {config.frame.enabled && (
-                <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 right-2" />
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab("presets")}
-              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
-                activeTab === "presets"
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
-                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-              }`}
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>5. Themes (35)</span>
-            </button>
-          </div>
-
-          {/* TAB 1: CONTENT TYPE & INPUTS */}
-          {activeTab === "content" && (
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl space-y-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">
-                  Choose QR Type
-                </label>
-                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                  {contentTypes.map((type) => {
-                    const Icon = type.icon;
-                    const isSelected = config.contentType === type.id;
-                    return (
-                      <button
-                        key={type.id}
-                        type="button"
-                        onClick={() => setConfig((prev) => ({ ...prev, contentType: type.id }))}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all ${
-                          isSelected
-                            ? "bg-indigo-600/20 border-indigo-500 text-white shadow-sm shadow-indigo-500/20 scale-[1.02]"
-                            : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                        }`}
-                      >
-                        <Icon className={`w-5 h-5 mb-1.5 ${isSelected ? "text-indigo-400" : ""}`} />
-                        <span className="text-[11px] font-semibold">{type.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Dynamic Inputs */}
-              <div className="pt-2 border-t border-slate-800/80">
-                {/* 1. URL Input */}
-                {config.contentType === "url" && (
-                  <div className="space-y-3">
-                    <label className="block text-xs font-semibold text-slate-200">
-                      Destination Website URL
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="url"
-                        value={config.url}
-                        onChange={(e) => setConfig((prev) => ({ ...prev, url: e.target.value }))}
-                        placeholder="https://example.com"
-                        className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
-                      />
-                    </div>
-                    {/* Quick prefixes */}
-                    <div className="flex items-center gap-2 pt-1">
-                      <span className="text-[11px] text-slate-400">Quick suggestions:</span>
-                      {["https://", "https://instagram.com/", "https://wa.me/"].map((prefix) => (
-                        <button
-                          key={prefix}
-                          type="button"
-                          onClick={() => setConfig((prev) => ({ ...prev, url: prefix }))}
-                          className="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors"
-                        >
-                          {prefix}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 2. WhatsApp Input */}
-                {/* 2. WhatsApp Input */}
-                {config.contentType === "whatsapp" && (
-                  <div className="space-y-4">
-                    {/* Link Style Selector */}
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                        Scan Action Link Format
-                      </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              whatsapp: { ...prev.whatsapp, linkStyle: "api" },
-                            }))
-                          }
-                          className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
-                            config.whatsapp.linkStyle === "api" || !config.whatsapp.linkStyle
-                              ? "bg-indigo-600/20 border-indigo-500 text-white"
-                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <div className="font-bold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <span>Direct Link (api.whatsapp.com)</span>
-                          </div>
-                          <p className="text-[10px] text-slate-400 mt-0.5">
-                            Triggers &quot;Open in WhatsApp&quot; on Camera Scan
-                          </p>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              whatsapp: { ...prev.whatsapp, linkStyle: "intent" },
-                            }))
-                          }
-                          className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
-                            config.whatsapp.linkStyle === "intent"
-                              ? "bg-indigo-600/20 border-indigo-500 text-white"
-                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <div className="font-bold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                            <span>App Scheme (whatsapp://)</span>
-                          </div>
-                          <p className="text-[10px] text-slate-400 mt-0.5">
-                            Direct app trigger on Android scanners
-                          </p>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              whatsapp: { ...prev.whatsapp, linkStyle: "wame" },
-                            }))
-                          }
-                          className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
-                            config.whatsapp.linkStyle === "wame"
-                              ? "bg-indigo-600/20 border-indigo-500 text-white"
-                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <div className="font-bold">Short Link (wa.me)</div>
-                          <p className="text-[10px] text-slate-400 mt-0.5">
-                            Compact short-link format
-                          </p>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Quick WhatsApp Message Templates */}
-                    <div>
-                      <span className="block text-[11px] text-slate-400 mb-1.5">
-                        Quick Message Templates (Auto-fill chat):
-                      </span>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {[
-                          {
-                            label: "💼 Business Inquiry",
-                            msg: "Hello! I am interested in your services and would like more details.",
-                          },
-                          {
-                            label: "🛍️ Product & Order",
-                            msg: "Hi! I would like to inquire about product pricing and availability.",
-                          },
-                          {
-                            label: "💰 Price Quotation",
-                            msg: "Hello! Could you please share a price quotation for your services?",
-                          },
-                          {
-                            label: "📅 Book Consultation",
-                            msg: "Hi, I would like to schedule an appointment/meeting with your team.",
-                          },
-                          {
-                            label: "🛠️ Customer Support",
-                            msg: "Hello Support, I need some assistance with my order/account.",
-                          },
-                        ].map((tmpl) => (
-                          <button
-                            key={tmpl.label}
-                            type="button"
-                            onClick={() =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                whatsapp: { ...prev.whatsapp, message: tmpl.msg },
-                              }))
-                            }
-                            className="px-2.5 py-1 rounded-lg text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-                          >
-                            {tmpl.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                          Country Code
-                        </label>
-                        <input
-                          type="text"
-                          value={config.whatsapp.countryCode}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              whatsapp: { ...prev.whatsapp, countryCode: e.target.value },
-                            }))
-                          }
-                          placeholder="+92"
-                          className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
-                        />
-                      </div>
-                      <div className="sm:col-span-2">
-                        <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                          WhatsApp Phone Number
-                        </label>
-                        <input
-                          type="tel"
-                          value={config.whatsapp.phone}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              whatsapp: { ...prev.whatsapp, phone: e.target.value },
-                            }))
-                          }
-                          placeholder="3001234567"
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Quick country codes */}
-                    <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                      <span className="text-[11px] text-slate-400">Popular:</span>
-                      {[
-                        { code: "+92", label: "🇵🇰 +92" },
-                        { code: "+971", label: "🇦🇪 +971" },
-                        { code: "+966", label: "🇸🇦 +966" },
-                        { code: "+44", label: "🇬🇧 +44" },
-                        { code: "+1", label: "🇺🇸 +1" },
-                        { code: "+91", label: "🇮🇳 +91" },
-                      ].map((item) => (
-                        <button
-                          key={item.code}
-                          type="button"
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              whatsapp: { ...prev.whatsapp, countryCode: item.code },
-                            }))
-                          }
-                          className="px-2 py-0.5 rounded text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                        Pre-filled WhatsApp Message
-                      </label>
-                      <textarea
-                        rows={2}
-                        value={config.whatsapp.message}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            whatsapp: { ...prev.whatsapp, message: e.target.value },
-                          }))
-                        }
-                        placeholder="Hello, I want to inquire about your services..."
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
-                      />
-                    </div>
-
-                    {/* Live WhatsApp Auto-Fill Draft & Test */}
-                    <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] uppercase font-bold text-slate-400">
-                          Auto-Filled WhatsApp Chat Preview:
-                        </span>
-                        <a
-                          href={qrData.startsWith("http") ? qrData : `https://api.whatsapp.com/send?phone=${config.whatsapp.phone}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 transition-colors"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          <span>Test Chat</span>
-                        </a>
-                      </div>
-                      <div className="text-[11px] font-mono text-slate-300 space-y-0.5">
-                        <p>
-                          <span className="text-slate-500">Phone:</span>{" "}
-                          <span className="text-emerald-400">{config.whatsapp.countryCode} {config.whatsapp.phone || "(empty)"}</span>
-                        </p>
-                        <p className="truncate">
-                          <span className="text-slate-500">Auto Message:</span>{" "}
-                          <span className="text-white">{config.whatsapp.message || "(No pre-filled message)"}</span>
-                        </p>
-                        <p className="text-[10px] text-slate-500 truncate pt-1 border-t border-slate-800/60">
-                          Target Payload: {qrData}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. Wi-Fi Input */}
-                {config.contentType === "wifi" && (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                          Network Name (SSID)
-                        </label>
-                        <input
-                          type="text"
-                          value={config.wifi.ssid}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              wifi: { ...prev.wifi, ssid: e.target.value },
-                            }))
-                          }
-                          placeholder="Office_Wi-Fi"
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                          Security Type
-                        </label>
-                        <select
-                          value={config.wifi.encryption}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              wifi: { ...prev.wifi, encryption: e.target.value as any },
-                            }))
-                          }
-                          className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
-                        >
-                          <option value="WPA">WPA/WPA2/WPA3 (Standard)</option>
-                          <option value="WEP">WEP (Legacy)</option>
-                          <option value="nopass">None (Open Network)</option>
-                        </select>
-                      </div>
-                    </div>
-                    {config.wifi.encryption !== "nopass" && (
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                          Wi-Fi Password
-                        </label>
-                        <div className="relative">
-                          <input
-                            type={wifiShowPass ? "text" : "password"}
-                            value={config.wifi.password}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                wifi: { ...prev.wifi, password: e.target.value },
-                              }))
-                            }
-                            placeholder="Network password"
-                            className="w-full px-4 py-2.5 pr-10 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500 focus:outline-none"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setWifiShowPass(!wifiShowPass)}
-                            className="absolute right-3 top-3 text-slate-400 hover:text-white"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    <label className="flex items-center gap-2 text-xs text-slate-400 cursor-pointer pt-1">
-                      <input
-                        type="checkbox"
-                        checked={config.wifi.hidden}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            wifi: { ...prev.wifi, hidden: e.target.checked },
-                          }))
-                        }
-                        className="rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-0"
-                      />
-                      <span>Hidden SSID Network</span>
-                    </label>
-                  </div>
-                )}
-
-                {/* 4. vCard Input */}
-                {config.contentType === "vcard" && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1">First Name</label>
-                        <input
-                          type="text"
-                          value={config.vcard.firstName}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              vcard: { ...prev.vcard, firstName: e.target.value },
-                            }))
-                          }
-                          className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:border-indigo-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1">Last Name</label>
-                        <input
-                          type="text"
-                          value={config.vcard.lastName}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              vcard: { ...prev.vcard, lastName: e.target.value },
-                            }))
-                          }
-                          className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1">Phone</label>
-                        <input
-                          type="tel"
-                          value={config.vcard.phone}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              vcard: { ...prev.vcard, phone: e.target.value },
-                            }))
-                          }
-                          className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:border-indigo-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1">Email</label>
-                        <input
-                          type="email"
-                          value={config.vcard.email}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              vcard: { ...prev.vcard, email: e.target.value },
-                            }))
-                          }
-                          className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1">Company</label>
-                        <input
-                          type="text"
-                          value={config.vcard.company}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              vcard: { ...prev.vcard, company: e.target.value },
-                            }))
-                          }
-                          className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:border-indigo-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-200 mb-1">Job Title</label>
-                        <input
-                          type="text"
-                          value={config.vcard.title}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              vcard: { ...prev.vcard, title: e.target.value },
-                            }))
-                          }
-                          className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-white text-xs focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 5. Email Input */}
-                {config.contentType === "email" && (
-                  <div className="space-y-4">
-                    {/* Format Selector */}
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                        Scan Auto-Fill Format
-                      </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              email: { ...prev.email, format: "mailto" },
-                            }))
-                          }
-                          className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
-                            config.email.format !== "matmsg"
-                              ? "bg-indigo-600/20 border-indigo-500 text-white"
-                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <div className="font-bold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-indigo-400" />
-                            <span>Standard URI (mailto:)</span>
-                          </div>
-                          <p className="text-[10px] text-slate-400 mt-0.5">
-                            Standard RFC format for iOS Camera, Mac &amp; Webmail
-                          </p>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              email: { ...prev.email, format: "matmsg" },
-                            }))
-                          }
-                          className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
-                            config.email.format === "matmsg"
-                              ? "bg-indigo-600/20 border-indigo-500 text-white"
-                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <div className="font-bold flex items-center gap-1.5">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <span>Phone Scanner (MATMSG)</span>
-                          </div>
-                          <p className="text-[10px] text-slate-400 mt-0.5">
-                            Forces Android camera/scanners to auto-fill Subject &amp; Body
-                          </p>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Quick Subject & Body Templates */}
-                    <div>
-                      <span className="block text-[11px] text-slate-400 mb-1.5">
-                        Quick Templates (Auto-fill all fields):
-                      </span>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {[
-                          {
-                            label: "💼 Business Inquiry",
-                            sub: "Business & Project Inquiry",
-                            body: "Hi team,\n\nI would like to inquire about your services.",
-                          },
-                          {
-                            label: "🛠️ Customer Support",
-                            sub: "Support Request - [Order / Account #]",
-                            body: "Hello Support,\n\nI need assistance with the following issue:\n",
-                          },
-                          {
-                            label: "💰 Request a Quote",
-                            sub: "Price Quote Request",
-                            body: "Hello,\n\nPlease provide a quote for the following requirements:\n",
-                          },
-                          {
-                            label: "⭐ Feedback",
-                            sub: "Customer Feedback & Review",
-                            body: "Hi there,\n\nI would love to share some feedback regarding:\n",
-                          },
-                        ].map((tmpl) => (
-                          <button
-                            key={tmpl.label}
-                            type="button"
-                            onClick={() =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                email: {
-                                  ...prev.email,
-                                  subject: tmpl.sub,
-                                  body: tmpl.body,
-                                },
-                              }))
-                            }
-                            className="px-2.5 py-1 rounded-lg text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
-                          >
-                            {tmpl.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-200 mb-1">
-                        Recipient Email (TO:)
-                      </label>
-                      <input
-                        type="email"
-                        value={config.email.email}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            email: { ...prev.email, email: e.target.value },
-                          }))
-                        }
-                        placeholder="hello@example.com"
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-200 mb-1">
-                        Subject Line
-                      </label>
-                      <input
-                        type="text"
-                        value={config.email.subject}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            email: { ...prev.email, subject: e.target.value },
-                          }))
-                        }
-                        placeholder="Project Inquiry"
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-200 mb-1">
-                        Email Body (Message Text)
-                      </label>
-                      <textarea
-                        rows={3}
-                        value={config.email.body}
-                        onChange={(e) =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            email: { ...prev.email, body: e.target.value },
-                          }))
-                        }
-                        placeholder="Type your pre-filled email message here..."
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500"
-                      />
-                    </div>
-
-                    {/* Live Auto-fill Preview and Test Button */}
-                    <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] uppercase font-bold text-slate-400">
-                          Auto-Filled Draft Preview:
-                        </span>
-                        <a
-                          href={`mailto:${config.email.email}?subject=${encodeURIComponent(
-                            config.email.subject
-                          )}&body=${encodeURIComponent(config.email.body)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-semibold flex items-center gap-1 transition-colors"
-                        >
-                          <ExternalLink className="w-3 h-3" />
-                          <span>Test in Mail App</span>
-                        </a>
-                      </div>
-                      <div className="text-[11px] font-mono text-slate-300 space-y-0.5">
-                        <p>
-                          <span className="text-slate-500">TO:</span>{" "}
-                          <span className="text-indigo-400">{config.email.email || "(empty)"}</span>
-                        </p>
-                        <p>
-                          <span className="text-slate-500">Subject:</span>{" "}
-                          <span className="text-white">{config.email.subject || "(empty)"}</span>
-                        </p>
-                        <p className="truncate">
-                          <span className="text-slate-500">Body:</span>{" "}
-                          <span className="text-slate-400">{config.email.body || "(empty)"}</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 6. Plain Text Input */}
-                {config.contentType === "text" && (
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                      Plain Text Note
-                    </label>
-                    <textarea
-                      rows={4}
-                      value={config.text}
-                      onChange={(e) => setConfig((prev) => ({ ...prev, text: e.target.value }))}
-                      placeholder="Write your message here..."
-                      className="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-indigo-500"
-                    />
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: BRAND LOGO */}
-          {activeTab === "logo" && (
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-white">Brand Logo Centerpiece</h3>
-                  <p className="text-xs text-slate-400">
-                    Upload your high-res logo or pick a popular brand icon.
-                  </p>
-                </div>
-                {config.logoUrl && (
-                  <button
-                    type="button"
-                    onClick={removeLogo}
-                    className="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Remove Logo</span>
-                  </button>
-                )}
-              </div>
-
-              {/* Upload Drop Area & Live Centerpiece Preview */}
+      {config.frame.enabled && (
+        <>
+          <Section title="Poster text">
+            <Field label="Heading">
               <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/png, image/jpeg, image/svg+xml, image/webp"
-                onChange={handleLogoUpload}
-                className="hidden"
+                type="text"
+                value={config.frame.text}
+                onChange={(e) => updateFrame({ text: e.target.value })}
+                className={`${inputCls} font-bold`}
               />
-
-              {config.logoUrl ? (
-                /* Active Logo Card */
-                <div className="p-4 rounded-2xl bg-slate-950/90 border border-indigo-500/40 ring-1 ring-indigo-500/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3.5">
-                    <div className="w-16 h-16 rounded-xl bg-white p-2 shadow-inner border border-slate-700 flex items-center justify-center shrink-0 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={config.logoUrl}
-                        alt="Brand Logo"
-                        className="max-w-full max-h-full object-contain"
-                      />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-white">Active Logo Embedded</span>
-                        <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                          Level-H Active
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-400 mt-0.5">
-                        Positioned in QR dead-center with 30% error correction tolerance.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 w-full sm:w-auto">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
-                    >
-                      Change Logo
-                    </button>
-                    <button
-                      type="button"
-                      onClick={removeLogo}
-                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* Drag-and-Drop Zone */
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    setIsDraggingLogo(true);
-                  }}
-                  onDragLeave={() => setIsDraggingLogo(false)}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    setIsDraggingLogo(false);
-                    const file = e.dataTransfer.files?.[0];
-                    if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (ev) => {
-                        setConfig((prev) => ({
-                          ...prev,
-                          logoUrl: ev.target?.result as string,
-                          errorCorrectionLevel: "H",
-                        }));
-                      };
-                      reader.readAsDataURL(file);
-                    }
-                  }}
-                  className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${
-                    isDraggingLogo
-                      ? "border-indigo-400 bg-indigo-950/40 scale-[1.01]"
-                      : "border-slate-700 hover:border-indigo-500 bg-slate-950/40 hover:bg-slate-950/80"
-                  } group`}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
-                    <Upload className="w-6 h-6" />
-                  </div>
-                  <p className="text-sm font-semibold text-white">
-                    {isDraggingLogo ? "Drop your logo here now!" : "Click to browse or Drag & Drop brand logo"}
-                  </p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    Supports PNG, SVG, JPG or WebP (Square with transparent background works best)
-                  </p>
-                  <span className="inline-block mt-2.5 text-[10px] font-mono text-indigo-400 bg-indigo-500/10 border border-indigo-500/20 px-2 py-0.5 rounded-md">
-                    🔒 Client-Side Only: Never uploaded to servers
-                  </span>
-                </div>
-              )}
-
-              {/* Instant Sample Logos */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-2">
-                  Or Test Instantly With Popular Brand Icons
-                </label>
-                <div className="flex flex-wrap items-center gap-2">
-                  {SAMPLE_LOGOS.map((sample) => (
-                    <button
-                      key={sample.name}
-                      type="button"
-                      onClick={() =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          logoUrl: sample.url,
-                          errorCorrectionLevel: "H",
-                        }))
-                      }
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition-colors"
-                    >
-                      <span
-                        className="w-2.5 h-2.5 rounded-full inline-block"
-                        style={{ backgroundColor: sample.color }}
-                      />
-                      <span>{sample.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Logo Sizing & Padding Sliders (Shown when logo exists) */}
-              {config.logoUrl && (
-                <div className="space-y-4 pt-4 border-t border-slate-800">
-                  <div>
-                    <div className="flex justify-between items-center text-xs font-medium text-slate-300 mb-1.5">
-                      <span className="flex items-center gap-1.5">
-                        <span>Logo Scale</span>
-                        <span
-                          className={`text-[10px] font-bold px-1.5 py-0.2 rounded ${
-                            config.logoSize <= 0.28
-                              ? "bg-emerald-500/20 text-emerald-400"
-                              : config.logoSize <= 0.32
-                              ? "bg-amber-500/20 text-amber-400"
-                              : "bg-rose-500/20 text-rose-400"
-                          }`}
-                        >
-                          {config.logoSize <= 0.28
-                            ? "Safe Scan Zone"
-                            : config.logoSize <= 0.32
-                            ? "Moderate Caution"
-                            : "Risk: May Block Modules"}
-                        </span>
-                      </span>
-                      <span className="font-mono font-bold text-white">
-                        {Math.round(config.logoSize * 100)}%
-                      </span>
-                    </div>
-
-                    <input
-                      type="range"
-                      min={0.16}
-                      max={0.38}
-                      step={0.02}
-                      value={config.logoSize}
-                      onChange={(e) =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          logoSize: parseFloat(e.target.value),
-                        }))
-                      }
-                      className="w-full accent-indigo-500 cursor-pointer"
-                    />
-
-                    {/* Visual Scannability Zone Indicator */}
-                    <div className="flex justify-between text-[9px] font-mono text-slate-400 mt-1">
-                      <span className="text-emerald-400">16% - 28% (Best Scannability)</span>
-                      <span className="text-amber-400">30% (Max Recommended)</span>
-                      <span className="text-rose-400">38% (High Risk)</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-medium text-slate-300 mb-1.5">
-                      <span>Logo Safe Padding / Margin</span>
-                      <span>{config.logoMargin}px</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={0}
-                      max={14}
-                      step={1}
-                      value={config.logoMargin}
-                      onChange={(e) =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          logoMargin: parseInt(e.target.value, 10),
-                        }))
-                      }
-                      className="w-full accent-indigo-500 cursor-pointer"
-                    />
-                  </div>
-
-                  <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer pt-1">
-                    <input
-                      type="checkbox"
-                      checked={config.hideBehindLogo}
-                      onChange={(e) =>
-                        setConfig((prev) => ({ ...prev, hideBehindLogo: e.target.checked }))
-                      }
-                      className="rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-0"
-                    />
-                    <span>Clear background dots behind logo for maximum emblem clarity</span>
-                  </label>
-                </div>
-              )}
-
-              {/* Error correction reassurance */}
-              <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300 flex items-start gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-                <div>
-                  <span className="font-semibold text-white">High Scannability Protection</span>
-                  <p className="text-slate-300 mt-0.5">
-                    When a logo is present, QR Vibe automatically activates Level-H error correction
-                    (30% redundancy), ensuring your code scans flawlessly even with a centered emblem.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: STYLING & COLORS */}
-          {activeTab === "style" && (
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl space-y-6">
-              {/* SECTION 1: 1-CLICK DESIGNER PALETTES */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                    <span>Instant Designer Color Palettes</span>
-                  </label>
-                  <span className="text-[11px] text-indigo-400 font-medium">1-Click Auto-Style</span>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    {
-                      name: "Electric Violet",
-                      c1: "#4f46e5",
-                      c2: "#9333ea",
-                      type: "gradient" as const,
-                      bg: "#ffffff",
-                    },
-                    {
-                      name: "Cyber Neon",
-                      c1: "#06b6d4",
-                      c2: "#a855f7",
-                      type: "gradient" as const,
-                      bg: "#090d16",
-                    },
-                    {
-                      name: "Emerald Luxury",
-                      c1: "#059669",
-                      c2: "#10b981",
-                      type: "gradient" as const,
-                      bg: "#ffffff",
-                    },
-                    {
-                      name: "Sunset Flame",
-                      c1: "#f43f5e",
-                      c2: "#f59e0b",
-                      type: "gradient" as const,
-                      bg: "#ffffff",
-                    },
-                    {
-                      name: "Ocean Breeze",
-                      c1: "#2563eb",
-                      c2: "#06b6d4",
-                      type: "gradient" as const,
-                      bg: "#ffffff",
-                    },
-                    {
-                      name: "Royal Amber",
-                      c1: "#b45309",
-                      c2: "#f59e0b",
-                      type: "gradient" as const,
-                      bg: "#ffffff",
-                    },
-                    {
-                      name: "Pitch Black",
-                      c1: "#0f172a",
-                      c2: "#0f172a",
-                      type: "single" as const,
-                      bg: "#ffffff",
-                    },
-                    {
-                      name: "Crimson Rose",
-                      c1: "#e11d48",
-                      c2: "#be185d",
-                      type: "gradient" as const,
-                      bg: "#ffffff",
-                    },
-                  ].map((pal) => {
-                    const isSelected =
-                      config.colorType === pal.type &&
-                      (pal.type === "single"
-                        ? config.dotsColor === pal.c1
-                        : config.gradientColor1 === pal.c1 && config.gradientColor2 === pal.c2);
-
-                    return (
-                      <button
-                        key={pal.name}
-                        type="button"
-                        onClick={() =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            colorType: pal.type,
-                            dotsColor: pal.c1,
-                            gradientColor1: pal.c1,
-                            gradientColor2: pal.c2,
-                            bgColor: pal.bg,
-                            isTransparentBg: false,
-                            customEyeColor: true,
-                            cornerSquareColor: pal.c1,
-                            cornerDotColor: pal.c2,
-                          }))
-                        }
-                        className={`p-2.5 rounded-xl border text-left flex items-center gap-2.5 transition-all ${
-                          isSelected
-                            ? "bg-indigo-600/25 border-indigo-500 shadow-md shadow-indigo-500/20 scale-[1.02]"
-                            : "bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900"
-                        }`}
-                      >
-                        <div
-                          className="w-7 h-7 rounded-lg shrink-0 border border-white/20 shadow-sm"
-                          style={{
-                            background:
-                              pal.type === "gradient"
-                                ? `linear-gradient(135deg, ${pal.c1}, ${pal.c2})`
-                                : pal.c1,
-                          }}
-                        />
-                        <div className="overflow-hidden">
-                          <p className="text-xs font-bold text-white truncate">{pal.name}</p>
-                          <p className="text-[10px] text-slate-400 capitalize">
-                            {pal.type === "gradient" ? "Gradient" : "Solid"}
-                          </p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* SECTION 2: DOT PATTERN STYLE (With Visual SVG previews) */}
-              <div className="pt-4 border-t border-slate-800">
-                <label className="block text-xs font-bold text-white uppercase tracking-wider mb-2.5">
-                  1. Body Dot Pattern
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                  {[
-                    {
-                      id: "rounded",
-                      label: "Rounded Pill",
-                      sub: "Smooth modern pills",
-                      svg: (
-                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
-                          <rect x="4" y="4" width="6" height="6" rx="2" />
-                          <rect x="14" y="4" width="6" height="6" rx="2" />
-                          <rect x="4" y="14" width="6" height="6" rx="2" />
-                          <rect x="14" y="14" width="6" height="6" rx="2" />
-                        </svg>
-                      ),
-                    },
-                    {
-                      id: "dots",
-                      label: "Circular Dots",
-                      sub: "Minimalist circles",
-                      svg: (
-                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="7" cy="7" r="3.2" />
-                          <circle cx="17" cy="7" r="3.2" />
-                          <circle cx="7" cy="17" r="3.2" />
-                          <circle cx="17" cy="17" r="3.2" />
-                        </svg>
-                      ),
-                    },
-                    {
-                      id: "classy",
-                      label: "Classy Diamond",
-                      sub: "Faceted diamond corners",
-                      svg: (
-                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
-                          <polygon points="7,3 11,7 7,11 3,7" />
-                          <polygon points="17,3 21,7 17,11 13,7" />
-                          <polygon points="7,13 11,17 7,21 3,17" />
-                          <polygon points="17,13 21,17 17,21 13,17" />
-                        </svg>
-                      ),
-                    },
-                    {
-                      id: "classy-rounded",
-                      label: "Classy Wave",
-                      sub: "Organic leaf curve",
-                      svg: (
-                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M4 4h4a3 3 0 0 1 3 3v4H7a3 3 0 0 1-3-3V4z" />
-                          <path d="M14 4h4a3 3 0 0 1 3 3v4h-4a3 3 0 0 1-3-3V4z" />
-                          <path d="M4 14h4a3 3 0 0 1 3 3v4H7a3 3 0 0 1-3-3v-4z" />
-                          <path d="M14 14h4a3 3 0 0 1 3 3v4h-4a3 3 0 0 1-3-3v-4z" />
-                        </svg>
-                      ),
-                    },
-                    {
-                      id: "extra-rounded",
-                      label: "Extra Smooth",
-                      sub: "Ultra soft squircles",
-                      svg: (
-                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
-                          <rect x="4" y="4" width="6" height="6" rx="3" />
-                          <rect x="14" y="4" width="6" height="6" rx="3" />
-                          <rect x="4" y="14" width="6" height="6" rx="3" />
-                          <rect x="14" y="14" width="6" height="6" rx="3" />
-                        </svg>
-                      ),
-                    },
-                    {
-                      id: "square",
-                      label: "Classic Square",
-                      sub: "Standard industrial",
-                      svg: (
-                        <svg className="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
-                          <rect x="4" y="4" width="6" height="6" />
-                          <rect x="14" y="4" width="6" height="6" />
-                          <rect x="4" y="14" width="6" height="6" />
-                          <rect x="14" y="14" width="6" height="6" />
-                        </svg>
-                      ),
-                    },
-                  ].map((dot) => {
-                    const isSelected = config.dotType === dot.id;
-                    return (
-                      <button
-                        key={dot.id}
-                        type="button"
-                        onClick={() =>
-                          setConfig((prev) => ({ ...prev, dotType: dot.id as DotType }))
-                        }
-                        className={`p-3 rounded-xl border text-left flex items-start gap-3 transition-all ${
-                          isSelected
-                            ? "bg-indigo-600/20 border-indigo-500 shadow-md shadow-indigo-500/20"
-                            : "bg-slate-950/60 border-slate-800 hover:border-slate-700 hover:bg-slate-900"
-                        }`}
-                      >
-                        <div
-                          className={`p-1.5 rounded-lg border ${
-                            isSelected
-                              ? "bg-indigo-600/30 border-indigo-500/50"
-                              : "bg-slate-900 border-slate-800"
-                          }`}
-                        >
-                          {dot.svg}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-white">{dot.label}</p>
-                          <p className="text-[10px] text-slate-400 mt-0.5">{dot.sub}</p>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* SECTION 3: CORNER EYES STYLING */}
-              <div className="pt-4 border-t border-slate-800 space-y-4">
-                <label className="block text-xs font-bold text-white uppercase tracking-wider">
-                  2. Corner Eyes (Finder Patterns)
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Outer Eye Frame */}
-                  <div>
-                    <span className="block text-[11px] font-semibold text-slate-300 mb-2">
-                      Outer Frame Shape
-                    </span>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        {
-                          id: "extra-rounded",
-                          label: "Curved",
-                          svg: (
-                            <svg className="w-5 h-5 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="3" width="18" height="18" rx="6" />
-                            </svg>
-                          ),
-                        },
-                        {
-                          id: "dot",
-                          label: "Circle",
-                          svg: (
-                            <svg className="w-5 h-5 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <circle cx="12" cy="12" r="9" />
-                            </svg>
-                          ),
-                        },
-                        {
-                          id: "square",
-                          label: "Square",
-                          svg: (
-                            <svg className="w-5 h-5 mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="3" width="18" height="18" />
-                            </svg>
-                          ),
-                        },
-                      ].map((c) => (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              cornerSquareType: c.id as CornerSquareType,
-                            }))
-                          }
-                          className={`p-2.5 rounded-xl border text-center transition-all ${
-                            config.cornerSquareType === c.id
-                              ? "bg-indigo-600/25 border-indigo-500 text-white font-bold"
-                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <div className="mb-1 text-indigo-400">{c.svg}</div>
-                          <span className="text-xs">{c.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Inner Eye Center */}
-                  <div>
-                    <span className="block text-[11px] font-semibold text-slate-300 mb-2">
-                      Inner Center Dot
-                    </span>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        {
-                          id: "dot",
-                          label: "Round Dot",
-                          svg: (
-                            <svg className="w-5 h-5 mx-auto text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
-                              <circle cx="12" cy="12" r="6" />
-                            </svg>
-                          ),
-                        },
-                        {
-                          id: "square",
-                          label: "Sharp Square",
-                          svg: (
-                            <svg className="w-5 h-5 mx-auto text-indigo-400" viewBox="0 0 24 24" fill="currentColor">
-                              <rect x="6" y="6" width="12" height="12" />
-                            </svg>
-                          ),
-                        },
-                      ].map((c) => (
-                        <button
-                          key={c.id}
-                          type="button"
-                          onClick={() =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              cornerDotType: c.id as CornerDotType,
-                            }))
-                          }
-                          className={`p-2.5 rounded-xl border text-center transition-all ${
-                            config.cornerDotType === c.id
-                              ? "bg-indigo-600/25 border-indigo-500 text-white font-bold"
-                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
-                          }`}
-                        >
-                          <div className="mb-1">{c.svg}</div>
-                          <span className="text-xs">{c.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* SECTION 4: COLOR ENGINE (Single vs Gradient + Angle) */}
-              <div className="pt-4 border-t border-slate-800 space-y-4">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-white uppercase tracking-wider">
-                    3. Custom Color Engine
-                  </label>
-                  <div className="flex items-center gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs">
-                    <button
-                      type="button"
-                      onClick={() => setConfig((prev) => ({ ...prev, colorType: "gradient" }))}
-                      className={`px-3 py-1 rounded-lg transition-all ${
-                        config.colorType === "gradient"
-                          ? "bg-indigo-600 text-white font-bold shadow-sm"
-                          : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      Gradient
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfig((prev) => ({ ...prev, colorType: "single" }))}
-                      className={`px-3 py-1 rounded-lg transition-all ${
-                        config.colorType === "single"
-                          ? "bg-indigo-600 text-white font-bold shadow-sm"
-                          : "text-slate-400 hover:text-white"
-                      }`}
-                    >
-                      Solid Color
-                    </button>
-                  </div>
-                </div>
-
-                {config.colorType === "single" ? (
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-                    <div className="relative w-10 h-10 rounded-xl overflow-hidden border border-slate-700 shrink-0">
-                      <input
-                        type="color"
-                        value={config.dotsColor}
-                        onChange={(e) =>
-                          setConfig((prev) => ({ ...prev, dotsColor: e.target.value }))
-                        }
-                        className="absolute -top-2 -left-2 w-14 h-14 cursor-pointer"
-                      />
-                    </div>
-                    <input
-                      type="text"
-                      value={config.dotsColor}
-                      onChange={(e) =>
-                        setConfig((prev) => ({ ...prev, dotsColor: e.target.value }))
-                      }
-                      className="px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs font-mono w-28 uppercase"
-                    />
-                    <span className="text-xs text-slate-400">All dots &amp; elements color</span>
-                  </div>
-                ) : (
-                  <div className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <span className="block text-[11px] font-semibold text-slate-300 mb-1">
-                          Gradient Color 1 (Start)
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={config.gradientColor1}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                gradientColor1: e.target.value,
-                              }))
-                            }
-                            className="w-9 h-9 rounded-lg cursor-pointer bg-transparent border-0"
-                          />
-                          <input
-                            type="text"
-                            value={config.gradientColor1}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                gradientColor1: e.target.value,
-                              }))
-                            }
-                            className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono w-full uppercase"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="block text-[11px] font-semibold text-slate-300 mb-1">
-                          Gradient Color 2 (End)
-                        </span>
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="color"
-                            value={config.gradientColor2}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                gradientColor2: e.target.value,
-                              }))
-                            }
-                            className="w-9 h-9 rounded-lg cursor-pointer bg-transparent border-0"
-                          />
-                          <input
-                            type="text"
-                            value={config.gradientColor2}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                gradientColor2: e.target.value,
-                              }))
-                            }
-                            className="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs font-mono w-full uppercase"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Quick Angle Buttons */}
-                    <div>
-                      <div className="flex justify-between text-xs text-slate-300 mb-1.5">
-                        <span>Gradient Direction</span>
-                        <span className="font-mono text-indigo-400 font-bold">
-                          {config.gradientRotation}°
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-4 gap-2">
-                        {[
-                          { deg: 45, label: "↗ 45° (Diagonal)" },
-                          { deg: 90, label: "➔ 90° (Vertical)" },
-                          { deg: 135, label: "↘ 135° (Reverse)" },
-                          { deg: 180, label: "↓ 180° (Horizontal)" },
-                        ].map((ang) => (
-                          <button
-                            key={ang.deg}
-                            type="button"
-                            onClick={() =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                gradientRotation: ang.deg,
-                              }))
-                            }
-                            className={`py-1.5 px-2 rounded-lg text-[11px] font-semibold border transition-all ${
-                              config.gradientRotation === ang.deg
-                                ? "bg-indigo-600 text-white border-indigo-500"
-                                : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
-                            }`}
-                          >
-                            {ang.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* SECTION 5: BACKGROUND & CONTRAST */}
-              <div className="pt-4 border-t border-slate-800 space-y-3">
-                <label className="block text-xs font-bold text-white uppercase tracking-wider">
-                  4. Background Style
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {[
-                    {
-                      label: "Pure White",
-                      bg: "#ffffff",
-                      trans: false,
-                      desc: "Maximum Contrast",
-                    },
-                    {
-                      label: "Dark Obsidian",
-                      bg: "#090d16",
-                      trans: false,
-                      desc: "Dark Mode Style",
-                    },
-                    {
-                      label: "Transparent",
-                      bg: "#ffffff",
-                      trans: true,
-                      desc: "Lossless PNG/SVG",
-                    },
-                    {
-                      label: "Custom Color",
-                      bg: config.bgColor,
-                      trans: false,
-                      desc: "Custom Hex",
-                    },
-                  ].map((b, i) => {
-                    const isSelected =
-                      b.trans === config.isTransparentBg &&
-                      (b.trans || (b.label === "Custom Color" ? true : config.bgColor === b.bg));
-
-                    return (
-                      <button
-                        key={i}
-                        type="button"
-                        onClick={() =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            bgColor: b.bg,
-                            isTransparentBg: b.trans,
-                          }))
-                        }
-                        className={`p-2.5 rounded-xl border text-left transition-all ${
-                          isSelected
-                            ? "bg-indigo-600/20 border-indigo-500 text-white"
-                            : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
-                        }`}
-                      >
-                        <p className="text-xs font-bold text-white">{b.label}</p>
-                        <p className="text-[10px] text-slate-400 mt-0.5">{b.desc}</p>
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {!config.isTransparentBg && (
-                  <div className="flex items-center gap-2 pt-1">
-                    <span className="text-[11px] text-slate-400">Custom background color:</span>
-                    <input
-                      type="color"
-                      value={config.bgColor}
-                      onChange={(e) =>
-                        setConfig((prev) => ({ ...prev, bgColor: e.target.value }))
-                      }
-                      className="w-7 h-7 rounded cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={config.bgColor}
-                      onChange={(e) =>
-                        setConfig((prev) => ({ ...prev, bgColor: e.target.value }))
-                      }
-                      className="px-2 py-1 rounded bg-slate-950 border border-slate-800 text-white text-xs font-mono w-24 uppercase"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* SECTION 6: INDEPENDENT EYE COLORS (Optional Accent) */}
-              <div className="pt-4 border-t border-slate-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-xs font-bold text-white uppercase tracking-wider cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={config.customEyeColor}
-                      onChange={(e) =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          customEyeColor: e.target.checked,
-                        }))
-                      }
-                      className="rounded border-slate-700 bg-slate-950 text-indigo-600 focus:ring-0"
-                    />
-                    <span>Independent Eye Accent Colors</span>
-                  </label>
-                  <span className="text-[11px] text-slate-400">Contrast Eyes</span>
-                </div>
-
-                {config.customEyeColor && (
-                  <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-slate-950/70 border border-slate-800">
-                    <div>
-                      <span className="block text-[11px] font-semibold text-slate-300 mb-1">
-                        Outer Eye Frame Color
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={config.cornerSquareColor}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              cornerSquareColor: e.target.value,
-                            }))
-                          }
-                          className="w-8 h-8 rounded cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={config.cornerSquareColor}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              cornerSquareColor: e.target.value,
-                            }))
-                          }
-                          className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-white text-xs font-mono w-full uppercase"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <span className="block text-[11px] font-semibold text-slate-300 mb-1">
-                        Inner Eye Center Color
-                      </span>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="color"
-                          value={config.cornerDotColor}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              cornerDotColor: e.target.value,
-                            }))
-                          }
-                          className="w-8 h-8 rounded cursor-pointer"
-                        />
-                        <input
-                          type="text"
-                          value={config.cornerDotColor}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              cornerDotColor: e.target.value,
-                            }))
-                          }
-                          className="px-2 py-1 rounded bg-slate-900 border border-slate-800 text-white text-xs font-mono w-full uppercase"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* TAB 4: PRINTABLE POSTER & STAND CARD TEMPLATES */}
-          {activeTab === "frame" && (
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <LayoutTemplate className="w-4 h-4 text-indigo-400" />
-                    Printable Poster & Table-Stand Templates
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    Choose from Canva-style printable card templates (viewfinder, payment stands, cafe menus, Wi-Fi signs) and customize all text and colors.
-                  </p>
-                </div>
-              </div>
-
-              {/* Mode Selector: Clean Code vs Framed Card */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      frame: { ...prev.frame, enabled: false },
-                    }))
-                  }
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    !config.frame.enabled
-                      ? "bg-indigo-600/15 border-indigo-500 text-white shadow-lg shadow-indigo-600/10"
-                      : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-                      Clean QR Code Only
-                    </span>
-                    {!config.frame.enabled && (
-                      <Check className="w-4 h-4 text-indigo-400" />
-                    )}
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    Sirf pure standalone QR code download karein, bina kisi poster frame ya text ke.
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      frame: { ...prev.frame, enabled: true },
-                    }))
-                  }
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    config.frame.enabled
-                      ? "bg-indigo-600/15 border-indigo-500 text-white shadow-lg shadow-indigo-600/10"
-                      : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200"
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-bold flex items-center gap-1.5">
-                      <LayoutTemplate className="w-3.5 h-3.5 text-indigo-400" />
-                      Printable Poster / Stand Template
-                    </span>
-                    {config.frame.enabled && (
-                      <Check className="w-4 h-4 text-indigo-400" />
-                    )}
-                  </div>
-                  <p className="text-[11px] text-slate-400">
-                    Canva-style printable poster, table tent ya cashier card banayein aur customize karein.
-                  </p>
-                </button>
-              </div>
-
-              {/* Template Customizer (when enabled) */}
-              {config.frame.enabled && (
-                <div className="space-y-6 pt-3 border-t border-slate-800/80">
-                  {/* Ready-to-use Template Gallery */}
-                  <div>
-                    <div className="flex items-center justify-between mb-2.5">
-                      <label className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
-                        <Printer className="w-3.5 h-3.5 text-indigo-400" />
-                        Choose a Template Style
-                      </label>
-                      <span className="text-[10px] text-slate-400">
-                        Click any to apply &amp; edit details
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {POSTER_TEMPLATES.map((tpl) => {
-                        const isSelected = config.frame.templateId === tpl.id;
-                        return (
-                          <button
-                            key={tpl.id}
-                            type="button"
-                            onClick={() => applyPosterTemplate(tpl)}
-                            className={`p-3 rounded-xl border text-left transition-all flex items-start gap-3 relative ${
-                              isSelected
-                                ? "bg-indigo-950/40 border-indigo-500 ring-1 ring-indigo-500/50"
-                                : "bg-slate-950/70 border-slate-800 hover:border-slate-700 hover:bg-slate-900/90"
-                            }`}
-                          >
-                            {/* Visual Thumbnail */}
-                            <div
-                              className="w-12 h-16 rounded-lg shrink-0 border border-white/20 shadow-md flex flex-col items-center justify-between p-1 text-[8px] font-black"
-                              style={{
-                                background: tpl.cardBgColor,
-                                color: tpl.cardTextColor,
-                              }}
-                            >
-                              <div
-                                className="w-full text-center truncate px-0.5 rounded text-[6px]"
-                                style={{ background: tpl.accentColor, color: "#fff" }}
-                              >
-                                {tpl.title.slice(0, 8)}
-                              </div>
-                              <div className="w-6 h-6 rounded bg-white flex items-center justify-center text-slate-900 font-mono text-[7px] shadow-sm">
-                                QR
-                              </div>
-                              <div className="w-full h-1 rounded-full bg-slate-400/40" />
-                            </div>
-
-                            <div className="overflow-hidden flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <p className="text-xs font-bold text-white truncate">
-                                  {tpl.name}
-                                </p>
-                                <span className="text-[8px] uppercase tracking-wider px-1 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
-                                  {tpl.category}
-                                </span>
-                              </div>
-                              <p className="text-[11px] text-indigo-300 font-medium truncate mt-0.5">
-                                {tpl.title}
-                              </p>
-                              <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                                {tpl.tagline}
-                              </p>
-                            </div>
-
-                            {isSelected && (
-                              <div className="w-4 h-4 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0">
-                                <Check className="w-2.5 h-2.5" />
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Editable Fields Section */}
-                  <div className="p-4 rounded-2xl bg-slate-950/90 border border-slate-800 space-y-4">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                      <span className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                        <Type className="w-3.5 h-3.5 text-indigo-400" />
-                        Customize Template Text
-                      </span>
-                      <span className="text-[10px] text-slate-400">
-                        Live preview updates automatically
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          Poster Main Headline
-                        </label>
-                        <input
-                          type="text"
-                          value={config.frame.text}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              frame: { ...prev.frame, text: e.target.value },
-                            }))
-                          }
-                          placeholder="e.g. SCAN HERE"
-                          maxLength={36}
-                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs font-bold focus:outline-none focus:border-indigo-500 uppercase tracking-wider"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          Subtitle / Call to Action
-                        </label>
-                        <input
-                          type="text"
-                          value={config.frame.subtext}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              frame: { ...prev.frame, subtext: e.target.value },
-                            }))
-                          }
-                          placeholder="e.g. Point your smartphone camera"
-                          maxLength={55}
-                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          Business / Brand Name Tag
-                        </label>
-                        <input
-                          type="text"
-                          value={config.frame.brandName}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              frame: { ...prev.frame, brandName: e.target.value },
-                            }))
-                          }
-                          placeholder="e.g. APEX CAFE &amp; LOUNGE"
-                          maxLength={32}
-                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs uppercase tracking-wider focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          Footer Note / Instructions
-                        </label>
-                        <input
-                          type="text"
-                          value={config.frame.footerNote}
-                          onChange={(e) =>
-                            setConfig((prev) => ({
-                              ...prev,
-                              frame: { ...prev.frame, footerNote: e.target.value },
-                            }))
-                          }
-                          placeholder="e.g. Table #12 • Free Wi-Fi"
-                          maxLength={65}
-                          className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700/80 text-white text-xs focus:outline-none focus:border-indigo-500"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Interactive Feature Toggles */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            frame: {
-                              ...prev.frame,
-                              showViewfinder: !prev.frame.showViewfinder,
-                            },
-                          }))
-                        }
-                        className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
-                          config.frame.showViewfinder
-                            ? "bg-indigo-950/40 border-indigo-500 text-white"
-                            : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Scan className="w-4 h-4 text-indigo-400" />
-                          <div>
-                            <p className="text-xs font-bold">Viewfinder Brackets [ ]</p>
-                            <p className="text-[10px] text-slate-400">Camera scan corners around QR</p>
-                          </div>
-                        </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${config.frame.showViewfinder ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
-                          {config.frame.showViewfinder ? "ON" : "OFF"}
-                        </span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setConfig((prev) => ({
-                            ...prev,
-                            frame: {
-                              ...prev.frame,
-                              showStepsBadge: !prev.frame.showStepsBadge,
-                            },
-                          }))
-                        }
-                        className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
-                          config.frame.showStepsBadge
-                            ? "bg-indigo-950/40 border-indigo-500 text-white"
-                            : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <Shield className="w-4 h-4 text-indigo-400" />
-                          <div>
-                            <p className="text-xs font-bold">Scan Steps Guide</p>
-                            <p className="text-[10px] text-slate-400">1. Open • 2. Point • 3. Tap</p>
-                          </div>
-                        </div>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${config.frame.showStepsBadge ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-400"}`}>
-                          {config.frame.showStepsBadge ? "ON" : "OFF"}
-                        </span>
-                      </button>
-                    </div>
-
-                    {/* Poster Color Customization */}
-                    <div className="pt-2">
-                      <label className="block text-xs font-semibold text-slate-300 mb-2">
-                        Poster Card Background Color
-                      </label>
-                      <div className="flex flex-wrap gap-2 items-center">
-                        {[
-                          { id: "#ffffff", label: "Clean White" },
-                          { id: "#09152b", label: "Deep Navy" },
-                          { id: "#042f2e", label: "Cafe Spruce" },
-                          { id: "#1e1b4b", label: "Dark Indigo" },
-                          { id: "#fff7ed", label: "Warm Peach" },
-                          { id: "#18181b", label: "Obsidian" },
-                        ].map((c) => (
-                          <button
-                            key={c.id}
-                            type="button"
-                            onClick={() =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                frame: {
-                                  ...prev.frame,
-                                  cardBgColor: c.id,
-                                  cardTextColor: c.id === "#ffffff" || c.id === "#fff7ed" ? "#0f172a" : "#ffffff",
-                                },
-                              }))
-                            }
-                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border flex items-center gap-1.5 transition-all ${
-                              config.frame.cardBgColor === c.id
-                                ? "border-indigo-500 bg-slate-900 text-white"
-                                : "border-slate-800 bg-slate-950 text-slate-400 hover:text-white"
-                            }`}
-                          >
-                            <span
-                              className="w-3.5 h-3.5 rounded-full border border-white/20"
-                              style={{ background: c.id }}
-                            />
-                            <span>{c.label}</span>
-                          </button>
-                        ))}
-
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950">
-                          <input
-                            type="color"
-                            value={config.frame.cardBgColor}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                frame: { ...prev.frame, cardBgColor: e.target.value },
-                              }))
-                            }
-                            className="w-5 h-5 rounded cursor-pointer bg-transparent border-0"
-                          />
-                          <span className="text-[11px] font-mono text-slate-300">
-                            Custom
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Accent Color */}
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-300 mb-2">
-                        Accent &amp; Viewfinder Brackets Color
-                      </label>
-                      <div className="flex flex-wrap gap-2 items-center">
-                        {[
-                          { id: "#4f46e5", label: "Indigo" },
-                          { id: "#0ea5e9", label: "Sky" },
-                          { id: "#14b8a6", label: "Teal" },
-                          { id: "#e11d48", label: "Rose" },
-                          { id: "#d97706", label: "Amber" },
-                          { id: "#8b5cf6", label: "Purple" },
-                        ].map((c) => (
-                          <button
-                            key={c.id}
-                            type="button"
-                            onClick={() =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                frame: { ...prev.frame, accentColor: c.id },
-                              }))
-                            }
-                            className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border flex items-center gap-1.5 transition-all ${
-                              config.frame.accentColor === c.id
-                                ? "border-indigo-500 bg-slate-900 text-white"
-                                : "border-slate-800 bg-slate-950 text-slate-400 hover:text-white"
-                            }`}
-                          >
-                            <span
-                              className="w-3.5 h-3.5 rounded-full"
-                              style={{ background: c.id }}
-                            />
-                            <span>{c.label}</span>
-                          </button>
-                        ))}
-
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950">
-                          <input
-                            type="color"
-                            value={config.frame.accentColor}
-                            onChange={(e) =>
-                              setConfig((prev) => ({
-                                ...prev,
-                                frame: { ...prev.frame, accentColor: e.target.value },
-                              }))
-                            }
-                            className="w-5 h-5 rounded cursor-pointer bg-transparent border-0"
-                          />
-                          <span className="text-[11px] font-mono text-slate-300">
-                            Custom
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* TAB 5: THEMES & PRESETS (35 Presets: 7 per Category) */}
-          {activeTab === "presets" && (
-            <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl space-y-5">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-indigo-400" />
-                    35 Curated Designer Themes
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    5 distinct categories with 7 high-contrast, scan-guaranteed presets each.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setConfig((prev) => ({
-                      ...prev,
-                      dotType: "rounded",
-                      cornerSquareType: "extra-rounded",
-                      cornerDotType: "dot",
-                      colorType: "gradient",
-                      dotsColor: "#4f46e5",
-                      gradientColor1: "#4f46e5",
-                      gradientColor2: "#9333ea",
-                      gradientType: "linear",
-                      bgColor: "#ffffff",
-                      isTransparentBg: false,
-                      customEyeColor: true,
-                      cornerSquareColor: "#4338ca",
-                      cornerDotColor: "#7e22ce",
-                    }))
-                  }
-                  className="self-start sm:self-auto text-[11px] font-semibold text-slate-400 hover:text-white flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 hover:bg-slate-800 transition-colors"
-                >
-                  <RefreshCw className="w-3 h-3" />
-                  Reset to Default
-                </button>
-              </div>
-
-              {/* Category Filter Tabs */}
-              <div className="flex flex-wrap gap-1.5 p-1 rounded-xl bg-slate-950/80 border border-slate-800">
-                {[
-                  { id: "all", label: "All Themes (35)" },
-                  { id: "vibrant", label: "🌟 Vibrant (7)" },
-                  { id: "corporate", label: "💼 Corporate (7)" },
-                  { id: "social", label: "🏷️ Social (7)" },
-                  { id: "pastel", label: "🌿 Soft Pastel (7)" },
-                  { id: "dark", label: "🕶️ Dark & Cyber (7)" },
-                ].map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => setSelectedCategory(cat.id as any)}
-                    className={`py-1.5 px-3 rounded-lg text-xs font-bold transition-all ${
-                      selectedCategory === cat.id
-                        ? "bg-indigo-600 text-white shadow-sm"
-                        : "text-slate-400 hover:text-white hover:bg-slate-800/60"
-                    }`}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Filtered Presets Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                {QR_PRESETS.filter(
-                  (p) => selectedCategory === "all" || p.category === selectedCategory
-                ).map((preset) => {
-                  const isCurrent =
-                    config.colorType === preset.colorType &&
-                    (preset.colorType === "gradient"
-                      ? config.gradientColor1 === preset.gradientColor1 &&
-                        config.gradientColor2 === preset.gradientColor2
-                      : config.dotsColor === preset.dotsColor) &&
-                    config.bgColor === preset.bgColor;
-
-                  return (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => applyPreset(preset)}
-                      className={`p-3.5 rounded-xl border transition-all text-left group flex items-start gap-3 relative ${
-                        isCurrent
-                          ? "border-indigo-500 bg-indigo-950/30 ring-1 ring-indigo-500/40"
-                          : "border-slate-800 bg-slate-950/70 hover:border-slate-700 hover:bg-slate-900/90"
-                      }`}
-                    >
-                      <div
-                        className="w-12 h-12 rounded-xl shrink-0 border border-white/20 shadow-md flex items-center justify-center font-black text-xs transition-transform group-hover:scale-105"
-                        style={{
-                          background:
-                            preset.colorType === "gradient"
-                              ? `linear-gradient(135deg, ${preset.gradientColor1}, ${preset.gradientColor2})`
-                              : preset.dotsColor,
-                          color: preset.bgColor === "#ffffff" ? "#ffffff" : "#ffffff",
-                          textShadow: "0 1px 2px rgba(0,0,0,0.5)",
-                        }}
-                      >
-                        QR
-                      </div>
-                      <div className="overflow-hidden flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-xs font-bold text-white group-hover:text-indigo-400 transition-colors truncate">
-                            {preset.name}
-                          </p>
-                          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded bg-slate-800/80 text-slate-400 border border-slate-700 shrink-0">
-                            {preset.category}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-400 truncate mt-1">
-                          {preset.description}
-                        </p>
-                      </div>
-                      {isCurrent && (
-                        <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0">
-                          <Check className="w-3 h-3" />
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Live Preview & Download Studio (order-1 on mobile so it's always seen first, order-2 on desktop) */}
-        <div id="preview-section" className="order-1 lg:order-2 lg:col-span-5 lg:sticky lg:top-24 space-y-4">
-          {/* Main Card */}
-          <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800/90 backdrop-blur-2xl shadow-2xl shadow-indigo-950/20 text-center">
-            {/* Header / Badges */}
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                Live Scanner Preview
-              </span>
-              <button
-                type="button"
-                onClick={() => setShowScanModal(true)}
-                className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/20 transition-colors"
-              >
-                <Eye className="w-3.5 h-3.5" />
-                <span>Simulate Phone Scan</span>
-              </button>
-            </div>
-
-            {/* QR Canvas Render Container (with Full Poster Preview when enabled) */}
-            <div
-              className={`relative mx-auto rounded-3xl transition-all duration-300 shadow-2xl flex flex-col items-center border ${
-                config.frame.enabled
-                  ? "p-6"
-                  : "p-5 bg-gradient-to-b from-slate-950 to-slate-900 border-slate-800 shadow-inner group"
-              }`}
-              style={
-                config.frame.enabled
-                  ? {
-                      background: config.frame.cardBgColor,
-                      color: config.frame.cardTextColor,
-                      borderColor:
-                        config.frame.cardTextColor === "#ffffff"
-                          ? "rgba(255,255,255,0.15)"
-                          : "rgba(0,0,0,0.12)",
-                    }
-                  : undefined
-              }
-            >
-              {/* Poster Header (Brand Tag, Headline, Subtitle) */}
-              {config.frame.enabled && (
-                <div className="w-full text-center mb-3">
-                  {config.frame.brandName && (
-                    <p
-                      className="text-[10px] font-extrabold uppercase tracking-widest mb-1"
-                      style={{ color: config.frame.accentColor }}
-                    >
-                      {config.frame.brandName}
-                    </p>
-                  )}
-                  <h3 className="text-lg font-black uppercase tracking-wider leading-tight mb-1">
-                    {config.frame.text || "SCAN HERE"}
-                  </h3>
-                  {config.frame.subtext && (
-                    <p className="text-[11px] opacity-80 font-medium max-w-[280px] mx-auto">
-                      {config.frame.subtext}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {/* QR Code Container with Camera Viewfinder Brackets */}
-              <div
-                className={`relative transition-all ${
-                  config.frame.enabled
-                    ? "p-3 rounded-2xl bg-white shadow-lg my-1"
-                    : ""
-                }`}
-              >
-                {config.frame.enabled && config.frame.showViewfinder && (
-                  <>
-                    {/* Top-Left Viewfinder Bracket */}
-                    <div
-                      className="absolute -top-2.5 -left-2.5 w-6 h-6 border-t-[4px] border-l-[4px] rounded-tl-lg pointer-events-none"
-                      style={{ borderColor: config.frame.accentColor }}
-                    />
-                    {/* Top-Right Viewfinder Bracket */}
-                    <div
-                      className="absolute -top-2.5 -right-2.5 w-6 h-6 border-t-[4px] border-r-[4px] rounded-tr-lg pointer-events-none"
-                      style={{ borderColor: config.frame.accentColor }}
-                    />
-                    {/* Bottom-Left Viewfinder Bracket */}
-                    <div
-                      className="absolute -bottom-2.5 -left-2.5 w-6 h-6 border-b-[4px] border-l-[4px] rounded-bl-lg pointer-events-none"
-                      style={{ borderColor: config.frame.accentColor }}
-                    />
-                    {/* Bottom-Right Viewfinder Bracket */}
-                    <div
-                      className="absolute -bottom-2.5 -right-2.5 w-6 h-6 border-b-[4px] border-r-[4px] rounded-br-lg pointer-events-none"
-                      style={{ borderColor: config.frame.accentColor }}
-                    />
-                  </>
-                )}
-
-                <div
-                  ref={!isMobileScreen ? qrContainerRef : undefined}
-                  className="flex items-center justify-center overflow-hidden transition-transform duration-300 group-hover:scale-[1.02]"
+            </Field>
+            <Field label="Subheading">
+              <input
+                type="text"
+                value={config.frame.subtext}
+                onChange={(e) => updateFrame({ subtext: e.target.value })}
+                className={inputCls}
+              />
+            </Field>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Field label="Top label">
+                <input
+                  type="text"
+                  value={config.frame.brandName}
+                  onChange={(e) => updateFrame({ brandName: e.target.value })}
+                  className={inputCls}
                 />
-              </div>
-
-              {/* Poster Footer (Steps Guide & Footer Note) */}
-              {config.frame.enabled && (
-                <div className="w-full text-center mt-3">
-                  {config.frame.showStepsBadge && (
-                    <div
-                      className="py-1.5 px-3 rounded-full text-[10px] font-bold text-white shadow-md flex items-center justify-center gap-1.5 max-w-[280px] mx-auto"
-                      style={{ background: config.frame.accentColor }}
-                    >
-                      <span>1. Open Camera</span>
-                      <span>•</span>
-                      <span>2. Point at QR</span>
-                      <span>•</span>
-                      <span>3. Tap Link</span>
-                    </div>
-                  )}
-
-                  {config.frame.footerNote && (
-                    <p className="mt-2 text-[10px] opacity-75 font-medium max-w-[280px] mx-auto">
-                      {config.frame.footerNote}
-                    </p>
-                  )}
-                </div>
-              )}
+              </Field>
+              <Field label="Footer note">
+                <input
+                  type="text"
+                  value={config.frame.footerNote}
+                  onChange={(e) => updateFrame({ footerNote: e.target.value })}
+                  className={inputCls}
+                />
+              </Field>
             </div>
+          </Section>
 
-            {/* Mobile Quick Action Buttons & 1-Tap Styles (lg:hidden) */}
-            <div className="lg:hidden w-full mt-4 space-y-3 pt-3 border-t border-slate-800/80">
-              {/* 1-Tap Download & Native Share */}
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => downloadQR("png")}
-                  className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-xs shadow-md shadow-indigo-600/30 flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+          <Section title="Poster extras">
+            <Toggle
+              checked={config.frame.showViewfinder}
+              onChange={(v) => updateFrame({ showViewfinder: v })}
+              label="Camera corner brackets"
+            />
+            <Toggle
+              checked={config.frame.showStepsBadge}
+              onChange={(v) => updateFrame({ showStepsBadge: v })}
+              label="“How to scan” steps"
+            />
+          </Section>
+
+          <Section title="Poster colors">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <ColorField label="Card" value={config.frame.cardBgColor} onChange={(v) => updateFrame({ cardBgColor: v })} />
+              <ColorField label="Text" value={config.frame.cardTextColor} onChange={(v) => updateFrame({ cardTextColor: v })} />
+              <ColorField label="Accent" value={config.frame.accentColor} onChange={(v) => updateFrame({ accentColor: v })} />
+            </div>
+          </Section>
+        </>
+      )}
+    </div>
+  );
+
+  const presetsPanel = (
+    <div className="space-y-4">
+      <Section
+        title="Ready-made themes"
+        hint={`${QR_PRESETS.length} tested designs. Tap one to apply.`}
+        action={
+          <button
+            type="button"
+            onClick={() => applyPreset(QR_PRESETS.find((p) => p.id === "electric-violet") ?? QR_PRESETS[0])}
+            className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-300 bg-slate-900 border border-slate-800 hover:text-white"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Reset
+          </button>
+        }
+      >
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+          {THEME_CATEGORIES.map((c) => (
+            <Chip key={c.id} active={themeCategory === c.id} onClick={() => setThemeCategory(c.id)}>
+              {c.label}
+            </Chip>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          {QR_PRESETS.filter((p) => themeCategory === "all" || p.category === themeCategory).map((p) => {
+            const active = isPresetActive(p);
+            return (
+              <OptionTile key={p.id} active={active} onClick={() => applyPreset(p)} className="flex items-center gap-2.5 p-2.5 text-left">
+                <span
+                  className="w-10 h-10 rounded-lg shrink-0 grid place-items-center border border-white/10"
+                  style={{ background: p.bgColor }}
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download PNG</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={shareQR}
-                  className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
-                >
-                  <Share2 className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Share QR</span>
-                </button>
-              </div>
-
-              {/* Instant 1-Tap Quick Themes Strip (Mobile) */}
-              <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80 text-left">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
-                    <Sparkles className="w-3 h-3 text-amber-400" />
-                    Instant 1-Tap Styles:
-                  </span>
-                  <span className="text-[9px] text-slate-500">Fast transform</span>
-                </div>
-                <div className="flex items-center justify-between gap-1.5">
-                  {quickMobileStyles.map((qs) => (
-                    <button
-                      key={qs.id}
-                      type="button"
-                      onClick={() =>
-                        setConfig((prev) => ({
-                          ...prev,
-                          dotType: qs.dotType,
-                          cornerSquareType: qs.cornerSquareType,
-                          cornerDotType: qs.cornerDotType,
-                          colorType: qs.colorType,
-                          gradientColor1: qs.gradientColor1,
-                          gradientColor2: qs.gradientColor2,
-                          dotsColor: qs.dotsColor,
-                          cornerSquareColor: qs.cornerSquareColor,
-                          cornerDotColor: qs.cornerDotColor,
-                          bgColor: qs.bgColor,
-                          isTransparentBg: false,
-                        }))
-                      }
-                      className="flex-1 flex flex-col items-center gap-1 py-1.5 px-1 rounded-lg bg-slate-900/60 hover:bg-slate-800 border border-slate-800/60 active:scale-95 transition-transform"
-                    >
-                      <div
-                        className="w-5 h-5 rounded-full shadow-md border border-white/20"
-                        style={{
-                          background: `linear-gradient(135deg, ${qs.gradientColor1}, ${qs.gradientColor2})`,
-                        }}
-                      />
-                      <span className="text-[9px] font-semibold text-slate-300 truncate max-w-[50px]">
-                        {qs.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Real Hardware In-Browser QR Decoder Verification */}
-            <div
-              className={`mt-5 p-3.5 rounded-2xl border text-left transition-all ${
-                decoderResult.isScannable && decoderResult.match
-                  ? "bg-emerald-950/40 border-emerald-500/40"
-                  : "bg-rose-950/40 border-rose-500/50"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-1.5">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      decoderResult.isScannable ? "bg-emerald-400 animate-pulse" : "bg-rose-400 animate-ping"
-                    }`}
-                  />
-                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                    <Scan className="w-3.5 h-3.5 text-emerald-400" />
-                    Computer-Vision Scan Verification:
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-900 border border-slate-800 text-slate-300">
-                  {decoderResult.latencyMs}ms latency
-                </span>
-              </div>
-
-              {decoderResult.isScannable ? (
-                <div className="space-y-1">
-                  <p className="text-[11px] font-medium text-emerald-300">
-                    ✅ 100% Genuine Read Verified. Tested via client-side computer-vision decoder. Scannable on all iOS &amp; Android cameras.
-                  </p>
-                  {decoderResult.decodedData && (
-                    <div className="p-1.5 rounded-lg bg-slate-950/90 border border-emerald-900/40 text-[10px] font-mono text-slate-300 truncate">
-                      <span className="text-emerald-400 font-bold">Decoded:</span> {decoderResult.decodedData}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-bold text-rose-300 flex items-center gap-1">
-                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                    <span>Scan Warning: Decoder could not parse QR bitmap.</span>
-                  </p>
-                  <p className="text-[10px] text-rose-200/90 leading-relaxed">
-                    {decoderResult.reason}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setConfig((prev) => ({
-                        ...prev,
-                        logoSize: 0.25,
-                        errorCorrectionLevel: "H",
-                        bgColor: "#ffffff",
-                        isTransparentBg: false,
-                        dotsColor: "#0f172a",
-                        colorType: "single",
-                      }))
-                    }
-                    className="mt-1 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[10px] font-bold transition-colors"
-                  >
-                    Auto-Optimize For 100% Scannability
-                  </button>
-                </div>
-              )}
-
-              {/* 100% Client-Side Privacy Verification Stamp */}
-              <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex items-center justify-between text-[10px]">
-                <span className="flex items-center gap-1 text-slate-300">
-                  <Lock className="w-3 h-3 text-emerald-400" />
-                  Client-Side Private Memory (0 bytes uploaded)
-                </span>
-                <span className="text-[9px] font-mono text-emerald-400 font-bold">
-                  VERIFIED LOCAL
-                </span>
-              </div>
-            </div>
-
-            {/* Scannability Health Bar */}
-            <div className="mt-3 p-3.5 rounded-xl border bg-slate-950/70 border-slate-800 text-left">
-              <div className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-1.5">
-                  <ShieldCheck
-                    className={`w-4 h-4 ${
-                      scannability.rating === "Excellent" || scannability.rating === "Good"
-                        ? "text-emerald-400"
-                        : "text-amber-400"
-                    }`}
-                  />
-                  <span className="text-xs font-bold text-white">Optical Contrast Ratio:</span>
                   <span
-                    className={`text-[11px] font-bold px-2 py-0.5 rounded border ${scannability.colorClass}`}
-                  >
-                    {scannability.rating} ({scannability.score}/100)
-                  </span>
-                </div>
-                <span className="text-[11px] font-mono text-slate-400">
-                  {scannability.contrastRatio}:1
+                    className="w-6 h-6 rounded-md"
+                    style={{
+                      background:
+                        p.colorType === "gradient"
+                          ? `linear-gradient(135deg, ${p.gradientColor1}, ${p.gradientColor2})`
+                          : p.dotsColor,
+                    }}
+                  />
                 </span>
+                <span className="min-w-0">
+                  <span className="block text-xs font-bold text-white leading-snug line-clamp-2">{p.name}</span>
+                  <span className="block text-[11px] text-slate-400 capitalize">{p.category}</span>
+                </span>
+                {active && <Check className="w-4 h-4 text-indigo-400 ml-auto shrink-0" />}
+              </OptionTile>
+            );
+          })}
+        </div>
+      </Section>
+    </div>
+  );
+
+  const panels: Record<StudioTab, React.ReactNode> = {
+    content: contentPanel,
+    logo: logoPanel,
+    style: stylePanel,
+    frame: posterPanel,
+    presets: presetsPanel,
+  };
+
+  /* ================================================================ */
+  /* Preview card                                                     */
+  /* ================================================================ */
+
+  const f = config.frame;
+  const statusOk = decoder.ok && !decoder.checking;
+
+  const previewCard = (
+    <div className="rounded-3xl bg-slate-900/80 border border-slate-800 p-4 sm:p-6 shadow-2xl shadow-black/30">
+      {/* QR / poster */}
+      <div
+        className={`mx-auto w-full max-w-[250px] sm:max-w-[320px] rounded-2xl flex flex-col items-center ${f.enabled ? "p-5 border" : "p-3 bg-slate-950 border border-slate-800"}`}
+        style={
+          f.enabled
+            ? {
+                background: f.cardBgColor,
+                color: f.cardTextColor,
+                borderColor: f.cardTextColor === "#ffffff" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)",
+              }
+            : undefined
+        }
+      >
+        {f.enabled && (
+          <div className="w-full text-center mb-3">
+            {f.brandName && (
+              <p className="text-[10px] font-extrabold uppercase tracking-widest mb-1" style={{ color: f.accentColor }}>
+                {f.brandName}
+              </p>
+            )}
+            <h3 className="text-lg font-black uppercase tracking-wide leading-tight">{f.text || "SCAN HERE"}</h3>
+            {f.subtext && <p className="text-[11px] opacity-75 font-medium mt-1">{f.subtext}</p>}
+          </div>
+        )}
+
+        <div className={`relative w-full ${f.enabled ? "max-w-[170px] sm:max-w-[200px] p-2 rounded-xl bg-white" : ""}`}>
+          {f.enabled && f.showViewfinder && (
+            <>
+              {["-top-2 -left-2 border-t-4 border-l-4 rounded-tl-lg", "-top-2 -right-2 border-t-4 border-r-4 rounded-tr-lg", "-bottom-2 -left-2 border-b-4 border-l-4 rounded-bl-lg", "-bottom-2 -right-2 border-b-4 border-r-4 rounded-br-lg"].map((pos) => (
+                <span key={pos} className={`absolute w-6 h-6 pointer-events-none ${pos}`} style={{ borderColor: f.accentColor }} />
+              ))}
+            </>
+          )}
+          <div
+            ref={qrContainerRef}
+            className="aspect-square w-full flex items-center justify-center [&_canvas]:!w-full [&_canvas]:!h-auto [&_canvas]:rounded-lg"
+          />
+        </div>
+
+        {f.enabled && (
+          <div className="w-full text-center mt-3 space-y-2">
+            {f.showStepsBadge && (
+              <div className="py-1.5 px-3 rounded-full text-[10px] font-bold text-white" style={{ background: f.accentColor }}>
+                1. Open Camera • 2. Point • 3. Tap
               </div>
+            )}
+            {f.footerNote && <p className="text-[10px] opacity-70 font-medium">{f.footerNote}</p>}
+          </div>
+        )}
+      </div>
 
-              {/* Progress bar */}
-              <div className="w-full h-1.5 rounded-full bg-slate-800 overflow-hidden mb-2">
-                <div
-                  className={`h-full transition-all duration-500 ${
-                    scannability.score >= 80
-                      ? "bg-emerald-500"
-                      : scannability.score >= 60
-                      ? "bg-blue-500"
-                      : scannability.score >= 40
-                      ? "bg-amber-500"
-                      : "bg-rose-500"
-                  }`}
-                  style={{ width: `${scannability.score}%` }}
-                />
-              </div>
+      {/* Scan check */}
+      <div
+        className={`mt-4 p-3 rounded-xl border text-left ${
+          decoder.checking
+            ? "bg-slate-950/60 border-slate-800"
+            : decoder.ok
+            ? "bg-emerald-500/10 border-emerald-500/30"
+            : "bg-rose-500/10 border-rose-500/40"
+        }`}
+        aria-live="polite"
+      >
+        <div className="flex items-center gap-2">
+          {decoder.checking ? (
+            <Loader2 className="w-4 h-4 text-slate-400 animate-spin shrink-0" />
+          ) : decoder.ok ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          ) : (
+            <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />
+          )}
+          <span className={`text-sm font-bold ${decoder.checking ? "text-slate-300" : decoder.ok ? "text-emerald-300" : "text-rose-300"}`}>
+            {decoder.checking ? "Checking scan…" : decoder.ok ? "Scan tested: works" : "May not scan"}
+          </span>
+          {testableLink && (
+            <a
+              href={testableLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto shrink-0 flex items-center gap-1 text-xs font-semibold text-indigo-300 hover:text-white"
+            >
+              Open link
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          )}
+        </div>
+        {!decoder.checking && !decoder.ok && (
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-rose-200/90">{decoder.reason}</p>
+            <button
+              type="button"
+              onClick={autoFixScannability}
+              className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold"
+            >
+              Fix it for me
+            </button>
+          </div>
+        )}
+        {statusOk && scannability.recommendations.length > 0 && (
+          <p className="mt-1.5 text-xs text-amber-300/90">Print tip: {scannability.recommendations[0]}</p>
+        )}
+      </div>
 
-              {scannability.recommendations.length > 0 ? (
-                <div className="space-y-1">
-                  {scannability.recommendations.map((rec, i) => (
-                    <div key={i} className="flex items-center gap-1.5 text-[11px] text-amber-300">
-                      <AlertTriangle className="w-3 h-3 shrink-0" />
-                      <span>{rec}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-[11px] text-slate-400">
-                  Contrast ratio and error-correction meet top optical scanning standards.
-                </p>
-              )}
-            </div>
+      {/* Export options */}
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        <Segmented
+          size="sm"
+          value={exportFormat}
+          onChange={setExportFormat}
+          options={[
+            { value: "png", label: "PNG" },
+            { value: "jpeg", label: "JPG" },
+            { value: "svg", label: "SVG" },
+          ]}
+        />
+        <Segmented
+          size="sm"
+          value={exportRes}
+          onChange={setExportRes}
+          options={[
+            { value: 512, label: "S" },
+            { value: 1024, label: "HD" },
+            { value: 2048, label: "Print" },
+          ]}
+        />
+      </div>
+      {f.enabled && exportFormat === "svg" && (
+        <p className="mt-2 text-[11px] text-amber-300/90">SVG saves the QR only. Choose PNG or JPG to get the full poster.</p>
+      )}
 
-            {/* Resolution Selector */}
-            <div className="mt-5 flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
-              <span className="text-slate-300 font-medium">Export Resolution:</span>
-              <div className="flex items-center gap-1">
-                {[
-                  { res: 512, label: "512px Web" },
-                  { res: 1024, label: "1024px HD" },
-                  { res: 2048, label: "2048px Print" },
-                ].map((item) => (
+      {/* Actions (desktop; on mobile these live in the bottom bar) */}
+      <div className="hidden lg:block mt-4 space-y-2">
+        <button
+          type="button"
+          onClick={downloadQR}
+          disabled={busy !== null}
+          className="w-full py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 hover:brightness-110 text-white shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition disabled:opacity-60"
+        >
+          {busy === "download" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+          Download {exportFormat === "jpeg" ? "JPG" : exportFormat.toUpperCase()}
+        </button>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={copyToClipboard}
+            disabled={busy !== null}
+            className="py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 flex items-center justify-center gap-1.5 disabled:opacity-60"
+          >
+            {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+            {copied ? "Copied" : "Copy image"}
+          </button>
+          <button
+            type="button"
+            onClick={shareQR}
+            disabled={busy !== null}
+            className="py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 flex items-center justify-center gap-1.5 disabled:opacity-60"
+          >
+            <Share2 className="w-4 h-4" />
+            Share
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  /* ================================================================ */
+  /* Layout: one responsive layout for every screen size              */
+  /* ================================================================ */
+
+  return (
+    <div
+      id="generator"
+      ref={studioRef}
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-2 pb-24 lg:pb-12 scroll-mt-16"
+    >
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) readLogoFile(file);
+        }}
+        accept="image/png,image/jpeg,image/svg+xml,image/webp"
+        className="hidden"
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
+        {/* Preview: first on mobile, right column on desktop */}
+        <div ref={previewRef} className="lg:col-span-5 lg:order-2 lg:sticky lg:top-20">
+          {previewCard}
+        </div>
+
+        {/* Controls */}
+        <div className="lg:col-span-7 lg:order-1 min-w-0">
+          <div id="studio-tabs" className="sticky top-14 lg:top-16 z-20 -mx-4 px-4 sm:mx-0 sm:px-0 py-2 bg-slate-950/90 backdrop-blur-xl scroll-mt-14">
+            <div role="tablist" className="grid grid-cols-5 gap-1 p-1 rounded-2xl bg-slate-900 border border-slate-800">
+              {TABS.map((t) => {
+                const Icon = t.icon;
+                const active = activeTab === t.id;
+                const dot =
+                  (t.id === "logo" && Boolean(config.logoUrl)) || (t.id === "frame" && config.frame.enabled);
+                return (
                   <button
-                    key={item.res}
+                    key={t.id}
                     type="button"
-                    onClick={() => setExportRes(item.res)}
-                    className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors ${
-                      exportRes === item.res
-                        ? "bg-indigo-600 text-white"
-                        : "text-slate-400 hover:text-white"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => selectTab(t.id)}
+                    className={`relative flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-xs font-bold transition-colors ${
+                      active ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30" : "text-slate-400 hover:text-white"
                     }`}
                   >
-                    {item.label}
+                    <Icon className="w-4 h-4" />
+                    {t.label}
+                    {dot && !active && <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400" />}
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
+          </div>
 
-            {/* Action Buttons */}
-            <div className="mt-4 space-y-2.5">
-              <button
-                type="button"
-                onClick={() => downloadQR("png")}
-                disabled={isDownloading}
-                className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 hover:from-indigo-600 hover:via-purple-700 hover:to-pink-700 text-white shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50"
-              >
-                <Download className="w-4 h-4" />
-                <span>{isDownloading ? "Generating High-Res..." : "Download High-Res PNG"}</span>
-              </button>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => downloadQR("svg")}
-                  disabled={isDownloading}
-                  className="py-2.5 px-3 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-700 flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <Download className="w-3.5 h-3.5 text-indigo-400" />
-                  <span>Download SVG</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={copyToClipboard}
-                  className="py-2.5 px-3 rounded-xl text-xs font-semibold bg-slate-800/80 hover:bg-slate-700 text-white border border-slate-700 flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  {copied ? (
-                    <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="text-emerald-400">Copied Image!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Copy to Clipboard</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
+          <div ref={panelRef} className="mt-3 p-4 sm:p-6 rounded-3xl bg-slate-900/60 border border-slate-800">
+            {panels[activeTab]}
           </div>
         </div>
       </div>
 
-      {/* APP-LIKE MOBILE STICKY BOTTOM BAR */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/90 px-4 py-2.5 shadow-[0_-10px_30px_rgba(0,0,0,0.7)]">
-        <div className="max-w-md mx-auto flex items-center justify-between gap-2.5">
-          {/* Quick status & Jump to preview */}
+      {/* Mobile bottom action bar */}
+      <div
+        className={`lg:hidden fixed inset-x-0 bottom-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800 px-4 pt-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))] transition-transform duration-300 ${
+          studioInView ? "translate-y-0" : "translate-y-full"
+        }`}
+      >
+        <div className="max-w-md mx-auto flex items-center gap-2">
           <button
             type="button"
-            onClick={() => {
-              const el = document.getElementById("preview-section");
-              el?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-left active:scale-95 transition-transform shrink-0"
+            onClick={scrollToPreview}
+            className={`flex items-center gap-2 h-11 px-3 rounded-xl bg-slate-900 border border-slate-800 text-left transition-opacity ${
+              previewInView ? "opacity-60" : ""
+            }`}
+            aria-label="Show QR preview"
           >
-            <div
-              className={`w-2 h-2 rounded-full ${
-                decoderResult.isScannable ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+            <span
+              className={`w-2 h-2 rounded-full shrink-0 ${
+                decoder.checking ? "bg-slate-500" : decoder.ok ? "bg-emerald-400" : "bg-rose-400"
               }`}
             />
-            <div>
-              <div className="text-[10px] font-bold text-white leading-tight">
-                {decoderResult.isScannable ? "100% Scannable" : "Adjust Contrast"}
-              </div>
-              <div className="text-[9px] text-indigo-400 leading-tight">Tap to view QR</div>
-            </div>
+            <span className="text-xs font-semibold text-white whitespace-nowrap">
+              {decoder.checking ? "Checking" : decoder.ok ? "Scannable" : "Check QR"}
+            </span>
+            <ChevronUp className="w-4 h-4 text-slate-400" />
           </button>
-
-          {/* Quick Share & Download actions */}
-          <div className="flex items-center gap-2 flex-1 justify-end">
-            <button
-              type="button"
-              onClick={shareQR}
-              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 active:scale-95 transition-transform flex items-center justify-center shrink-0"
-              title="Share QR code"
-              aria-label="Share QR code"
-            >
-              <Share2 className="w-4 h-4 text-slate-300" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => downloadQR("png")}
-              className="flex-1 py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={shareQR}
+            disabled={busy !== null}
+            className="w-11 h-11 shrink-0 rounded-xl bg-slate-900 border border-slate-800 text-white grid place-items-center disabled:opacity-60"
+            aria-label="Share QR code"
+          >
+            {busy === "share" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Share2 className="w-4 h-4" />}
+          </button>
+          <button
+            type="button"
+            onClick={downloadQR}
+            disabled={busy !== null}
+            className="flex-1 h-11 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 text-white font-bold text-sm shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-60"
+          >
+            {busy === "download" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            Download
+          </button>
         </div>
       </div>
-      </div> {/* Closes DESKTOP STUDIO VIEW */}
 
-      {/* SCAN SIMULATOR MODAL */}
-      {showScanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn">
-          <div className="relative w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 shadow-2xl text-center space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2 text-white font-bold text-sm">
-                <Eye className="w-4 h-4 text-indigo-400" />
-                <span>Phone Camera Viewfinder Simulation</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowScanModal(false)}
-                className="w-7 h-7 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-xs"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Camera Viewfinder graphics */}
-            <div className="relative w-56 h-56 mx-auto rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shadow-inner">
-              {/* Corner brackets */}
-              <div className="absolute top-2 left-2 w-6 h-6 border-t-2 border-l-2 border-indigo-400" />
-              <div className="absolute top-2 right-2 w-6 h-6 border-t-2 border-r-2 border-indigo-400" />
-              <div className="absolute bottom-2 left-2 w-6 h-6 border-b-2 border-l-2 border-indigo-400" />
-              <div className="absolute bottom-2 right-2 w-6 h-6 border-b-2 border-r-2 border-indigo-400" />
-
-              {/* Scanning Laser Line */}
-              <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_12px_#34d399] animate-pulse" />
-
-              <div className="text-center p-4">
-                <Check className="w-8 h-8 text-emerald-400 mx-auto mb-1 animate-bounce" />
-                <span className="text-xs font-bold text-white uppercase tracking-wider">
-                  Target Detected
-                </span>
-              </div>
-            </div>
-
-            {/* Decoded content payload banner */}
-            <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-left">
-              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
-                Decoded Action & Payload
-              </span>
-              <p className="text-xs font-mono text-indigo-300 break-all bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-                {qrData}
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              {config.contentType === "url" && (
-                <a
-                  href={qrData}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Open URL in New Tab</span>
-                </a>
-              )}
-              <button
-                type="button"
-                onClick={() => setShowScanModal(false)}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition-colors"
-              >
-                Close Simulator
-              </button>
-            </div>
-          </div>
+      {/* Toast */}
+      {toast && (
+        <div className="fixed left-1/2 -translate-x-1/2 bottom-24 lg:bottom-8 z-50 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white shadow-xl animate-fadeIn">
+          {toast}
         </div>
       )}
     </div>

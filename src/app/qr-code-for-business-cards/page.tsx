@@ -38,7 +38,7 @@ export default function BusinessCardQRPage() {
         </div>
 
         {/* Live Studio pre-selected on vCard */}
-        <div className="mb-20">
+        <div className="mb-20 -mx-4 sm:-mx-6 lg:-mx-8">
           <QRStudio initialContentType="vcard" initialTab="content" />
         </div>
 

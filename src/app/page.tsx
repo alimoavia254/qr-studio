@@ -15,6 +15,17 @@ export default function Home() {
 
       <Header />
       <main className="flex-1">
+        <div className="max-w-3xl mx-auto px-4 pt-6 pb-4 sm:pt-10 sm:pb-8 text-center">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+            Free QR Code Generator{" "}
+            <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+              With Logo
+            </span>
+          </h1>
+          <p className="mt-2 sm:mt-3 text-slate-400 text-sm sm:text-base">
+            Add your logo, pick colors, check it scans, then download in HD. No sign-up.
+          </p>
+        </div>
         <QRStudio />
         <div id="features">
           <FeaturesSection />
