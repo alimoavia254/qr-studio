@@ -12,10 +12,33 @@ export function formatQRData(config: QRDesignConfig): string {
     }
 
     case "whatsapp": {
-      const cleanPhone = (config.whatsapp.countryCode + config.whatsapp.phone).replace(/[^0-9]/g, "");
-      if (!cleanPhone) return "https://wa.me/";
+      let cc = config.whatsapp.countryCode.replace(/[^0-9]/g, "");
+      let phone = config.whatsapp.phone.replace(/[^0-9]/g, "");
+
+      // Automatically strip leading zero (e.g. 0300... -> 300...)
+      phone = phone.replace(/^0+/, "");
+
+      // Avoid duplicating country code if user typed country code in phone box
+      let cleanPhone = phone;
+      if (cc && !phone.startsWith(cc)) {
+        cleanPhone = `${cc}${phone}`;
+      }
+
+      if (!cleanPhone) {
+        cleanPhone = "15551234567";
+      }
+
       const text = encodeURIComponent(config.whatsapp.message || "");
-      return text ? `https://wa.me/${cleanPhone}?text=${text}` : `https://wa.me/${cleanPhone}`;
+      const isWame = config.whatsapp.linkStyle === "wame";
+
+      if (isWame) {
+        return text ? `https://wa.me/${cleanPhone}?text=${text}` : `https://wa.me/${cleanPhone}`;
+      }
+
+      // Default: Universal official WhatsApp URL that triggers the "Open in WhatsApp" OS prompt on all Android & iOS camera scanners
+      return text
+        ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${text}`
+        : `https://api.whatsapp.com/send?phone=${cleanPhone}`;
     }
 
     case "wifi": {

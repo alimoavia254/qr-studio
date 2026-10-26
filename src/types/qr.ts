@@ -20,6 +20,7 @@ export interface WhatsappData {
   countryCode: string;
   phone: string;
   message: string;
+  linkStyle?: "api" | "wame";
 }
 
 export interface VCardData {
