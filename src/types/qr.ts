@@ -41,6 +41,17 @@ export interface EmailData {
   format?: "mailto" | "matmsg";
 }
 
+export interface QRCardFrameConfig {
+  enabled: boolean;
+  text: string;
+  subtext: string;
+  position: "bottom" | "top";
+  theme: "match" | "dark" | "blue" | "emerald" | "amber" | "custom";
+  bgColor: string;
+  textColor: string;
+  style: "badge" | "card" | "banner";
+}
+
 export interface QRDesignConfig {
   contentType: QRContentType;
   // Content values
@@ -82,12 +93,18 @@ export interface QRDesignConfig {
 
   // Error Correction
   errorCorrectionLevel: ErrorCorrectionLevel;
+
+  // Card Frame / Text Banner
+  frame: QRCardFrameConfig;
 }
+
+export type ThemeCategory = "vibrant" | "corporate" | "social" | "pastel" | "dark";
 
 export interface QRPreset {
   id: string;
   name: string;
   description: string;
+  category: ThemeCategory;
   dotType: DotType;
   cornerSquareType: CornerSquareType;
   cornerDotType: CornerDotType;
