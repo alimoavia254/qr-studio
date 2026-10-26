@@ -31,6 +31,8 @@ import {
   Scan,
   Shield,
   Printer,
+  Share2,
+  Zap,
 } from "lucide-react";
 import { QRDesignConfig, QRContentType, ThemeCategory, PosterTemplatePreset } from "@/types/qr";
 import { formatQRData } from "@/lib/qrDataFormatters";
@@ -651,6 +653,119 @@ export function QRStudio({
     }
   };
 
+  // Native Mobile Web Share (Direct to WhatsApp / Photos / AirDrop)
+  const shareQR = async () => {
+    if (typeof window === "undefined") return;
+    try {
+      const { default: QRCodeStyling } = await import("qr-code-styling");
+      const tempOptions = getQROptions(1024);
+      const exporter = new QRCodeStyling(tempOptions);
+      const rawBlob = await exporter.getRawData("png");
+      if (rawBlob && navigator.share) {
+        const file = new File([rawBlob as Blob], `qr-studio-${config.contentType}.png`, {
+          type: "image/png",
+        });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            files: [file],
+            title: "My Custom QR Code",
+            text: "Generated with QR Studio PRO",
+          });
+          return;
+        } else {
+          await navigator.share({
+            title: "My Custom QR Code",
+            text: "Scan my custom brand QR code",
+            url: window.location.href,
+          });
+          return;
+        }
+      }
+      // Fallback: direct download
+      await downloadQR("png");
+    } catch (err) {
+      console.log("Share dismissed or not supported", err);
+    }
+  };
+
+  const quickMobileStyles = [
+    {
+      id: "violet-flow",
+      name: "Violet",
+      dotType: "rounded" as DotType,
+      cornerSquareType: "extra-rounded" as CornerSquareType,
+      cornerDotType: "dot" as CornerDotType,
+      colorType: "gradient" as const,
+      gradientColor1: "#6366f1",
+      gradientColor2: "#a855f7",
+      dotsColor: "#6366f1",
+      cornerSquareColor: "#4f46e5",
+      cornerDotColor: "#9333ea",
+      bgColor: "#ffffff",
+      dotColor: "#6366f1",
+    },
+    {
+      id: "emerald-chat",
+      name: "WhatsApp",
+      dotType: "dots" as DotType,
+      cornerSquareType: "extra-rounded" as CornerSquareType,
+      cornerDotType: "dot" as CornerDotType,
+      colorType: "gradient" as const,
+      gradientColor1: "#059669",
+      gradientColor2: "#10b981",
+      dotsColor: "#059669",
+      cornerSquareColor: "#047857",
+      cornerDotColor: "#059669",
+      bgColor: "#ffffff",
+      dotColor: "#059669",
+    },
+    {
+      id: "ocean-breeze",
+      name: "Ocean",
+      dotType: "classy-rounded" as DotType,
+      cornerSquareType: "extra-rounded" as CornerSquareType,
+      cornerDotType: "dot" as CornerDotType,
+      colorType: "gradient" as const,
+      gradientColor1: "#0284c7",
+      gradientColor2: "#06b6d4",
+      dotsColor: "#0284c7",
+      cornerSquareColor: "#0369a1",
+      cornerDotColor: "#0891b2",
+      bgColor: "#ffffff",
+      dotColor: "#0284c7",
+    },
+    {
+      id: "sunset-glow",
+      name: "Amber",
+      dotType: "classy" as DotType,
+      cornerSquareType: "extra-rounded" as CornerSquareType,
+      cornerDotType: "dot" as CornerDotType,
+      colorType: "gradient" as const,
+      gradientColor1: "#d97706",
+      gradientColor2: "#ea580c",
+      dotsColor: "#d97706",
+      cornerSquareColor: "#b45309",
+      cornerDotColor: "#c2410c",
+      bgColor: "#ffffff",
+      dotColor: "#d97706",
+    },
+    {
+      id: "midnight-cyber",
+      name: "Dark",
+      dotType: "rounded" as DotType,
+      cornerSquareType: "square" as CornerSquareType,
+      cornerDotType: "dot" as CornerDotType,
+      colorType: "gradient" as const,
+      gradientColor1: "#818cf8",
+      gradientColor2: "#c084fc",
+      dotsColor: "#818cf8",
+      cornerSquareColor: "#6366f1",
+      cornerDotColor: "#a855f7",
+      bgColor: "#090d16",
+      dotColor: "#818cf8",
+    },
+  ];
+
   const contentTypes: { id: QRContentType; label: string; icon: React.ElementType }[] = [
     { id: "url", label: "Website URL", icon: Globe },
     { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
@@ -661,34 +776,34 @@ export function QRStudio({
   ];
 
   return (
-    <div id="generator" className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div id="generator" className="py-6 sm:py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-24 lg:pb-10">
       {/* Studio Top Hero Subtitle */}
-      <div className="text-center max-w-3xl mx-auto mb-10">
+      <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-slate-300 text-xs font-semibold mb-3 shadow-inner">
           <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
           <span>Interactive Brand QR Studio</span>
         </div>
-        <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight">
+        <h1 className="text-2xl sm:text-5xl font-black text-white tracking-tight leading-tight">
           Create Beautiful,{" "}
           <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             Scannable Brand QR Codes
           </span>
         </h1>
-        <p className="mt-3 text-slate-400 text-sm sm:text-base">
+        <p className="mt-2 sm:mt-3 text-slate-400 text-xs sm:text-base">
           Embed your logo, style dots and gradients, and verify instant scannability before downloading in ultra-high resolution.
         </p>
       </div>
 
-      {/* Main Grid: Left Controls / Right Sticky Preview */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      {/* Main Grid: Left Controls (order-2 on mobile) / Right Sticky Preview (order-1 on mobile) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
         {/* Left Column (7 cols): Studio Controls */}
-        <div className="lg:col-span-7 space-y-6">
+        <div className="order-2 lg:order-1 lg:col-span-7 space-y-6">
           {/* Main Navigation Tabs */}
-          <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl">
+          <div className="flex items-center gap-1.5 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-xl overflow-x-auto no-scrollbar scroll-smooth">
             <button
               type="button"
               onClick={() => setActiveTab("content")}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
                 activeTab === "content"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/60"
@@ -700,7 +815,7 @@ export function QRStudio({
             <button
               type="button"
               onClick={() => setActiveTab("logo")}
-              className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative ${
+              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative whitespace-nowrap ${
                 activeTab === "logo"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/60"
@@ -715,7 +830,7 @@ export function QRStudio({
             <button
               type="button"
               onClick={() => setActiveTab("style")}
-              className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
                 activeTab === "style"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/60"
@@ -727,14 +842,14 @@ export function QRStudio({
             <button
               type="button"
               onClick={() => setActiveTab("frame")}
-              className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative ${
+              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 relative whitespace-nowrap ${
                 activeTab === "frame"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/60"
               }`}
             >
               <LayoutTemplate className="w-3.5 h-3.5" />
-              <span>4. Poster Templates</span>
+              <span>4. Posters</span>
               {config.frame.enabled && (
                 <span className="w-2 h-2 rounded-full bg-emerald-400 absolute top-2 right-2" />
               )}
@@ -742,7 +857,7 @@ export function QRStudio({
             <button
               type="button"
               onClick={() => setActiveTab("presets")}
-              className={`flex-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              className={`shrink-0 sm:flex-1 py-2 sm:py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 whitespace-nowrap ${
                 activeTab === "presets"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30"
                   : "text-slate-400 hover:text-white hover:bg-slate-800/60"
@@ -2932,8 +3047,8 @@ export function QRStudio({
           )}
         </div>
 
-        {/* Right Column (5 cols): Sticky Live Preview & Download Studio */}
-        <div id="preview-section" className="lg:col-span-5 sticky top-24 space-y-5">
+        {/* Right Column: Live Preview & Download Studio (order-1 on mobile so it's always seen first, order-2 on desktop) */}
+        <div id="preview-section" className="order-1 lg:order-2 lg:col-span-5 lg:sticky lg:top-24 space-y-4">
           {/* Main Card */}
           <div className="p-6 rounded-3xl bg-slate-900/80 border border-slate-800/90 backdrop-blur-2xl shadow-2xl shadow-indigo-950/20 text-center">
             {/* Header / Badges */}
@@ -3055,6 +3170,75 @@ export function QRStudio({
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Mobile Quick Action Buttons & 1-Tap Styles (lg:hidden) */}
+            <div className="lg:hidden w-full mt-4 space-y-3 pt-3 border-t border-slate-800/80">
+              {/* 1-Tap Download & Native Share */}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => downloadQR("png")}
+                  className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-xs shadow-md shadow-indigo-600/30 flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download PNG</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={shareQR}
+                  className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs border border-slate-700 flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Share QR</span>
+                </button>
+              </div>
+
+              {/* Instant 1-Tap Quick Themes Strip (Mobile) */}
+              <div className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800/80 text-left">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    Instant 1-Tap Styles:
+                  </span>
+                  <span className="text-[9px] text-slate-500">Fast transform</span>
+                </div>
+                <div className="flex items-center justify-between gap-1.5">
+                  {quickMobileStyles.map((qs) => (
+                    <button
+                      key={qs.id}
+                      type="button"
+                      onClick={() =>
+                        setConfig((prev) => ({
+                          ...prev,
+                          dotType: qs.dotType,
+                          cornerSquareType: qs.cornerSquareType,
+                          cornerDotType: qs.cornerDotType,
+                          colorType: qs.colorType,
+                          gradientColor1: qs.gradientColor1,
+                          gradientColor2: qs.gradientColor2,
+                          dotsColor: qs.dotsColor,
+                          cornerSquareColor: qs.cornerSquareColor,
+                          cornerDotColor: qs.cornerDotColor,
+                          bgColor: qs.bgColor,
+                          isTransparentBg: false,
+                        }))
+                      }
+                      className="flex-1 flex flex-col items-center gap-1 py-1.5 px-1 rounded-lg bg-slate-900/60 hover:bg-slate-800 border border-slate-800/60 active:scale-95 transition-transform"
+                    >
+                      <div
+                        className="w-5 h-5 rounded-full shadow-md border border-white/20"
+                        style={{
+                          background: `linear-gradient(135deg, ${qs.gradientColor1}, ${qs.gradientColor2})`,
+                        }}
+                      />
+                      <span className="text-[9px] font-semibold text-slate-300 truncate max-w-[50px]">
+                        {qs.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Real Hardware In-Browser QR Decoder Verification */}
@@ -3260,19 +3444,53 @@ export function QRStudio({
         </div>
       </div>
 
-      {/* Mobile Floating "Jump to Preview & Download" Button */}
-      <div className="lg:hidden fixed bottom-5 right-5 z-40">
-        <button
-          type="button"
-          onClick={() => {
-            const el = document.getElementById("preview-section");
-            el?.scrollIntoView({ behavior: "smooth" });
-          }}
-          className="py-2.5 px-4 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-xs shadow-2xl shadow-indigo-950/80 flex items-center gap-2 border border-white/20 active:scale-95 transition-transform"
-        >
-          <Eye className="w-4 h-4" />
-          <span>View QR &amp; Download</span>
-        </button>
+      {/* APP-LIKE MOBILE STICKY BOTTOM BAR */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/90 px-4 py-2.5 shadow-[0_-10px_30px_rgba(0,0,0,0.7)]">
+        <div className="max-w-md mx-auto flex items-center justify-between gap-2.5">
+          {/* Quick status & Jump to preview */}
+          <button
+            type="button"
+            onClick={() => {
+              const el = document.getElementById("preview-section");
+              el?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-left active:scale-95 transition-transform shrink-0"
+          >
+            <div
+              className={`w-2 h-2 rounded-full ${
+                decoderResult.isScannable ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+              }`}
+            />
+            <div>
+              <div className="text-[10px] font-bold text-white leading-tight">
+                {decoderResult.isScannable ? "100% Scannable" : "Adjust Contrast"}
+              </div>
+              <div className="text-[9px] text-indigo-400 leading-tight">Tap to view QR</div>
+            </div>
+          </button>
+
+          {/* Quick Share & Download actions */}
+          <div className="flex items-center gap-2 flex-1 justify-end">
+            <button
+              type="button"
+              onClick={shareQR}
+              className="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 active:scale-95 transition-transform flex items-center justify-center shrink-0"
+              title="Share QR code"
+              aria-label="Share QR code"
+            >
+              <Share2 className="w-4 h-4 text-slate-300" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => downloadQR("png")}
+              className="flex-1 py-2.5 px-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 active:scale-95 transition-transform"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* SCAN SIMULATOR MODAL */}
