@@ -1968,13 +1968,13 @@ export function QRStudio({
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-start">
-        {/* Preview: first on mobile, right column on desktop */}
-        <div ref={previewRef} className="lg:col-span-5 lg:order-2 lg:sticky lg:top-20">
+        {/* Preview: below the content panel on mobile, right column on desktop */}
+        <div ref={previewRef} className="order-2 lg:col-span-5 lg:order-2 lg:sticky lg:top-20">
           {previewCard}
         </div>
 
         {/* Controls */}
-        <div className="lg:col-span-7 lg:order-1 min-w-0">
+        <div className="order-1 lg:col-span-7 lg:order-1 min-w-0">
           <div id="studio-tabs" className="hidden lg:block sticky top-16 z-20 py-2 bg-slate-950/90 backdrop-blur-xl">
             <div role="tablist" className="grid grid-cols-5 gap-1 p-1 rounded-2xl bg-slate-900 border border-slate-800">
               {TABS.map((t) => {
