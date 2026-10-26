@@ -29,9 +29,16 @@ export function formatQRData(config: QRDesignConfig): string {
       }
 
       const text = encodeURIComponent(config.whatsapp.message || "");
-      const isWame = config.whatsapp.linkStyle === "wame";
 
-      if (isWame) {
+      // Direct App Intent scheme (launches WhatsApp app directly on Android scanners)
+      if (config.whatsapp.linkStyle === "intent") {
+        return text
+          ? `whatsapp://send?phone=${cleanPhone}&text=${text}`
+          : `whatsapp://send?phone=${cleanPhone}`;
+      }
+
+      // Short link (wa.me)
+      if (config.whatsapp.linkStyle === "wame") {
         return text ? `https://wa.me/${cleanPhone}?text=${text}` : `https://wa.me/${cleanPhone}`;
       }
 

@@ -462,6 +462,7 @@ export function QRStudio() {
                 )}
 
                 {/* 2. WhatsApp Input */}
+                {/* 2. WhatsApp Input */}
                 {config.contentType === "whatsapp" && (
                   <div className="space-y-4">
                     {/* Link Style Selector */}
@@ -469,7 +470,7 @@ export function QRStudio() {
                       <label className="block text-xs font-semibold text-slate-200 mb-1.5">
                         Scan Action Link Format
                       </label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <button
                           type="button"
                           onClick={() =>
@@ -479,17 +480,40 @@ export function QRStudio() {
                             }))
                           }
                           className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
-                            config.whatsapp.linkStyle !== "wame"
+                            config.whatsapp.linkStyle === "api" || !config.whatsapp.linkStyle
                               ? "bg-indigo-600/20 border-indigo-500 text-white"
                               : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
                           }`}
                         >
                           <div className="font-bold flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                            <span>Direct App Link (api.whatsapp.com)</span>
+                            <span>Direct Link (api.whatsapp.com)</span>
                           </div>
                           <p className="text-[10px] text-slate-400 mt-0.5">
-                            Triggers &quot;Open in WhatsApp&quot; prompt on camera scan
+                            Triggers &quot;Open in WhatsApp&quot; on Camera Scan
+                          </p>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setConfig((prev) => ({
+                              ...prev,
+                              whatsapp: { ...prev.whatsapp, linkStyle: "intent" },
+                            }))
+                          }
+                          className={`p-2.5 rounded-xl border text-left text-xs transition-all ${
+                            config.whatsapp.linkStyle === "intent"
+                              ? "bg-indigo-600/20 border-indigo-500 text-white"
+                              : "bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white"
+                          }`}
+                        >
+                          <div className="font-bold flex items-center gap-1.5">
+                            <span className="w-2 h-2 rounded-full bg-indigo-400" />
+                            <span>App Scheme (whatsapp://)</span>
+                          </div>
+                          <p className="text-[10px] text-slate-400 mt-0.5">
+                            Direct app trigger on Android scanners
                           </p>
                         </button>
 
@@ -515,6 +539,51 @@ export function QRStudio() {
                       </div>
                     </div>
 
+                    {/* Quick WhatsApp Message Templates */}
+                    <div>
+                      <span className="block text-[11px] text-slate-400 mb-1.5">
+                        Quick Message Templates (Auto-fill chat):
+                      </span>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {[
+                          {
+                            label: "💼 Business Inquiry",
+                            msg: "Hello! I am interested in your services and would like more details.",
+                          },
+                          {
+                            label: "🛍️ Product & Order",
+                            msg: "Hi! I would like to inquire about product pricing and availability.",
+                          },
+                          {
+                            label: "💰 Price Quotation",
+                            msg: "Hello! Could you please share a price quotation for your services?",
+                          },
+                          {
+                            label: "📅 Book Consultation",
+                            msg: "Hi, I would like to schedule an appointment/meeting with your team.",
+                          },
+                          {
+                            label: "🛠️ Customer Support",
+                            msg: "Hello Support, I need some assistance with my order/account.",
+                          },
+                        ].map((tmpl) => (
+                          <button
+                            key={tmpl.label}
+                            type="button"
+                            onClick={() =>
+                              setConfig((prev) => ({
+                                ...prev,
+                                whatsapp: { ...prev.whatsapp, message: tmpl.msg },
+                              }))
+                            }
+                            className="px-2.5 py-1 rounded-lg text-[11px] bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors"
+                          >
+                            {tmpl.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
                         <label className="block text-xs font-semibold text-slate-200 mb-1.5">
@@ -535,7 +604,7 @@ export function QRStudio() {
                       </div>
                       <div className="sm:col-span-2">
                         <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                          Phone Number
+                          WhatsApp Phone Number
                         </label>
                         <input
                           type="tel"
@@ -581,7 +650,7 @@ export function QRStudio() {
 
                     <div>
                       <label className="block text-xs font-semibold text-slate-200 mb-1.5">
-                        Pre-filled WhatsApp Message (Optional)
+                        Pre-filled WhatsApp Message
                       </label>
                       <textarea
                         rows={2}
@@ -597,25 +666,35 @@ export function QRStudio() {
                       />
                     </div>
 
-                    {/* Live WhatsApp Link Preview & Test */}
-                    <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between gap-3">
-                      <div className="overflow-hidden">
-                        <span className="block text-[10px] uppercase font-bold text-slate-400">
-                          Scannable Destination Link:
+                    {/* Live WhatsApp Auto-Fill Draft & Test */}
+                    <div className="p-3.5 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">
+                          Auto-Filled WhatsApp Chat Preview:
                         </span>
-                        <p className="text-xs font-mono text-emerald-400 truncate mt-0.5">
-                          {qrData}
+                        <a
+                          href={qrData.startsWith("http") ? qrData : `https://api.whatsapp.com/send?phone=${config.whatsapp.phone}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          <span>Test Chat</span>
+                        </a>
+                      </div>
+                      <div className="text-[11px] font-mono text-slate-300 space-y-0.5">
+                        <p>
+                          <span className="text-slate-500">Phone:</span>{" "}
+                          <span className="text-emerald-400">{config.whatsapp.countryCode} {config.whatsapp.phone || "(empty)"}</span>
+                        </p>
+                        <p className="truncate">
+                          <span className="text-slate-500">Auto Message:</span>{" "}
+                          <span className="text-white">{config.whatsapp.message || "(No pre-filled message)"}</span>
+                        </p>
+                        <p className="text-[10px] text-slate-500 truncate pt-1 border-t border-slate-800/60">
+                          Target Payload: {qrData}
                         </p>
                       </div>
-                      <a
-                        href={qrData}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shrink-0 flex items-center gap-1 transition-colors"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        <span>Test Chat</span>
-                      </a>
                     </div>
                   </div>
                 )}
