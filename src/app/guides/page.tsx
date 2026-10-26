@@ -10,7 +10,7 @@ import { SITE_URL } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "QR Code Guides - Sizes, Menus, Error Correction & Safety",
   description:
-    "Practical QR code guides: print sizes in cm and inches, static vs dynamic codes, restaurant menu QR codes, error correction levels, scanning on iPhone and Android, and avoiding QR scams.",
+    "Practical QR code guides: print sizes, static vs dynamic codes, menu QR codes, error correction, scanning on iPhone and Android, and avoiding QR scams.",
   alternates: { canonical: `${SITE_URL}/guides` },
 };
 

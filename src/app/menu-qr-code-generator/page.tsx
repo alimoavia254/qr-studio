@@ -5,7 +5,7 @@ import { UseCasePage } from "@/components/UseCasePage";
 export const metadata: Metadata = {
   title: "Restaurant Menu QR Code Generator - Free & Contactless",
   description:
-    "Create a free menu QR code for your restaurant or cafe. Link your online or PDF menu, add your logo and a 'Scan for menu' frame, and print table stickers.",
+    "Create a free menu QR code for your restaurant or cafe. Link your PDF or online menu, add your logo and a 'Scan for menu' frame, then print it.",
   alternates: { canonical: "https://qrvibe.online/menu-qr-code-generator" },
   openGraph: {
     images: "/opengraph-image",
