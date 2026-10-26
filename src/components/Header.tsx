@@ -108,6 +108,9 @@ export function Header() {
             )}
           </div>
 
+          <Link href="/guides" className="hover:text-white transition-colors">
+            Guides
+          </Link>
           <Link href="/about" className="hover:text-white transition-colors">
             About Us
           </Link>
@@ -188,6 +191,7 @@ export function Header() {
           </div>
 
           <div className="border-t border-slate-800 pt-3 flex flex-wrap gap-x-5 gap-y-2 px-2 text-sm text-slate-400">
+            <Link href="/guides" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Guides</Link>
             <Link href="/about" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">About</Link>
             <Link href="/privacy-policy" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Privacy</Link>
             <Link href="/terms" onClick={() => setMobileMenuOpen(false)} className="hover:text-white">Terms</Link>

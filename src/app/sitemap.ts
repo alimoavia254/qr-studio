@@ -1,4 +1,5 @@
 import { MetadataRoute } from "next";
+import { GUIDES } from "@/lib/guides";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://qrvibe.online";
@@ -84,10 +85,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
     {
-      url: `${baseUrl}/contact`,
+      url: `${baseUrl}/guides`,
       lastModified,
-      changeFrequency: "monthly",
-      priority: 0.5,
+      changeFrequency: "weekly",
+      priority: 0.8,
     },
+    ...GUIDES.map((g) => ({
+      url: `${baseUrl}/guides/${g.slug}`,
+      lastModified: new Date(g.updated),
+      changeFrequency: "monthly" as const,
+      priority: 0.7,
+    })),
   ];
 }

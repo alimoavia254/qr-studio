@@ -113,6 +113,11 @@ export function Footer() {
             <h4 className="text-white text-xs font-bold uppercase tracking-wider mb-4">Company &amp; Legal</h4>
             <ul className="space-y-2.5">
               <li>
+                <Link href="/guides" className="hover:text-white transition-colors">
+                  QR Code Guides
+                </Link>
+              </li>
+              <li>
                 <Link href="/about" className="hover:text-white transition-colors">
                   About Us
                 </Link>
