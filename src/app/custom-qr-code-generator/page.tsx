@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Sparkles, Palette, ShieldCheck, Layers, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { PageFAQ } from "@/components/PageFAQ";
+import { PAGE_FAQS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Custom QR Code Generator - Designer Dots, Corners & Gradients",
@@ -12,6 +14,7 @@ export const metadata: Metadata = {
     canonical: "https://qrvibe.online/custom-qr-code-generator",
   },
   openGraph: {
+    images: "/opengraph-image",
     title: "Custom QR Code Generator | Aesthetic Brand Designer",
     description: "Upgrade from boring square black-and-white barcodes to sleek, custom-designed branded QR codes.",
   },
@@ -100,6 +103,8 @@ export default function CustomQRPage() {
               </ul>
             </div>
           </div>
+
+          <PageFAQ title="Custom QR Code FAQ" faqs={PAGE_FAQS.custom} />
 
           {/* Quick Links */}
           <div className="text-center">

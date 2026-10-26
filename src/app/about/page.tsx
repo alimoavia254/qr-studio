@@ -5,7 +5,7 @@ import { Sparkles, Code2, Heart, Award, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About Us | QR Vibe - The Private QR Code Platform",
+  title: "About Us - The Private QR Code Platform",
   description: "Learn why we built QR Vibe: to free creators from scammy subscription redirects and provide a fast, beautiful, 100% private QR generator.",
   alternates: {
     canonical: "https://qrvibe.online/about",

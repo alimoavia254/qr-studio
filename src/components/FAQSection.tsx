@@ -2,32 +2,12 @@
 
 import React, { useState } from "react";
 import { ChevronDown, HelpCircle } from "lucide-react";
+import { HOME_FAQS } from "@/lib/seo";
 
 export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
-  const faqs = [
-    {
-      q: "How does QR Vibe ensure the QR code actually scans with a logo?",
-      a: "QR codes use Reed-Solomon Error Correction. QR Vibe automatically switches the error correction level to 'High' (Level H) when you upload a logo. Level H allows up to 30% of the QR pattern to be covered or damaged while still being 100% reconstructible and readable by any phone camera.",
-    },
-    {
-      q: "Why do some colored QR codes fail to scan?",
-      a: "The most common reason is low contrast. Phone camera sensors need strong optical separation between the dark modules (dots) and the light background. QR Vibe features a live Scannability Engine that checks the WCAG contrast ratio in real-time and warns you if the colors are too low contrast.",
-    },
-    {
-      q: "Do these QR codes expire or have scan limits?",
-      a: "No! All QR codes generated in QR Vibe are 100% static and encode your direct content (such as your direct URL, Wi-Fi credentials, or vCard details). They never route through a third-party redirect and never expire or ask you for a monthly subscription.",
-    },
-    {
-      q: "What format should I download for printing on packaging or business cards?",
-      a: "For professional printing, select SVG (Scalable Vector Graphics). SVGs scale to any billboard or packaging dimension without pixelation. For digital sharing and social media, the 1024px or 2048px Ultra-HD PNG option is perfect.",
-    },
-    {
-      q: "Is my uploaded logo or private data stored on any server?",
-      a: "No. Everything runs 100% locally on your computer inside your web browser. Neither your Wi-Fi password, vCard data, nor your brand logo is uploaded to external servers, guaranteeing complete privacy and confidentiality.",
-    },
-  ];
+  const faqs = HOME_FAQS;
 
   return (
     <section className="py-20 bg-slate-950 border-t border-slate-900">

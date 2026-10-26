@@ -4,6 +4,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { MessageSquare, ShieldCheck, Zap, Smartphone, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { PageFAQ } from "@/components/PageFAQ";
+import { PAGE_FAQS } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "WhatsApp QR Code Generator - Direct Chat Link (No Contact Save)",
@@ -12,6 +14,7 @@ export const metadata: Metadata = {
     canonical: "https://qrvibe.online/whatsapp-qr-code-generator",
   },
   openGraph: {
+    images: "/opengraph-image",
     title: "Free WhatsApp QR Code Generator | Instant Chat Opener",
     description: "Generate WhatsApp QR codes that open direct chats without forcing customers to save your number first.",
   },
@@ -100,6 +103,8 @@ export default function WhatsAppQRPage() {
               </ul>
             </div>
           </div>
+
+          <PageFAQ title="WhatsApp QR Code FAQ" faqs={PAGE_FAQS.whatsapp} />
 
           {/* Quick Links to other generators */}
           <div className="text-center">

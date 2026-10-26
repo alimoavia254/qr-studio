@@ -4,7 +4,7 @@ import Footer from "@/components/Footer";
 import { ShieldCheck, Lock, EyeOff, ServerOff, FileCheck } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | QR Vibe - 100% In-Browser Privacy",
+  title: "Privacy Policy - 100% In-Browser Privacy",
   description: "Learn how QR Vibe protects your privacy with 100% client-side QR code generation. Zero server uploads, zero database storage.",
   alternates: {
     canonical: "https://qrvibe.online/privacy-policy",
