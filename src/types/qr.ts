@@ -7,7 +7,59 @@ import type {
   ShapeType,
 } from "qr-code-styling";
 
-export type QRContentType = "url" | "whatsapp" | "wifi" | "vcard" | "email" | "text";
+export type QRContentType =
+  | "url"
+  | "whatsapp"
+  | "wifi"
+  | "vcard"
+  | "email"
+  | "text"
+  | "sms"
+  | "phone"
+  | "geo"
+  | "event"
+  | "upi"
+  | "crypto";
+
+export interface SmsData {
+  phone: string;
+  message: string;
+}
+
+export interface PhoneData {
+  phone: string;
+}
+
+export interface GeoData {
+  lat: string;
+  lng: string;
+  linkStyle: "geo" | "maps";
+}
+
+export interface EventData {
+  title: string;
+  location: string;
+  description: string;
+  allDay: boolean;
+  /** "YYYY-MM-DDTHH:mm" (or "YYYY-MM-DD" when allDay) */
+  start: string;
+  end: string;
+}
+
+export interface UpiData {
+  vpa: string;
+  name: string;
+  amount: string;
+  note: string;
+}
+
+export type CryptoCoin = "bitcoin" | "litecoin" | "dogecoin" | "ethereum";
+
+export interface CryptoData {
+  coin: CryptoCoin;
+  address: string;
+  amount: string;
+}
 
 export interface WifiData {
   ssid: string;
@@ -106,6 +158,12 @@ export interface QRDesignConfig {
   whatsapp: WhatsappData;
   vcard: VCardData;
   email: EmailData;
+  sms: SmsData;
+  phone: PhoneData;
+  geo: GeoData;
+  event: EventData;
+  upi: UpiData;
+  crypto: CryptoData;
 
   // Visual Styles
   shape: ShapeType;

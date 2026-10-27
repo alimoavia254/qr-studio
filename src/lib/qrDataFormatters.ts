@@ -1,5 +1,19 @@
 import { QRDesignConfig } from "@/types/qr";
 
+const digitsOnly = (v: string) => v.replace(/[^0-9+]/g, "");
+
+/** iCalendar text values: escape backslash, comma, semicolon and newlines. */
+const icsEscape = (v: string) =>
+  v.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+
+/** "2026-10-27T14:30" -> "20261027T143000", "2026-10-27" -> "20261027" */
+const icsDate = (v: string, allDay: boolean) => {
+  const [d = "", t = ""] = v.split("T");
+  const date = d.replace(/-/g, "");
+  if (allDay) return date;
+  return `${date}T${(t || "00:00").replace(/:/g, "").padEnd(6, "0").slice(0, 6)}`;
+};
+
 export function formatQRData(config: QRDesignConfig): string {
   switch (config.contentType) {
     case "url": {
@@ -12,7 +26,7 @@ export function formatQRData(config: QRDesignConfig): string {
     }
 
     case "whatsapp": {
-      let cc = config.whatsapp.countryCode.replace(/[^0-9]/g, "");
+      const cc = config.whatsapp.countryCode.replace(/[^0-9]/g, "");
       let phone = config.whatsapp.phone.replace(/[^0-9]/g, "");
 
       // Automatically strip leading zero (e.g. 0300... -> 300...)
@@ -96,6 +110,66 @@ export function formatQRData(config: QRDesignConfig): string {
       }
       const query = params.length > 0 ? `?${params.join("&")}` : "";
       return `mailto:${cleanEmail}${query}`;
+    }
+
+    case "sms": {
+      const phone = digitsOnly(config.sms.phone) || "+15551234567";
+      const body = config.sms.message.trim();
+      return body ? `SMSTO:${phone}:${body}` : `SMSTO:${phone}`;
+    }
+
+    case "phone":
+      return `tel:${digitsOnly(config.phone.phone) || "+15551234567"}`;
+
+    case "geo": {
+      const lat = parseFloat(config.geo.lat);
+      const lng = parseFloat(config.geo.lng);
+      const ok = Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+      const la = ok ? lat : 31.5204;
+      const ln = ok ? lng : 74.3587;
+      return config.geo.linkStyle === "maps"
+        ? `https://www.google.com/maps?q=${la},${ln}`
+        : `geo:${la},${ln}`;
+    }
+
+    case "event": {
+      const e = config.event;
+      const start = e.start || (e.allDay ? "2026-12-01" : "2026-12-01T10:00");
+      const end = e.end || start;
+      const lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "BEGIN:VEVENT",
+        `SUMMARY:${icsEscape(e.title || "Event")}`,
+        e.allDay ? `DTSTART;VALUE=DATE:${icsDate(start, true)}` : `DTSTART:${icsDate(start, false)}`,
+        e.allDay ? `DTEND;VALUE=DATE:${icsDate(end, true)}` : `DTEND:${icsDate(end, false)}`,
+      ];
+      if (e.location) lines.push(`LOCATION:${icsEscape(e.location)}`);
+      if (e.description) lines.push(`DESCRIPTION:${icsEscape(e.description)}`);
+      lines.push("END:VEVENT", "END:VCALENDAR");
+      return lines.join("\n");
+    }
+
+    case "upi": {
+      const u = config.upi;
+      const params = [`pa=${encodeURIComponent(u.vpa.trim() || "name@bank")}`];
+      if (u.name.trim()) params.push(`pn=${encodeURIComponent(u.name.trim())}`);
+      const amount = parseFloat(u.amount);
+      if (Number.isFinite(amount) && amount > 0) params.push(`am=${amount.toFixed(2)}`);
+      params.push("cu=INR");
+      if (u.note.trim()) params.push(`tn=${encodeURIComponent(u.note.trim())}`);
+      return `upi://pay?${params.join("&")}`;
+    }
+
+    case "crypto": {
+      const c = config.crypto;
+      const address = c.address.trim() || "bc1qexampleaddress";
+      // Ethereum amounts are in wei, so only the address is encoded for it.
+      const amount = parseFloat(c.amount);
+      if (c.coin !== "ethereum" && Number.isFinite(amount) && amount > 0) {
+        return `${c.coin}:${address}?amount=${amount}`;
+      }
+      return `${c.coin}:${address}`;
     }
 
     case "text":

@@ -1,14 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import confetti from "canvas-confetti";
 import {
   Globe,
-  MessageCircle,
-  Wifi,
-  Contact,
-  Mail,
-  FileText,
   Upload,
   Trash2,
   Download,
@@ -16,22 +10,32 @@ import {
   Check,
   Sparkles,
   AlertTriangle,
-  Eye,
-  EyeOff,
   RefreshCw,
   Palette,
   Image as ImageIcon,
   ExternalLink,
   LayoutTemplate,
   Share2,
-  X,
   Loader2,
   CheckCircle2,
+  Save,
+  Link2,
+  FolderHeart,
 } from "lucide-react";
+import { Section, Field, Chip, Segmented, Toggle, ColorField, OptionTile, inputCls } from "./studio/ui";
+import { ContentPanel, CONTENT_TYPES } from "./studio/ContentPanel";
 import { QRDesignConfig, QRContentType, ThemeCategory, PosterTemplatePreset } from "@/types/qr";
 import { formatQRData } from "@/lib/qrDataFormatters";
 import { evaluateScannability } from "@/lib/colorUtils";
 import { QR_PRESETS, SAMPLE_LOGOS } from "@/lib/qrPresets";
+import { jpegToPdf } from "@/lib/pdf";
+import {
+  loadSavedDesigns,
+  persistSavedDesigns,
+  encodeDesign,
+  decodeDesign,
+  type SavedDesign,
+} from "@/lib/savedDesigns";
 import { POSTER_TEMPLATES } from "@/lib/posterTemplates";
 import type QRCodeStylingType from "qr-code-styling";
 import type {
@@ -73,6 +77,19 @@ const INITIAL_CONFIG: QRDesignConfig = {
     body: "Hi team,\n\nI would like to discuss a project with you.",
     format: "mailto",
   },
+  sms: { phone: "+923001234567", message: "Hi! I saw your QR code and want to know more." },
+  phone: { phone: "+923001234567" },
+  geo: { lat: "31.5204", lng: "74.3587", linkStyle: "maps" },
+  event: {
+    title: "Grand Opening",
+    location: "Main Street, Lahore",
+    description: "Join us for the opening day.",
+    allDay: false,
+    start: "2026-12-01T10:00",
+    end: "2026-12-01T12:00",
+  },
+  upi: { vpa: "shopname@okaxis", name: "My Shop", amount: "", note: "" },
+  crypto: { coin: "bitcoin", address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq", amount: "" },
   shape: "square",
   dotType: "rounded",
   cornerSquareType: "extra-rounded",
@@ -114,8 +131,12 @@ const INITIAL_CONFIG: QRDesignConfig = {
   },
 };
 
-type StudioTab = "content" | "logo" | "style" | "frame" | "presets";
-type ExportFormat = "png" | "jpeg" | "svg";
+type StudioTab = "content" | "logo" | "style" | "frame" | "presets" | "saved";
+type ExportFormat = "png" | "jpeg" | "webp" | "svg" | "pdf";
+
+const PDF_SIZES_CM = [3, 5, 10, 15] as const;
+const FORMAT_EXT: Record<ExportFormat, string> = { png: "png", jpeg: "jpg", webp: "webp", svg: "svg", pdf: "pdf" };
+const FORMAT_LABEL: Record<ExportFormat, string> = { png: "PNG", jpeg: "JPG", webp: "WebP", svg: "SVG", pdf: "PDF" };
 
 const PREVIEW_SIZE = 300;
 const STEPS_TEXT = "1. Open Camera   •   2. Point at QR   •   3. Tap Link";
@@ -126,15 +147,7 @@ const TABS: { id: StudioTab; label: string; icon: React.ElementType }[] = [
   { id: "style", label: "Style", icon: Palette },
   { id: "frame", label: "Poster", icon: LayoutTemplate },
   { id: "presets", label: "Themes", icon: Sparkles },
-];
-
-const CONTENT_TYPES: { id: QRContentType; label: string; icon: React.ElementType }[] = [
-  { id: "url", label: "Website", icon: Globe },
-  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle },
-  { id: "wifi", label: "Wi-Fi", icon: Wifi },
-  { id: "vcard", label: "Contact", icon: Contact },
-  { id: "email", label: "Email", icon: Mail },
-  { id: "text", label: "Text", icon: FileText },
+  { id: "saved", label: "Saved", icon: FolderHeart },
 ];
 
 const THEME_CATEGORIES: { id: "all" | ThemeCategory; label: string }[] = [
@@ -242,216 +255,6 @@ const EYE_CENTERS: { id: CornerDotType; label: string }[] = [
   { id: "square", label: "Square" },
 ];
 
-const WHATSAPP_TEMPLATES = [
-  { label: "Business inquiry", msg: "Hello! I am interested in your services and would like more details." },
-  { label: "Order", msg: "Hi! I would like to inquire about product pricing and availability." },
-  { label: "Price quote", msg: "Hello! Could you please share a price quotation for your services?" },
-  { label: "Booking", msg: "Hi, I would like to schedule an appointment/meeting with your team." },
-  { label: "Support", msg: "Hello Support, I need some assistance with my order/account." },
-];
-
-const EMAIL_TEMPLATES = [
-  { label: "Business inquiry", sub: "Business & Project Inquiry", body: "Hi team,\n\nI would like to inquire about your services." },
-  { label: "Support", sub: "Support Request - [Order / Account #]", body: "Hello Support,\n\nI need assistance with the following issue:\n" },
-  { label: "Quote", sub: "Price Quote Request", body: "Hello,\n\nPlease provide a quote for the following requirements:\n" },
-  { label: "Feedback", sub: "Customer Feedback & Review", body: "Hi there,\n\nI would love to share some feedback regarding:\n" },
-];
-
-const COUNTRY_CODES = ["+92", "+971", "+966", "+44", "+1", "+91"];
-
-/* ------------------------------------------------------------------ */
-/* Small shared UI pieces so every panel looks and behaves the same    */
-/* ------------------------------------------------------------------ */
-
-const inputCls =
-  "w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors";
-
-function Section({
-  title,
-  hint,
-  action,
-  children,
-}: {
-  title: string;
-  hint?: string;
-  action?: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="space-y-3 max-lg:p-4 max-lg:rounded-2xl max-lg:bg-slate-900/70 max-lg:border max-lg:border-slate-800/80">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-bold text-white">{title}</h3>
-          {hint && <p className="text-xs text-slate-400 mt-0.5">{hint}</p>}
-        </div>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="block">
-      <span className="block text-xs font-semibold text-slate-300 mb-1.5">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active?: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`shrink-0 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
-        active
-          ? "bg-indigo-600 border-indigo-500 text-white"
-          : "bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-600 hover:text-white"
-      }`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function Segmented<T extends string | number>({
-  options,
-  value,
-  onChange,
-  size = "md",
-}: {
-  options: { value: T; label: string }[];
-  value: T;
-  onChange: (v: T) => void;
-  size?: "sm" | "md";
-}) {
-  return (
-    <div className="flex p-1 rounded-xl bg-slate-950 border border-slate-800">
-      {options.map((o) => (
-        <button
-          key={String(o.value)}
-          type="button"
-          onClick={() => onChange(o.value)}
-          className={`flex-1 rounded-lg font-semibold transition-colors ${
-            size === "sm" ? "py-1.5 text-[11px]" : "py-2 text-xs"
-          } ${value === o.value ? "bg-indigo-600 text-white shadow-sm" : "text-slate-400 hover:text-white"}`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function Toggle({
-  checked,
-  onChange,
-  label,
-  hint,
-}: {
-  checked: boolean;
-  onChange: (v: boolean) => void;
-  label: string;
-  hint?: string;
-}) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className="w-full flex items-center justify-between gap-4 py-1 text-left"
-    >
-      <span>
-        <span className="block text-sm font-semibold text-white">{label}</span>
-        {hint && <span className="block text-xs text-slate-400 mt-0.5">{hint}</span>}
-      </span>
-      <span
-        className={`relative shrink-0 w-11 h-6 rounded-full transition-colors ${
-          checked ? "bg-indigo-600" : "bg-slate-700"
-        }`}
-      >
-        <span
-          className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-            checked ? "translate-x-5" : ""
-          }`}
-        />
-      </span>
-    </button>
-  );
-}
-
-function ColorField({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div>
-      <span className="block text-xs font-semibold text-slate-300 mb-1.5">{label}</span>
-      <div className="flex items-center gap-2 p-1.5 rounded-xl bg-slate-950 border border-slate-800 focus-within:border-indigo-500">
-        <span className="relative w-8 h-8 rounded-lg overflow-hidden border border-slate-700 shrink-0">
-          <input
-            type="color"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className="absolute -inset-2 w-12 h-12 cursor-pointer"
-            aria-label={label}
-          />
-        </span>
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full min-w-0 bg-transparent text-base sm:text-sm font-mono text-white outline-none uppercase"
-          spellCheck={false}
-        />
-      </div>
-    </div>
-  );
-}
-
-function OptionTile({
-  active,
-  onClick,
-  children,
-  className = "",
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={`rounded-xl border transition-all active:scale-[0.97] ${
-        active
-          ? "bg-indigo-600/15 border-indigo-500 text-white ring-1 ring-indigo-500/40"
-          : "bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-600 hover:text-white"
-      } ${className}`}
-    >
-      {children}
-    </button>
-  );
-}
-
 /* Shrinks the font until the text fits the given width (used for poster export). */
 function fitText(
   ctx: CanvasRenderingContext2D,
@@ -488,11 +291,13 @@ export function QRStudio({
   const [activeTab, setActiveTab] = useState<StudioTab>(initialTab);
   const [exportRes, setExportRes] = useState<number>(1024);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("png");
+  const [pdfCm, setPdfCm] = useState<number>(5);
+  const [saved, setSaved] = useState<SavedDesign[]>([]);
+  const [saveName, setSaveName] = useState("");
   const [busy, setBusy] = useState<null | "download" | "share" | "copy">(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [themeCategory, setThemeCategory] = useState<"all" | ThemeCategory>("all");
-  const [wifiShowPass, setWifiShowPass] = useState(false);
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
   const [studioInView, setStudioInView] = useState(true);
   const [previewInView, setPreviewInView] = useState(true);
@@ -536,6 +341,68 @@ export function QRStudio({
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2600);
+  };
+
+  // Restore saved designs, and open a design shared through a link (#d=...)
+  /* eslint-disable react-hooks/set-state-in-effect -- one-time sync from localStorage / URL after hydration */
+  useEffect(() => {
+    setSaved(loadSavedDesigns());
+    const shared = decodeDesign(window.location.hash);
+    if (!shared) return;
+    setConfig((prev) => {
+      const next: Record<string, unknown> = { ...prev };
+      for (const [k, v] of Object.entries(shared)) {
+        if (!(k in prev)) continue;
+        const cur = (prev as unknown as Record<string, unknown>)[k];
+        next[k] =
+          cur && typeof cur === "object" && v && typeof v === "object" && !Array.isArray(v)
+            ? { ...(cur as object), ...(v as object) }
+            : v;
+      }
+      // A shared link must never make the page load a remote image
+      const logo = next.logoUrl;
+      if (typeof logo !== "string" || !(logo.startsWith("data:image/") || logo.startsWith("/"))) next.logoUrl = null;
+      if (!CONTENT_TYPES.some((t) => t.id === next.contentType)) next.contentType = prev.contentType;
+      return next as unknown as QRDesignConfig;
+    });
+    showToast("Opened a shared design.");
+  }, []);
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const saveDesign = () => {
+    const label = CONTENT_TYPES.find((t) => t.id === config.contentType)?.label ?? "QR";
+    const entry: SavedDesign = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: saveName.trim() || `${label} QR`,
+      savedAt: Date.now(),
+      thumb,
+      config,
+    };
+    const next = [entry, ...saved].slice(0, 30);
+    if (!persistSavedDesigns(next)) {
+      showToast("Couldn't save: browser storage is full or blocked.");
+      return;
+    }
+    setSaved(next);
+    setSaveName("");
+    showToast("Design saved on this device.");
+  };
+
+  const deleteDesign = (id: string) => {
+    const next = saved.filter((d) => d.id !== id);
+    persistSavedDesigns(next);
+    setSaved(next);
+  };
+
+  const copyShareLink = async () => {
+    const { hash, logoDropped } = encodeDesign(config);
+    const link = `${window.location.origin}${window.location.pathname}${hash}`;
+    try {
+      await navigator.clipboard.writeText(link);
+      showToast(logoDropped ? "Link copied. Uploaded logos aren't included in links." : "Design link copied.");
+    } catch {
+      showToast("Couldn't copy the link in this browser.");
+    }
   };
 
   // Track whether the studio / preview are on screen (drives the mobile action bar)
@@ -615,7 +482,7 @@ export function QRStudio({
   // Live preview render
   useEffect(() => {
     let isMounted = true;
-    (async () => {
+    const timer = setTimeout(async () => {
       if (!qrContainerRef.current) return;
       const { default: QRCodeStyling } = await import("qr-code-styling");
       if (!isMounted || !qrContainerRef.current) return;
@@ -627,9 +494,10 @@ export function QRStudio({
       }
       qrContainerRef.current.innerHTML = "";
       qrCodeInstanceRef.current.append(qrContainerRef.current);
-    })();
+    }, 120);
     return () => {
       isMounted = false;
+      clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config, qrData]);
@@ -777,7 +645,7 @@ export function QRStudio({
 
     if (format === "svg" || !config.frame.enabled) {
       const exporter = new QRCodeStyling(getQROptions(size, format === "svg" ? "svg" : "canvas"));
-      return (await exporter.getRawData(format)) as Blob | null;
+      return (await exporter.getRawData(format as "png" | "jpeg" | "webp" | "svg")) as Blob | null;
     }
 
     const exporter = new QRCodeStyling(getQROptions(size));
@@ -904,19 +772,29 @@ export function QRStudio({
     }
 
     return await new Promise<Blob | null>((res) =>
-      canvas.toBlob((b) => res(b), format === "jpeg" ? "image/jpeg" : "image/png", 0.95)
+      canvas.toBlob((b) => res(b), format === "jpeg" ? "image/jpeg" : format === "webp" ? "image/webp" : "image/png", 0.95)
     );
   };
 
   const fileName = (format: ExportFormat) =>
     `qrvibe-${config.frame.enabled && format !== "svg" ? "poster-" : ""}${config.contentType}-${exportRes}px.${
-      format === "jpeg" ? "jpg" : format
+      FORMAT_EXT[format]
     }`;
 
   const downloadQR = async () => {
     setBusy("download");
     try {
-      const blob = await renderBlob(exportFormat, exportRes);
+      let blob: Blob | null;
+      if (exportFormat === "pdf") {
+        // PDF embeds a high-res JPEG scaled to the chosen physical size
+        const jpeg = await renderBlob("jpeg", Math.max(exportRes, 2048));
+        if (!jpeg) throw new Error("Empty export");
+        const bmp = await createImageBitmap(jpeg);
+        blob = jpegToPdf(new Uint8Array(await jpeg.arrayBuffer()), bmp.width, bmp.height, pdfCm);
+        bmp.close();
+      } else {
+        blob = await renderBlob(exportFormat, exportRes);
+      }
       if (!blob) throw new Error("Empty export");
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -925,7 +803,9 @@ export function QRStudio({
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.85 } });
+      import("canvas-confetti").then(({ default: confetti }) =>
+        confetti({ particleCount: 80, spread: 60, origin: { y: 0.85 } })
+      );
     } catch (err) {
       console.error("Export error:", err);
       showToast("Download failed. Please try again.");
@@ -1003,302 +883,9 @@ export function QRStudio({
   /* ================================================================ */
 
   const contentPanel = (
-    <div className="space-y-6">
-      <Section title="What should the QR open?">
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-          {CONTENT_TYPES.map((t) => {
-            const Icon = t.icon;
-            return (
-              <OptionTile
-                key={t.id}
-                active={config.contentType === t.id}
-                onClick={() => update("contentType", t.id)}
-                className="flex flex-col items-center justify-center gap-1.5 py-3"
-              >
-                <Icon className="w-5 h-5" />
-                <span className="text-xs font-semibold">{t.label}</span>
-              </OptionTile>
-            );
-          })}
-        </div>
-      </Section>
+ <ContentPanel config={config} update={update} />
+ );
 
-      <div className="h-px bg-slate-800" />
-
-      {config.contentType === "url" && (
-        <Section title="Website link" hint="Paste any link: website, Instagram, YouTube, Google Maps…">
-          <div className="relative">
-            <input
-              type="url"
-              inputMode="url"
-              autoCapitalize="off"
-              autoCorrect="off"
-              value={config.url}
-              onChange={(e) => update("url", e.target.value)}
-              placeholder="https://example.com"
-              className={`${inputCls} pr-10`}
-            />
-            {config.url && (
-              <button
-                type="button"
-                onClick={() => update("url", "")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
-                aria-label="Clear link"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-            {["https://", "https://instagram.com/", "https://wa.me/", "https://youtube.com/"].map((p) => (
-              <Chip key={p} onClick={() => update("url", p)}>
-                {p.replace("https://", "") || "https://"}
-              </Chip>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {config.contentType === "whatsapp" && (
-        <Section title="WhatsApp chat" hint="People scan and a chat opens with your number and message.">
-          <div className="grid grid-cols-[96px_1fr] gap-2">
-            <Field label="Code">
-              <input
-                type="tel"
-                value={config.whatsapp.countryCode}
-                onChange={(e) => update("whatsapp", { ...config.whatsapp, countryCode: e.target.value })}
-                placeholder="+92"
-                className={`${inputCls} text-center`}
-              />
-            </Field>
-            <Field label="Phone number">
-              <input
-                type="tel"
-                inputMode="tel"
-                value={config.whatsapp.phone}
-                onChange={(e) => update("whatsapp", { ...config.whatsapp, phone: e.target.value })}
-                placeholder="3001234567"
-                className={inputCls}
-              />
-            </Field>
-          </div>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-            {COUNTRY_CODES.map((c) => (
-              <Chip
-                key={c}
-                active={config.whatsapp.countryCode === c}
-                onClick={() => update("whatsapp", { ...config.whatsapp, countryCode: c })}
-              >
-                {c}
-              </Chip>
-            ))}
-          </div>
-          <Field label="Message (optional)">
-            <textarea
-              rows={2}
-              value={config.whatsapp.message}
-              onChange={(e) => update("whatsapp", { ...config.whatsapp, message: e.target.value })}
-              placeholder="Hello, I want to ask about…"
-              className={inputCls}
-            />
-          </Field>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-            {WHATSAPP_TEMPLATES.map((t) => (
-              <Chip
-                key={t.label}
-                active={config.whatsapp.message === t.msg}
-                onClick={() => update("whatsapp", { ...config.whatsapp, message: t.msg })}
-              >
-                {t.label}
-              </Chip>
-            ))}
-          </div>
-          <Field label="Link type">
-            <Segmented
-              value={config.whatsapp.linkStyle || "api"}
-              onChange={(v) => update("whatsapp", { ...config.whatsapp, linkStyle: v })}
-              options={[
-                { value: "api", label: "Standard" },
-                { value: "wame", label: "wa.me" },
-                { value: "intent", label: "App link" },
-              ]}
-            />
-          </Field>
-        </Section>
-      )}
-
-      {config.contentType === "wifi" && (
-        <Section title="Wi-Fi network" hint="Guests scan and join without typing the password.">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label="Network name (SSID)">
-              <input
-                type="text"
-                autoCapitalize="off"
-                value={config.wifi.ssid}
-                onChange={(e) => update("wifi", { ...config.wifi, ssid: e.target.value })}
-                placeholder="Office_WiFi"
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Security">
-              <select
-                value={config.wifi.encryption}
-                onChange={(e) =>
-                  update("wifi", { ...config.wifi, encryption: e.target.value as QRDesignConfig["wifi"]["encryption"] })
-                }
-                className={inputCls}
-              >
-                <option value="WPA">WPA / WPA2 / WPA3</option>
-                <option value="WEP">WEP (old)</option>
-                <option value="nopass">No password</option>
-              </select>
-            </Field>
-          </div>
-          {config.wifi.encryption !== "nopass" && (
-            <Field label="Password">
-              <div className="relative">
-                <input
-                  type={wifiShowPass ? "text" : "password"}
-                  autoCapitalize="off"
-                  value={config.wifi.password}
-                  onChange={(e) => update("wifi", { ...config.wifi, password: e.target.value })}
-                  placeholder="Network password"
-                  className={`${inputCls} pr-11`}
-                />
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setWifiShowPass((s) => !s);
-                  }}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-white"
-                  aria-label={wifiShowPass ? "Hide password" : "Show password"}
-                >
-                  {wifiShowPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </Field>
-          )}
-          <Toggle
-            checked={config.wifi.hidden}
-            onChange={(v) => update("wifi", { ...config.wifi, hidden: v })}
-            label="Hidden network"
-            hint="Turn on only if your Wi-Fi name is hidden."
-          />
-        </Section>
-      )}
-
-      {config.contentType === "vcard" && (
-        <Section title="Contact card" hint="People scan and save your contact in one tap.">
-          <div className="grid grid-cols-2 gap-3">
-            {(
-              [
-                ["firstName", "First name", "text"],
-                ["lastName", "Last name", "text"],
-                ["phone", "Phone", "tel"],
-                ["email", "Email", "email"],
-                ["company", "Company", "text"],
-                ["title", "Job title", "text"],
-              ] as const
-            ).map(([key, label, type]) => (
-              <Field key={key} label={label}>
-                <input
-                  type={type}
-                  value={config.vcard[key]}
-                  onChange={(e) => update("vcard", { ...config.vcard, [key]: e.target.value })}
-                  className={inputCls}
-                />
-              </Field>
-            ))}
-          </div>
-          <Field label="Website">
-            <input
-              type="url"
-              inputMode="url"
-              autoCapitalize="off"
-              value={config.vcard.website}
-              onChange={(e) => update("vcard", { ...config.vcard, website: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Address">
-            <input
-              type="text"
-              value={config.vcard.address}
-              onChange={(e) => update("vcard", { ...config.vcard, address: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
-        </Section>
-      )}
-
-      {config.contentType === "email" && (
-        <Section title="Email" hint="Opens a ready-to-send email in the scanner's mail app.">
-          <Field label="Send to">
-            <input
-              type="email"
-              inputMode="email"
-              autoCapitalize="off"
-              value={config.email.email}
-              onChange={(e) => update("email", { ...config.email, email: e.target.value })}
-              placeholder="hello@example.com"
-              className={inputCls}
-            />
-          </Field>
-          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-            {EMAIL_TEMPLATES.map((t) => (
-              <Chip
-                key={t.label}
-                active={config.email.subject === t.sub}
-                onClick={() => update("email", { ...config.email, subject: t.sub, body: t.body })}
-              >
-                {t.label}
-              </Chip>
-            ))}
-          </div>
-          <Field label="Subject">
-            <input
-              type="text"
-              value={config.email.subject}
-              onChange={(e) => update("email", { ...config.email, subject: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Message">
-            <textarea
-              rows={3}
-              value={config.email.body}
-              onChange={(e) => update("email", { ...config.email, body: e.target.value })}
-              className={inputCls}
-            />
-          </Field>
-          <Field label="Format">
-            <Segmented
-              value={config.email.format === "matmsg" ? "matmsg" : "mailto"}
-              onChange={(v) => update("email", { ...config.email, format: v })}
-              options={[
-                { value: "mailto", label: "Standard (mailto)" },
-                { value: "matmsg", label: "Android (MATMSG)" },
-              ]}
-            />
-          </Field>
-        </Section>
-      )}
-
-      {config.contentType === "text" && (
-        <Section title="Plain text" hint="Shows this text when scanned.">
-          <textarea
-            rows={4}
-            value={config.text}
-            onChange={(e) => update("text", e.target.value)}
-            placeholder="Write your message…"
-            className={inputCls}
-          />
-          <p className="text-xs text-slate-500 text-right">{config.text.length} characters</p>
-        </Section>
-      )}
-    </div>
-  );
 
   const logoPanel = (
     <div className="space-y-6">
@@ -1756,12 +1343,92 @@ export function QRStudio({
     </div>
   );
 
+  const savedPanel = (
+    <div className="space-y-4">
+      <Section
+        title="Save this design"
+        hint="Stored only in this browser. Nothing is uploaded."
+      >
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={saveName}
+            onChange={(e) => setSaveName(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && saveDesign()}
+            placeholder="Name (optional)"
+            maxLength={40}
+            className={inputCls}
+          />
+          <button
+            type="button"
+            onClick={saveDesign}
+            className="shrink-0 flex items-center gap-1.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold"
+          >
+            <Save className="w-4 h-4" />
+            Save
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={copyShareLink}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-900 border border-slate-800 hover:border-slate-600 text-slate-200 hover:text-white text-sm font-semibold"
+        >
+          <Link2 className="w-4 h-4" />
+          Copy design link
+        </button>
+      </Section>
+
+      <Section title={`My designs (${saved.length})`} hint="Tap a design to open it.">
+        {saved.length === 0 ? (
+          <p className="text-sm text-slate-500 py-6 text-center">No saved designs yet.</p>
+        ) : (
+          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {saved.map((d) => (
+              <li key={d.id} className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfig(d.config);
+                    showToast(`Opened "${d.name}".`);
+                  }}
+                  className="flex items-center gap-3 min-w-0 flex-1 text-left"
+                >
+                  {d.thumb ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={d.thumb} alt="" className="w-12 h-12 rounded-lg shrink-0 bg-white" />
+                  ) : (
+                    <span className="w-12 h-12 rounded-lg shrink-0 bg-slate-800" />
+                  )}
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-white truncate">{d.name}</span>
+                    <span className="block text-[11px] text-slate-400">
+                      {new Date(d.savedAt).toLocaleDateString()}
+                    </span>
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => deleteDesign(d.id)}
+                  aria-label={`Delete ${d.name}`}
+                  className="shrink-0 p-2 rounded-lg text-slate-400 hover:text-rose-300 hover:bg-rose-500/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+    </div>
+  );
+
   const panels: Record<StudioTab, React.ReactNode> = {
     content: contentPanel,
     logo: logoPanel,
     style: stylePanel,
     frame: posterPanel,
     presets: presetsPanel,
+    saved: savedPanel,
   };
 
   /* ================================================================ */
@@ -1876,28 +1543,39 @@ export function QRStudio({
       </div>
 
       {/* Export options */}
-      <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="mt-4 grid gap-2">
         <Segmented
           size="sm"
           value={exportFormat}
           onChange={setExportFormat}
-          options={[
-            { value: "png", label: "PNG" },
-            { value: "jpeg", label: "JPG" },
-            { value: "svg", label: "SVG" },
-          ]}
+          options={(Object.keys(FORMAT_LABEL) as ExportFormat[]).map((v) => ({ value: v, label: FORMAT_LABEL[v] }))}
         />
-        <Segmented
-          size="sm"
-          value={exportRes}
-          onChange={setExportRes}
-          options={[
-            { value: 512, label: "S" },
-            { value: 1024, label: "HD" },
-            { value: 2048, label: "Print" },
-          ]}
-        />
+        {exportFormat === "pdf" ? (
+          <Segmented
+            size="sm"
+            value={pdfCm}
+            onChange={setPdfCm}
+            options={PDF_SIZES_CM.map((v) => ({ value: v, label: `${v} cm` }))}
+          />
+        ) : (
+          <Segmented
+            size="sm"
+            value={exportRes}
+            onChange={setExportRes}
+            options={[
+              { value: 512, label: "S" },
+              { value: 1024, label: "HD" },
+              { value: 2048, label: "Print" },
+              { value: 4096, label: "4K" },
+            ]}
+          />
+        )}
       </div>
+      {exportFormat === "pdf" && (
+        <p className="mt-2 text-[11px] text-slate-400">
+          Print-ready PDF: the QR is exactly {pdfCm} cm wide with a 1 cm margin. Share it with your print shop as is.
+        </p>
+      )}
       {f.enabled && exportFormat === "svg" && (
         <p className="mt-2 text-[11px] text-amber-300/90">SVG saves the QR only. Choose PNG or JPG to get the full poster.</p>
       )}
@@ -1920,7 +1598,7 @@ export function QRStudio({
           className="flex-1 w-full h-12 lg:h-auto lg:py-3.5 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-600 hover:brightness-110 text-white shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-2 transition disabled:opacity-60"
         >
           {busy === "download" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-          Download {exportFormat === "jpeg" ? "JPG" : exportFormat.toUpperCase()}
+          Download {FORMAT_LABEL[exportFormat]}
         </button>
         <div className="hidden lg:grid grid-cols-2 gap-2">
           <button
@@ -1976,7 +1654,7 @@ export function QRStudio({
         {/* Controls */}
         <div className="order-1 lg:col-span-7 lg:order-1 min-w-0">
           <div id="studio-tabs" className="hidden lg:block sticky top-16 z-20 py-2 bg-slate-950/90 backdrop-blur-xl">
-            <div role="tablist" className="grid grid-cols-5 gap-1 p-1 rounded-2xl bg-slate-900 border border-slate-800">
+            <div role="tablist" className="grid grid-cols-6 gap-1 p-1 rounded-2xl bg-slate-900 border border-slate-800">
               {TABS.map((t) => {
                 const Icon = t.icon;
                 const active = activeTab === t.id;
@@ -2053,7 +1731,7 @@ export function QRStudio({
           studioInView ? "translate-y-0" : "translate-y-full"
         }`}
       >
-        <div className="max-w-md mx-auto grid grid-cols-5">
+        <div className="max-w-md mx-auto grid grid-cols-6">
           {TABS.map((t) => {
             const Icon = t.icon;
             const active = activeTab === t.id;

@@ -1,10 +1,10 @@
 # QR Vibe
 
-> QR Vibe (https://qrvibe.online) is a free online QR code generator with logo. It makes branded, scan-tested QR codes for websites, WhatsApp, Wi-Fi, business cards (vCard), email and text. No sign-up, no watermark, and codes never expire because they are static. Everything runs in the browser, so logos and Wi-Fi passwords are never uploaded.
+> QR Vibe (https://qrvibe.online) is a free online QR code generator with logo. It makes branded, scan-tested QR codes for websites, WhatsApp, Wi-Fi, business cards (vCard), email, text, SMS, phone calls, locations, calendar events, UPI payments and crypto wallets. No sign-up, no watermark, and codes never expire because they are static. Everything runs in the browser, so logos and Wi-Fi passwords are never uploaded.
 
 ## Key facts
 - Price: 100% free, unlimited downloads
-- Downloads: PNG, JPG and SVG (HD and print sizes)
+- Downloads: PNG, JPG, WebP, SVG and print-ready PDF (HD, 4K and exact-size cm options)
 - Logo support: error correction switches to Level H (30%) automatically when a logo is added
 - Live scan check: a built-in decoder test-scans every design before download
 - Design: colors, gradients, dot and corner styles, ready-made themes, poster frames with a call-to-action
@@ -20,6 +20,13 @@
 - [Restaurant menu QR code generator](https://qrvibe.online/menu-qr-code-generator): contactless menu QR codes for restaurants and cafes
 - [Free QR code generator that never expires](https://qrvibe.online/free-qr-code-generator-no-expiry): static QR codes with no sign-up, watermark, scan limit or subscription
 - [Custom QR code generator](https://qrvibe.online/custom-qr-code-generator): custom colors, dots, corners and frames
+- [SMS QR code generator](https://qrvibe.online/sms-qr-code-generator): opens the messages app with number and text pre-filled
+- [Phone call QR code generator](https://qrvibe.online/phone-call-qr-code-generator): opens the dialer with your number
+- [Location QR code generator](https://qrvibe.online/location-qr-code-generator): opens Google Maps or a map app at exact coordinates
+- [Calendar event QR code generator](https://qrvibe.online/event-qr-code-generator): adds an event to the phone calendar
+- [UPI payment QR code generator](https://qrvibe.online/upi-qr-code-generator): UPI payment QR for GPay, PhonePe and Paytm
+- [Bulk QR code generator](https://qrvibe.online/bulk-qr-code-generator): up to 200 QR codes from a list or CSV, downloaded as a ZIP
+- [QR code scanner](https://qrvibe.online/qr-code-scanner): scan with a camera or an uploaded image, entirely in the browser
 
 ## Guides
 - [Static vs Dynamic QR Codes: Which One Should You Use?](https://qrvibe.online/guides/static-vs-dynamic-qr-codes)
