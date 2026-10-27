@@ -2,7 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { QrCode, ShieldCheck, ChevronDown, Sparkles, MessageSquare, Wifi, Palette, Contact, Menu, X, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, Share2 } from "lucide-react";
+import Image from "next/image";
+import { ShieldCheck, ChevronDown, Sparkles, MessageSquare, Wifi, Palette, Contact, Menu, X, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, Share2 } from "lucide-react";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -12,25 +13,15 @@ export function Header() {
     <header className="sticky top-0 z-50 bg-slate-950/95 border-b border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 lg:h-16 flex items-center justify-between">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="relative flex items-center justify-center w-9 h-9 lg:w-10 lg:h-10 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-0.5 shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-            <div className="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
-              <QrCode className="w-5 h-5 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
-            </div>
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg lg:text-xl font-black tracking-tight bg-gradient-to-r from-white via-slate-100 to-indigo-300 bg-clip-text text-transparent">
-                QR Vibe
-              </span>
-              <span className="hidden sm:inline px-2 py-0.5 text-[10px] font-bold tracking-wider uppercase rounded-full bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 text-indigo-300 border border-indigo-500/30">
-                .ONLINE
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-400 hidden sm:block">
-              Vibrant &amp; Scannable Brand QR Codes
-            </p>
-          </div>
+        <Link href="/" className="flex items-center group" aria-label="QR Vibe home">
+          <Image
+            src="/brand/logo-horizontal-dark.png"
+            alt="QR Vibe"
+            width={484}
+            height={120}
+            priority
+            className="h-9 lg:h-11 w-auto group-hover:scale-[1.03] transition-transform"
+          />
         </Link>
 
         {/* Desktop Navigation Links */}

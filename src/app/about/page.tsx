@@ -3,6 +3,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Sparkles, Code2, Heart, Award, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -19,6 +20,13 @@ export default function AboutPage() {
       <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14 w-full">
         {/* Header */}
         <div className="mb-12">
+          <Image
+            src="/brand/logo-full-dark.png"
+            alt="QR Vibe: scan, create, share"
+            width={560}
+            height={400}
+            className="w-44 sm:w-56 h-auto mb-8"
+          />
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold mb-4">
             <Heart className="w-3.5 h-3.5" />
             Our Mission &amp; Principles

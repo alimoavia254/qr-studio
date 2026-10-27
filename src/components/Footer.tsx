@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { QrCode, ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact, Camera, Star, UtensilsCrossed, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, Share2 } from "lucide-react";
+import Image from "next/image";
+import { ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact, Camera, Star, UtensilsCrossed, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, Share2 } from "lucide-react";
 
 export function Footer() {
   const currentYear = 2026;
@@ -14,11 +15,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800/80">
           {/* Brand Info */}
           <div className="md:col-span-1 space-y-4">
-            <Link href="/" className="flex items-center gap-2.5">
-              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
-                <QrCode className="w-4 h-4" />
-              </div>
-              <span className="text-base font-black text-white tracking-tight">QR Vibe <span className="text-indigo-400 text-xs font-semibold">.ONLINE</span></span>
+            <Link href="/" className="inline-block" aria-label="QR Vibe home">
+              <Image src="/brand/logo-horizontal-dark.png" alt="QR Vibe" width={484} height={120} className="h-9 w-auto" />
             </Link>
             <p className="text-slate-400 text-xs leading-relaxed">
               Professional, static QR code generator with real-time computer-vision scan validation and 100% private in-browser generation.
