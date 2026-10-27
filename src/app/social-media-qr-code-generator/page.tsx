@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { Share2, Smartphone, Printer } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/social-media-qr-code-generator",
   title: "Social Media QR Code Generator - Free, With Logo",
-  description:
-    "Make a free QR code for your Instagram, TikTok, Facebook, YouTube, Telegram or X profile. Type your username, add a logo and download PNG, SVG or PDF.",
-  alternates: { canonical: "https://qrvibe.online/social-media-qr-code-generator" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Social Media QR Code Generator | QR Vibe",
-    description: "Turn your username into a branded QR code that opens your profile in one scan.",
-  },
-};
+  description: "Make a free QR code for your Instagram, TikTok, Facebook, YouTube, Telegram or X profile. Type your username, add a logo and download PNG, SVG or PDF.",
+  socialTitle: "Free Social Media QR Code Generator | QR Vibe",
+  socialDescription: "Turn your username into a branded QR code that opens your profile in one scan.",
+});
 
 export default function SocialQRPage() {
   return (

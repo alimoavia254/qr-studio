@@ -7,7 +7,7 @@ import { Footer } from "@/components/Footer";
 import { PageFAQ } from "@/components/PageFAQ";
 import { JsonLd } from "@/components/JsonLd";
 import type { QRContentType } from "@/types/qr";
-import { SITE_URL, type Faq } from "@/lib/seo";
+import { SITE_URL, breadcrumbSchema, type Faq } from "@/lib/seo";
 
 export type UseCaseFeature = { icon: LucideIcon; title: string; text: string };
 
@@ -63,6 +63,7 @@ export function UseCasePage(p: UseCasePageProps) {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
       <JsonLd data={howTo} />
+      <JsonLd data={breadcrumbSchema([{ name: p.titleLead + " " + p.titleAccent, path: p.path }])} />
       <Header />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">

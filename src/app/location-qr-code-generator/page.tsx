@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { MapPin, Navigation, Printer } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/location-qr-code-generator",
   title: "Location QR Code Generator - Free Google Maps QR Code",
-  description:
-    "Make a free location QR code that opens Google Maps or the phone map app at exact coordinates. Add your logo, download PNG, SVG or PDF. No sign-up.",
-  alternates: { canonical: "https://qrvibe.online/location-qr-code-generator" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Location QR Code Generator | QR Vibe",
-    description: "Send people straight to your shop, venue or meeting point on the map.",
-  },
-};
+  description: "Make a free location QR code that opens Google Maps or the phone map app at exact coordinates. Add your logo, download PNG, SVG or PDF. No sign-up.",
+  socialTitle: "Free Location QR Code Generator | QR Vibe",
+  socialDescription: "Send people straight to your shop, venue or meeting point on the map.",
+});
 
 export default function LocationQRPage() {
   return (

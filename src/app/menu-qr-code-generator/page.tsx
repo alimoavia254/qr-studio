@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { UtensilsCrossed, Smartphone, RefreshCw, Printer } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/menu-qr-code-generator",
   title: "Restaurant Menu QR Code Generator - Free & Contactless",
-  description:
-    "Create a free menu QR code for your restaurant or cafe. Link your PDF or online menu, add your logo and a 'Scan for menu' frame, then print it.",
-  alternates: { canonical: "https://qrvibe.online/menu-qr-code-generator" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Restaurant Menu QR Code Generator | QR Vibe",
-    description: "Contactless menu QR codes for restaurants and cafes. Branded, scan-tested and print-ready.",
-  },
-};
+  description: "Create a free menu QR code for your restaurant or cafe. Link your PDF or online menu, add your logo and a 'Scan for menu' frame, then print it.",
+  socialTitle: "Free Restaurant Menu QR Code Generator | QR Vibe",
+  socialDescription: "Contactless menu QR codes for restaurants and cafes. Branded, scan-tested and print-ready.",
+});
 
 export default function MenuQRPage() {
   return (

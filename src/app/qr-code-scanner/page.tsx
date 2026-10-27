@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
 import { ScanLine, ShieldCheck, ImageUp } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 import { QRScanner } from "@/components/QRScanner";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/qr-code-scanner",
   title: "Free QR Code Scanner Online - Scan With Camera or Image",
-  description:
-    "Scan any QR code online with your camera or an uploaded image. See where a link goes before you open it. Free, private, no app and no sign-up.",
-  alternates: { canonical: "https://qrvibe.online/qr-code-scanner" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Online QR Code Scanner | QR Vibe",
-    description: "Scan with your camera or upload an image, and check the link before you open it.",
-  },
-};
+  description: "Scan any QR code online with your camera or an uploaded image. See where a link goes before you open it. Free, private, no app and no sign-up.",
+  socialTitle: "Free Online QR Code Scanner | QR Vibe",
+  socialDescription: "Scan with your camera or upload an image, and check the link before you open it.",
+});
 
 export default function QRScannerPage() {
   return (

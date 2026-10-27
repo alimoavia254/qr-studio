@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { Phone, Zap, Printer } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/phone-call-qr-code-generator",
   title: "Phone Call QR Code Generator - Free Click-to-Call",
-  description:
-    "Create a free QR code that opens the phone dialer with your number. One scan, one tap to call. Add a logo, pick colors, download PNG, SVG or PDF.",
-  alternates: { canonical: "https://qrvibe.online/phone-call-qr-code-generator" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Phone Call QR Code Generator | QR Vibe",
-    description: "Scan and call in one tap. Free, no sign-up, never expires.",
-  },
-};
+  description: "Create a free QR code that opens the phone dialer with your number. One scan, one tap to call. Add a logo, pick colors, download PNG, SVG or PDF.",
+  socialTitle: "Free Phone Call QR Code Generator | QR Vibe",
+  socialDescription: "Scan and call in one tap. Free, no sign-up, never expires.",
+});
 
 export default function PhoneQRPage() {
   return (

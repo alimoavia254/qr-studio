@@ -200,7 +200,6 @@ export function formatQRData(config: QRDesignConfig): string {
  * makes it store the right bytes, so phones decode the original text.
  */
 export function toQRBytes(data: string): string {
-  // eslint-disable-next-line no-control-regex
   if (/^[\x00-\x7f]*$/.test(data)) return data;
   return Array.from(new TextEncoder().encode(data), (b) => String.fromCharCode(b)).join("");
 }

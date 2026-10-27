@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { MessageSquare, Smartphone, Printer } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/sms-qr-code-generator",
   title: "SMS QR Code Generator - Free Pre-filled Text Message",
-  description:
-    "Make a free SMS QR code with the number and message pre-filled. Scan, tap send. Add your logo and colors, download PNG, SVG or PDF. No sign-up.",
-  alternates: { canonical: "https://qrvibe.online/sms-qr-code-generator" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free SMS QR Code Generator | QR Vibe",
-    description: "Scanning opens the messages app with your number and text ready to send.",
-  },
-};
+  description: "Make a free SMS QR code with the number and message pre-filled. Scan, tap send. Add your logo and colors, download PNG, SVG or PDF. No sign-up.",
+  socialTitle: "Free SMS QR Code Generator | QR Vibe",
+  socialDescription: "Scanning opens the messages app with your number and text ready to send.",
+});
 
 export default function SmsQRPage() {
   return (

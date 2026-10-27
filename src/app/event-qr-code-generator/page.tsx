@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { CalendarDays, BellRing, Printer } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/event-qr-code-generator",
   title: "Calendar Event QR Code Generator - Free Add-to-Calendar",
-  description:
-    "Create a free QR code that adds your event to the phone calendar with date, time and place. Great for invitations and flyers. Download PNG, SVG or PDF.",
-  alternates: { canonical: "https://qrvibe.online/event-qr-code-generator" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Calendar Event QR Code Generator | QR Vibe",
-    description: "Guests scan and save your event to their calendar in one tap.",
-  },
-};
+  description: "Create a free QR code that adds your event to the phone calendar with date, time and place. Great for invitations and flyers. Download PNG, SVG or PDF.",
+  socialTitle: "Free Calendar Event QR Code Generator | QR Vibe",
+  socialDescription: "Guests scan and save your event to their calendar in one tap.",
+});
 
 export default function EventQRPage() {
   return (

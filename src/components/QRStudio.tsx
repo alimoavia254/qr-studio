@@ -47,7 +47,7 @@ import type {
 
 const INITIAL_CONFIG: QRDesignConfig = {
   contentType: "url",
-  url: "https://crownixbet.com/",
+  url: "https://qrvibe.online/",
   text: "Hello from QR Vibe (qrvibe.online)!",
   wifi: {
     ssid: "Office_5G",
@@ -811,9 +811,7 @@ export function QRStudio({
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-      import("canvas-confetti").then(({ default: confetti }) =>
-        confetti({ particleCount: 80, spread: 60, origin: { y: 0.85 } })
-      );
+      void import("canvas-confetti").then(({ default: confetti }) => confetti({ particleCount: 80, spread: 60, origin: { y: 0.85 } }));
     } catch (err) {
       console.error("Export error:", err);
       showToast("Download failed. Please try again.");
@@ -1668,7 +1666,7 @@ export function QRStudio({
 
         {/* Controls */}
         <div className="order-1 lg:col-span-7 lg:order-1 min-w-0">
-          <div id="studio-tabs" className="hidden lg:block sticky top-16 z-20 py-2 bg-slate-950/90 backdrop-blur-xl">
+          <div id="studio-tabs" className="hidden lg:block sticky top-16 z-20 py-2 bg-slate-950/95">
             <div role="tablist" className="grid grid-cols-6 gap-1 p-1 rounded-2xl bg-slate-900 border border-slate-800">
               {TABS.map((t) => {
                 const Icon = t.icon;
@@ -1759,7 +1757,7 @@ export function QRStudio({
                 aria-selected={active}
                 onClick={() => selectTab(t.id)}
                 className={`relative flex flex-col items-center gap-1 pt-2.5 pb-2 text-[11px] font-semibold transition-colors ${
-                  active ? "text-white" : "text-slate-500"
+                  active ? "text-white" : "text-slate-400"
                 }`}
               >
                 <span

@@ -1,7 +1,58 @@
+import type { Metadata } from "next";
+
 export const SITE_URL = "https://qrvibe.online";
 export const SITE_NAME = "QR Vibe";
 
 export type Faq = { q: string; a: string };
+
+// Next replaces (not merges) nested openGraph/twitter objects per route, so every
+// page builds its full social metadata here to avoid inheriting the homepage's.
+export function pageMetadata(p: {
+  path: string;
+  title: string;
+  description: string;
+  socialTitle?: string;
+  socialDescription?: string;
+  keywords?: string[];
+}): Metadata {
+  const url = `${SITE_URL}${p.path}`;
+  const socialTitle = p.socialTitle ?? `${p.title} | ${SITE_NAME}`;
+  const socialDescription = p.socialDescription ?? p.description;
+  return {
+    title: p.title,
+    description: p.description,
+    keywords: p.keywords,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      url,
+      siteName: SITE_NAME,
+      locale: "en_US",
+      title: socialTitle,
+      description: socialDescription,
+      images: "/opengraph-image",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: socialTitle,
+      description: socialDescription,
+      images: "/twitter-image",
+    },
+  };
+}
+
+export function breadcrumbSchema(items: { name: string; path: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [{ name: "Home", path: "" }, ...items].map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: it.name,
+      item: `${SITE_URL}${it.path}`,
+    })),
+  };
+}
 
 export const HOME_FAQS: Faq[] = [
   {

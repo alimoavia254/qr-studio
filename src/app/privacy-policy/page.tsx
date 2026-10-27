@@ -2,14 +2,13 @@ import { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ShieldCheck, Lock, EyeOff, ServerOff, FileCheck } from "lucide-react";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/privacy-policy",
   title: "Privacy Policy - 100% In-Browser Privacy",
   description: "Learn how QR Vibe protects your privacy with 100% client-side QR code generation. Zero server uploads, zero database storage.",
-  alternates: {
-    canonical: "https://qrvibe.online/privacy-policy",
-  },
-};
+});
 
 export default function PrivacyPolicyPage() {
   return (
@@ -50,8 +49,8 @@ export default function PrivacyPolicyPage() {
           <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-start gap-3">
             <EyeOff className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
             <div>
-              <h2 className="text-sm font-semibold text-white">Zero Tracking Cookies</h2>
-              <p className="text-xs text-slate-400 mt-1">Clean session management with no invasive cross-site profiling.</p>
+              <h2 className="text-sm font-semibold text-white">No Account Tracking</h2>
+              <p className="text-xs text-slate-400 mt-1">QR Vibe sets no sign-in or profiling cookies of its own. Third-party ad partners may use cookies, as described in section 4.</p>
             </div>
           </div>
         </div>

@@ -31,11 +31,16 @@ export function Footer() {
 
           {/* Generators */}
           <div>
-            <h4 className="text-white text-xs font-bold uppercase tracking-wider mb-4">Dedicated Generators</h4>
+            <h3 className="text-white text-xs font-bold uppercase tracking-wider mb-4">Dedicated Generators</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/qr-code-generator-with-logo" className="hover:text-white flex items-center gap-2 transition-colors">
                   <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> QR Code with Logo
+                </Link>
+              </li>
+              <li>
+                <Link href="/free-qr-code-generator-no-expiry" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <Sparkles className="w-3.5 h-3.5 text-violet-400" /> QR Codes That Never Expire
                 </Link>
               </li>
               <li>
@@ -108,39 +113,39 @@ export function Footer() {
 
           {/* Core Features */}
           <div>
-            <h4 className="text-white text-xs font-bold uppercase tracking-wider mb-4">Features &amp; Tech</h4>
+            <h3 className="text-white text-xs font-bold uppercase tracking-wider mb-4">Features &amp; Tech</h3>
             <ul className="space-y-2.5 text-slate-400">
               <li>
-                <a href="/#generator" className="hover:text-white transition-colors">
+                <Link href="/#generator" className="hover:text-white transition-colors">
                   Live Hardware Scan Decoder
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#generator" className="hover:text-white transition-colors">
+                <Link href="/#generator" className="hover:text-white transition-colors">
                   Vector SVG &amp; 2048px PNG Export
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#generator" className="hover:text-white transition-colors">
+                <Link href="/#generator" className="hover:text-white transition-colors">
                   High Error Correction (Level H)
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#features" className="hover:text-white transition-colors">
+                <Link href="/#features" className="hover:text-white transition-colors">
                   Free Commercial License
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/#faq" className="hover:text-white transition-colors">
+                <Link href="/#faq" className="hover:text-white transition-colors">
                   Scannability FAQ
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
 
           {/* Legal & Company */}
           <div>
-            <h4 className="text-white text-xs font-bold uppercase tracking-wider mb-4">Company &amp; Legal</h4>
+            <h3 className="text-white text-xs font-bold uppercase tracking-wider mb-4">Company &amp; Legal</h3>
             <ul className="space-y-2.5">
               <li>
                 <Link href="/guides" className="hover:text-white transition-colors">
@@ -172,7 +177,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-500 text-[11px]">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-400 text-[11px]">
           <p>© {currentYear} QR Vibe (qrvibe.online). All rights reserved. Made for creators, businesses &amp; agencies worldwide.</p>
           <div className="flex items-center gap-1.5 text-slate-400">
             <span>Client-side optical verification</span>

@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
 import { Layers, FileArchive, Lock } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 import { BulkGenerator } from "@/components/BulkGenerator";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/bulk-qr-code-generator",
   title: "Bulk QR Code Generator - Free, Download as ZIP",
-  description:
-    "Make up to 200 QR codes at once from a list or CSV file. Pick a style, add your logo and download everything as a ZIP of PNG or SVG files. Free, no sign-up.",
-  alternates: { canonical: "https://qrvibe.online/bulk-qr-code-generator" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Bulk QR Code Generator | QR Vibe",
-    description: "Turn a list of links or a CSV into hundreds of styled QR codes in one ZIP.",
-  },
-};
+  description: "Make up to 200 QR codes at once from a list or CSV file. Pick a style, add your logo and download everything as a ZIP of PNG or SVG files. Free, no sign-up.",
+  socialTitle: "Free Bulk QR Code Generator | QR Vibe",
+  socialDescription: "Turn a list of links or a CSV into hundreds of styled QR codes in one ZIP.",
+});
 
 export default function BulkQRPage() {
   return (

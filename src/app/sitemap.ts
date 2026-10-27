@@ -1,9 +1,13 @@
 import { MetadataRoute } from "next";
 import { GUIDES } from "@/lib/guides";
 
+const CONTENT_UPDATED = "2026-10-27";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://qrvibe.online";
-  const lastModified = new Date();
+  // Fixed per content revision (not per build) so lastmod stays a trustworthy signal.
+  // Bump this when page content actually changes.
+  const lastModified = new Date(CONTENT_UPDATED);
 
   return [
     {

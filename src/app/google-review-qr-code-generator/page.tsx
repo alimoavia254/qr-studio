@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { Star, MapPin, ThumbsUp, Store } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Google Review QR Code Generator - Get More 5-Star Reviews",
-  description:
-    "Create a free Google review QR code that opens your review form in one scan. Add your logo and a 'Review us' frame, then print it for your counter.",
-  alternates: { canonical: "https://qrvibe.online/google-review-qr-code-generator" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Google Review QR Code Generator | QR Vibe",
-    description: "Let customers leave a Google review with one scan. Free, branded and print-ready.",
-  },
-};
+export const metadata: Metadata = pageMetadata({
+  path: "/google-review-qr-code-generator",
+  title: "Google Review QR Code Generator - Free, With Logo",
+  description: "Create a free Google review QR code that opens your review form in one scan. Add your logo and a 'Review us' frame, then print it for your counter.",
+  socialTitle: "Free Google Review QR Code Generator | QR Vibe",
+  socialDescription: "Let customers leave a Google review with one scan. Free, branded and print-ready.",
+});
 
 export default function GoogleReviewQRPage() {
   return (
