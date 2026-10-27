@@ -1,5 +1,5 @@
 /* QR Vibe service worker: lets the generator open offline once it has been visited. */
-const VERSION = "v1";
+const VERSION = "v2";
 const STATIC_CACHE = `qrvibe-static-${VERSION}`;
 const PAGE_CACHE = `qrvibe-pages-${VERSION}`;
 
@@ -47,7 +47,7 @@ self.addEventListener("fetch", (event) => {
   }
 
   // Hashed build assets and icons never change for a given URL: cache first.
-  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/pwa-icon/")) {
+  if (url.pathname.startsWith("/_next/static/") || url.pathname.startsWith("/icons/") || url.pathname.startsWith("/brand/")) {
     event.respondWith(
       caches.match(req).then(
         (hit) =>

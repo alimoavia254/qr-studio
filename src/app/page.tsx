@@ -20,7 +20,7 @@ const homeSchema = {
       "@id": `${SITE_URL}/#organization`,
       name: SITE_NAME,
       url: SITE_URL,
-      logo: `${SITE_URL}/icon`,
+      logo: `${SITE_URL}/icons/icon-512.png`,
     },
     {
       "@type": "WebSite",
