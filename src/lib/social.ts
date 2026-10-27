@@ -13,7 +13,7 @@ export const SOCIAL_PLATFORMS: { id: SocialPlatform; label: string; hint: string
 ];
 
 /** Username or full link -> profile URL. Returns null when the value is empty. */
-export function socialUrl(platform: SocialPlatform, value: string): string | null {
+export function socialUrl(platform: SocialPlatform, value: string, message = ""): string | null {
   const v = value.trim();
   if (!v) return null;
   if (/^https?:\/\//i.test(v)) return v;
@@ -21,7 +21,8 @@ export function socialUrl(platform: SocialPlatform, value: string): string | nul
   if (!h) return null;
   if (platform === "whatsapp") {
     const digits = h.replace(/\D/g, "");
-    return digits ? `https://wa.me/${digits}` : null;
+    const text = message.trim();
+    return digits ? `https://wa.me/${digits}${text ? `?text=${encodeURIComponent(text)}` : ""}` : null;
   }
   const e = encodeURIComponent(h);
   switch (platform) {
