@@ -1,3 +1,4 @@
+import type React from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle, type LucideIcon } from "lucide-react";
 import { QRStudio } from "@/components/QRStudio";
@@ -5,12 +6,17 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PageFAQ } from "@/components/PageFAQ";
 import { JsonLd } from "@/components/JsonLd";
+import type { QRContentType } from "@/types/qr";
 import { SITE_URL, breadcrumbSchema, type Faq } from "@/lib/seo";
 
 export type UseCaseFeature = { icon: LucideIcon; title: string; text: string };
 
 export interface UseCasePageProps {
   path: string;
+  /** Which QR type the generator opens on. Defaults to a website link. */
+  contentType?: QRContentType;
+  /** Replaces the QR generator with another tool (scanner, bulk generator). */
+  tool?: React.ReactNode;
   badgeIcon: LucideIcon;
   badge: string;
   titleLead: string;
@@ -35,6 +41,13 @@ const RELATED = [
   { href: "/whatsapp-qr-code-generator", label: "WhatsApp QR Code" },
   { href: "/wifi-qr-code-generator", label: "Wi-Fi QR Code" },
   { href: "/qr-code-for-business-cards", label: "Business Card vCard QR" },
+  { href: "/sms-qr-code-generator", label: "SMS QR Code" },
+  { href: "/phone-call-qr-code-generator", label: "Phone Call QR Code" },
+  { href: "/location-qr-code-generator", label: "Location QR Code" },
+  { href: "/event-qr-code-generator", label: "Calendar Event QR Code" },
+  { href: "/social-media-qr-code-generator", label: "Social Media QR Code" },
+  { href: "/bulk-qr-code-generator", label: "Bulk QR Code Generator" },
+  { href: "/qr-code-scanner", label: "Free QR Code Scanner" },
 ];
 
 export function UseCasePage(p: UseCasePageProps) {
@@ -69,7 +82,7 @@ export function UseCasePage(p: UseCasePageProps) {
         </div>
 
         <div className="mb-20 -mx-4 sm:-mx-6 lg:-mx-8">
-          <QRStudio initialContentType="url" initialTab="content" />
+          {p.tool ?? <QRStudio initialContentType={p.contentType ?? "url"} initialTab="content" />}
         </div>
 
         <section className="border-t border-slate-800/80 pt-16 mt-10">

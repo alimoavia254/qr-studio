@@ -7,7 +7,76 @@ import type {
   ShapeType,
 } from "qr-code-styling";
 
-export type QRContentType = "url" | "whatsapp" | "wifi" | "vcard" | "email" | "text";
+export type QRContentType =
+  | "url"
+  | "whatsapp"
+  | "wifi"
+  | "vcard"
+  | "email"
+  | "text"
+  | "sms"
+  | "phone"
+  | "geo"
+  | "event"
+  | "social"
+  | "crypto";
+
+export interface SmsData {
+  phone: string;
+  message: string;
+}
+
+export interface PhoneData {
+  phone: string;
+}
+
+export interface GeoData {
+  lat: string;
+  lng: string;
+  linkStyle: "geo" | "maps";
+}
+
+export interface EventData {
+  title: string;
+  location: string;
+  description: string;
+  allDay: boolean;
+  /** "gcal" = Google Calendar link (opens everywhere), "ics" = raw calendar data */
+  linkStyle: "gcal" | "ics";
+  /** "YYYY-MM-DDTHH:mm" (or "YYYY-MM-DD" when allDay) */
+  start: string;
+  end: string;
+}
+
+export type SocialPlatform =
+  | "instagram"
+  | "facebook"
+  | "tiktok"
+  | "youtube"
+  | "telegram"
+  | "x"
+  | "linkedin"
+  | "snapchat"
+  | "whatsapp";
+
+export interface SocialData {
+  platform: SocialPlatform;
+  /** Username, or a full profile link */
+  username: string;
+  /** "single" = one profile link, "all" = every profile listed in one QR */
+  mode?: "single" | "all";
+  name?: string;
+  tagline?: string;
+  links?: Partial<Record<SocialPlatform, string>>;
+}
+
+export type CryptoCoin = "bitcoin" | "litecoin" | "dogecoin" | "ethereum";
+
+export interface CryptoData {
+  coin: CryptoCoin;
+  address: string;
+  amount: string;
+}
 
 export interface WifiData {
   ssid: string;
@@ -106,6 +175,12 @@ export interface QRDesignConfig {
   whatsapp: WhatsappData;
   vcard: VCardData;
   email: EmailData;
+  sms: SmsData;
+  phone: PhoneData;
+  geo: GeoData;
+  event: EventData;
+  social: SocialData;
+  crypto: CryptoData;
 
   // Visual Styles
   shape: ShapeType;

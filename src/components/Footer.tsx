@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { QrCode, ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact, Camera, Star, UtensilsCrossed } from "lucide-react";
+import { QrCode, ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact, Camera, Star, UtensilsCrossed, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, Share2 } from "lucide-react";
 
 export function Footer() {
   const currentYear = 2026;
@@ -76,6 +76,36 @@ export function Footer() {
               <li>
                 <Link href="/qr-code-for-business-cards" className="hover:text-white flex items-center gap-2 transition-colors">
                   <Contact className="w-3.5 h-3.5 text-amber-400" /> Business Card vCard
+                </Link>
+              </li>
+              <li>
+                <Link href="/bulk-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <Layers className="w-3.5 h-3.5 text-fuchsia-400" /> Bulk QR Generator
+                </Link>
+              </li>
+              <li>
+                <Link href="/qr-code-scanner" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <ScanLine className="w-3.5 h-3.5 text-lime-400" /> QR Code Scanner
+                </Link>
+              </li>
+              <li>
+                <Link href="/sms-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <MessageCircle className="w-3.5 h-3.5 text-sky-400" /> SMS QR Code
+                </Link>
+              </li>
+              <li>
+                <Link href="/location-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <MapPin className="w-3.5 h-3.5 text-red-400" /> Location QR Code
+                </Link>
+              </li>
+              <li>
+                <Link href="/event-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <CalendarDays className="w-3.5 h-3.5 text-teal-400" /> Calendar Event QR
+                </Link>
+              </li>
+              <li>
+                <Link href="/social-media-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <Share2 className="w-3.5 h-3.5 text-green-400" /> Social Media QR
                 </Link>
               </li>
             </ul>

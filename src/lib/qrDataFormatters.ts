@@ -1,4 +1,26 @@
 import { QRDesignConfig } from "@/types/qr";
+import { socialUrl, socialsText } from "@/lib/social";
+import { formatCryptoAmount } from "@/lib/cryptoAddress";
+
+const digitsOnly = (v: string) => v.replace(/[^0-9+]/g, "");
+
+/** iCalendar text values: escape backslash, comma, semicolon and newlines. */
+const icsEscape = (v: string) =>
+  v.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+
+/** "2026-10-27T14:30" -> "20261027T143000", "2026-10-27" -> "20261027" */
+const icsDate = (v: string, allDay: boolean) => {
+  const [d = "", t = ""] = v.split("T");
+  const date = d.replace(/-/g, "");
+  if (allDay) return date;
+  return `${date}T${(t || "00:00").replace(/:/g, "").padEnd(6, "0").slice(0, 6)}`;
+};
+
+const addDay = (ymd: string) => {
+  const d = new Date(`${ymd.slice(0, 10)}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
+};
 
 export function formatQRData(config: QRDesignConfig): string {
   switch (config.contentType) {
@@ -98,8 +120,86 @@ export function formatQRData(config: QRDesignConfig): string {
       return `mailto:${cleanEmail}${query}`;
     }
 
+    case "sms": {
+      const phone = digitsOnly(config.sms.phone) || "+15551234567";
+      const body = config.sms.message.trim();
+      return body ? `SMSTO:${phone}:${body}` : `SMSTO:${phone}`;
+    }
+
+    case "phone":
+      return `tel:${digitsOnly(config.phone.phone) || "+15551234567"}`;
+
+    case "geo": {
+      const lat = parseFloat(config.geo.lat);
+      const lng = parseFloat(config.geo.lng);
+      const ok = Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+      const la = ok ? lat : 31.5204;
+      const ln = ok ? lng : 74.3587;
+      return config.geo.linkStyle === "maps"
+        ? `https://www.google.com/maps/place/${la}%2C${ln}`
+        : `geo:${la},${ln}`;
+    }
+
+    case "event": {
+      const e = config.event;
+      const start = e.start || (e.allDay ? "2026-12-01" : "2026-12-01T10:00");
+      let end = e.end || start;
+      // iCalendar and Google both treat an all-day end date as exclusive
+      if (e.allDay) end = addDay(end);
+
+      if (e.linkStyle !== "ics") {
+        const params = [
+          "action=TEMPLATE",
+          `text=${encodeURIComponent(e.title || "Event")}`,
+          `dates=${icsDate(start, e.allDay)}/${icsDate(end, e.allDay)}`,
+        ];
+        if (e.description) params.push(`details=${encodeURIComponent(e.description)}`);
+        if (e.location) params.push(`location=${encodeURIComponent(e.location)}`);
+        return `https://calendar.google.com/calendar/render?${params.join("&")}`;
+      }
+
+      const lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "BEGIN:VEVENT",
+        `SUMMARY:${icsEscape(e.title || "Event")}`,
+        e.allDay ? `DTSTART;VALUE=DATE:${icsDate(start, true)}` : `DTSTART:${icsDate(start, false)}`,
+        e.allDay ? `DTEND;VALUE=DATE:${icsDate(end, true)}` : `DTEND:${icsDate(end, false)}`,
+      ];
+      if (e.location) lines.push(`LOCATION:${icsEscape(e.location)}`);
+      if (e.description) lines.push(`DESCRIPTION:${icsEscape(e.description)}`);
+      lines.push("END:VEVENT", "END:VCALENDAR");
+      return lines.join("\n");
+    }
+
+    case "social": {
+      const { platform, username, mode, name, tagline, links } = config.social;
+      if (mode === "all") {
+        return socialsText(name ?? "", tagline ?? "", links ?? {}) || "Add your usernames to build the list.";
+      }
+      return socialUrl(platform, username) ?? socialUrl(platform, "username") ?? "https://example.com";
+    }
+
+    case "crypto": {
+      const c = config.crypto;
+      const address = c.address.trim() || "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq";
+      // BIP-21 style URI. Ethereum amounts are in wei (EIP-681), so only the address is encoded for it.
+      const amount = c.coin === "ethereum" ? null : formatCryptoAmount(c.amount);
+      return amount ? `${c.coin}:${address}?amount=${amount}` : `${c.coin}:${address}`;
+    }
+
     case "text":
     default:
       return config.text || "Hello from QR Vibe (qrvibe.online)!";
   }
+}
+
+/**
+ * qr-code-styling writes one byte per character (it drops the high byte of anything above U+00FF),
+ * which corrupts characters like "•", "é" or non-Latin text. Passing the UTF-8 bytes as a byte-string
+ * makes it store the right bytes, so phones decode the original text.
+ */
+export function toQRBytes(data: string): string {
+  if (/^[\x00-\x7f]*$/.test(data)) return data;
+  return Array.from(new TextEncoder().encode(data), (b) => String.fromCharCode(b)).join("");
 }
