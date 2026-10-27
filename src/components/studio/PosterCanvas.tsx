@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { drawPoster, makeFakeQr, posterSize, type PosterSpec } from "@/lib/posterRenderer";
 
 interface Props {
@@ -15,17 +15,40 @@ interface Props {
   /** Changes whenever the real QR was re-rendered, to trigger a redraw */
   tick?: number;
   label?: string;
+  /** Draw only once the canvas scrolls into view (gallery with many thumbnails) */
+  lazy?: boolean;
 }
 
-export function PosterCanvas({ spec, px, className, getQr, fake, tick, label }: Props) {
+export function PosterCanvas({ spec, px, className, getQr, fake, tick, label, lazy }: Props) {
   const ref = useRef<HTMLCanvasElement>(null);
-  const { H } = posterSize(spec.templateId, px);
+  const [visible, setVisible] = useState(!lazy);
+  const { H } = posterSize(spec.layout, px);
+
+  useEffect(() => {
+    if (!lazy || visible) return;
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setVisible(true);
+      return;
+    }
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          io.disconnect();
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [lazy, visible]);
 
   useEffect(() => {
     const canvas = ref.current;
     const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
-    const { W, H: h } = posterSize(spec.templateId, px);
+    if (!canvas || !ctx || !visible) return;
+    const { W, H: h } = posterSize(spec.layout, px);
     canvas.width = W;
     canvas.height = h;
     ctx.clearRect(0, 0, W, h);
@@ -35,7 +58,12 @@ export function PosterCanvas({ spec, px, className, getQr, fake, tick, label }: 
   }, [
     px,
     tick,
+    visible,
     spec.templateId,
+    spec.layout,
+    spec.alt,
+    spec.icon,
+    spec.pattern,
     spec.title,
     spec.subtitle,
     spec.brand,

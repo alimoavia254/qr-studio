@@ -118,18 +118,30 @@ export interface EmailData {
   format?: "mailto" | "matmsg";
 }
 
-export type PosterTemplateId =
-  | "none"
-  | "viewfinder-minimal"
-  | "payment-merchant"
-  | "cafe-menu"
-  | "wifi-stand"
-  | "vibrant-retro"
-  | "luxury-event"
-  | "social-creator"
-  | "modern-cyber"
-  | "offer-sale"
-  | "review-stars";
+export type PosterTemplateId = string;
+
+export type PosterLayoutId =
+  | "minimal"
+  | "payment"
+  | "menu"
+  | "hero"
+  | "retro"
+  | "luxury"
+  | "story"
+  | "cyber"
+  | "offer"
+  | "review"
+  | "split"
+  | "glass"
+  | "aurora"
+  | "stamp"
+  | "pattern"
+  | "kraft"
+  | "chalk"
+  | "ticket"
+  | "polaroid";
+
+export type PosterPattern = "stripes" | "checker" | "dots";
 
 export interface QRCardFrameConfig {
   enabled: boolean;
@@ -145,6 +157,8 @@ export interface QRCardFrameConfig {
   bgColor: string;
   textColor: string;
   accentColor: string;
+  /** second colour used by gradients and patterns */
+  altColor: string;
   cardBgColor: string;
   cardTextColor: string;
   style: "badge" | "card" | "banner" | "poster";
@@ -153,6 +167,14 @@ export interface QRCardFrameConfig {
 
 export interface PosterTemplatePreset {
   id: PosterTemplateId;
+  /** which drawing routine renders this template */
+  layout: PosterLayoutId;
+  /** lucide icon name used by icon-based layouts */
+  icon?: string;
+  pattern?: PosterPattern;
+  /** three short words shown as chips (payment layout) */
+  chips?: string[];
+  altColor: string;
   name: string;
   category: "Business" | "Marketing" | "Dining & Cafe" | "Events" | "Tech & Wi-Fi" | "Creative";
   tagline: string;

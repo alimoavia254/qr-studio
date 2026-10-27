@@ -29,7 +29,7 @@ import { formatQRData, toQRBytes } from "@/lib/qrDataFormatters";
 import { evaluateScannability } from "@/lib/colorUtils";
 import { QR_PRESETS, SAMPLE_LOGOS } from "@/lib/qrPresets";
 import { jpegToPdf } from "@/lib/pdf";
-import { drawPoster, posterSize, type PosterSpec } from "@/lib/posterRenderer";
+import { drawPoster, posterAspect, posterSize, type PosterSpec } from "@/lib/posterRenderer";
 import { PosterCanvas } from "./studio/PosterCanvas";
 import {
   loadSavedDesigns,
@@ -38,7 +38,7 @@ import {
   decodeDesign,
   type SavedDesign,
 } from "@/lib/savedDesigns";
-import { POSTER_TEMPLATES } from "@/lib/posterTemplates";
+import { POSTER_TEMPLATES, POSTER_CATEGORIES, templateSpec } from "@/lib/posterTemplates";
 import type QRCodeStylingType from "qr-code-styling";
 import type {
   DotType,
@@ -135,6 +135,7 @@ const INITIAL_CONFIG: QRDesignConfig = {
     bgColor: "#4f46e5",
     textColor: "#ffffff",
     accentColor: "#4f46e5",
+    altColor: "#8b5cf6",
     cardBgColor: "#ffffff",
     cardTextColor: "#0f172a",
     style: "poster",
@@ -327,8 +328,14 @@ export function QRStudio({
   const qrData = useMemo(() => formatQRData(config), [config]);
   const posterSpec = useMemo<PosterSpec>(() => {
     const f = config.frame;
+    const tpl = POSTER_TEMPLATES.find((t) => t.id === f.templateId);
     return {
       templateId: f.templateId,
+      layout: tpl?.layout ?? "minimal",
+      icon: tpl?.icon,
+      pattern: tpl?.pattern,
+      chips: tpl?.chips,
+      alt: f.altColor,
       title: f.text,
       subtitle: f.subtext,
       brand: f.brandName,
@@ -619,6 +626,7 @@ export function QRStudio({
         cardBgColor: tpl.cardBgColor,
         cardTextColor: tpl.cardTextColor,
         accentColor: tpl.accentColor,
+        altColor: tpl.altColor,
         style: "poster",
       },
       dotsColor: tpl.dotsColor,
@@ -671,7 +679,7 @@ export function QRStudio({
       img.src = imgUrl;
     });
 
-    const { W, H } = posterSize(config.frame.templateId, size);
+    const { W, H } = posterSize(posterSpec.layout, size);
     const canvas = document.createElement("canvas");
     canvas.width = W;
     canvas.height = H;
@@ -1109,7 +1117,7 @@ export function QRStudio({
 
       <Section title="Poster templates" hint="Every template has its own design. What you see here is what you get.">
         <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-          {["All", ...Array.from(new Set(POSTER_TEMPLATES.map((t) => t.category)))].map((c) => (
+          {["All", ...POSTER_CATEGORIES].map((c) => (
             <Chip key={c} active={posterCat === c} onClick={() => setPosterCat(c)}>
               {c}
             </Chip>
@@ -1132,18 +1140,8 @@ export function QRStudio({
               >
                 <PosterCanvas
                   px={300}
-                  spec={{
-                    templateId: tpl.id,
-                    title: tpl.title,
-                    subtitle: tpl.subtitle,
-                    brand: tpl.brandName,
-                    footer: tpl.footerNote,
-                    showViewfinder: tpl.showViewfinder,
-                    showSteps: tpl.showStepsBadge,
-                    card: tpl.cardBgColor,
-                    text: tpl.cardTextColor,
-                    accent: tpl.accentColor,
-                  }}
+                  lazy
+                  spec={templateSpec(tpl)}
                   fake={{ dark: tpl.dotsColor, eye: tpl.cornerSquareColor }}
                   className="w-full h-auto rounded-xl shadow-md shadow-black/40"
                   label={`${tpl.name} preview`}
@@ -1214,10 +1212,11 @@ export function QRStudio({
           </Section>
 
           <Section title="Poster colors">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <ColorField label="Card" value={config.frame.cardBgColor} onChange={(v) => updateFrame({ cardBgColor: v })} />
               <ColorField label="Text" value={config.frame.cardTextColor} onChange={(v) => updateFrame({ cardTextColor: v })} />
               <ColorField label="Accent" value={config.frame.accentColor} onChange={(v) => updateFrame({ accentColor: v })} />
+              <ColorField label="Accent 2" value={config.frame.altColor} onChange={(v) => updateFrame({ altColor: v })} />
             </div>
           </Section>
         </>
@@ -1392,7 +1391,7 @@ export function QRStudio({
           tick={qrTick}
           getQr={() => qrContainerRef.current?.querySelector("canvas") ?? null}
           className={`mx-auto w-full h-auto rounded-2xl shadow-xl shadow-black/40 ${
-            f.templateId === "social-creator" ? "max-w-[220px] sm:max-w-[280px]" : "max-w-[250px] sm:max-w-[320px]"
+            posterAspect(posterSpec.layout) > 1.6 ? "max-w-[220px] sm:max-w-[280px]" : "max-w-[250px] sm:max-w-[320px]"
           }`}
           label="Poster preview"
         />
