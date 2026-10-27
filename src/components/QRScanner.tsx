@@ -43,7 +43,7 @@ function describe(data: string): Described {
     return { ...base, kind: "Text message", action: m ? { label: "Send message", href: `sms:${m[1]}${body}` } : null };
   }
   const geo = /^geo:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i.exec(t);
-  if (geo) return { ...base, kind: "Location", action: { label: "Open in Maps", href: `https://www.google.com/maps?q=${geo[1]},${geo[2]}` } };
+  if (geo) return { ...base, kind: "Location", action: { label: "Open in Maps", href: `https://www.google.com/maps/place/${geo[1]}%2C${geo[2]}` } };
   if (/^(bitcoin|ethereum|litecoin|dogecoin):/i.test(t)) return { ...base, kind: "Crypto address" };
   return base;
 }
@@ -156,6 +156,18 @@ export function QRScanner() {
   };
 
   const info = result ? describe(result) : null;
+  // A text QR holding several links (e.g. all social profiles): show each one with its own Copy / Open
+  const links = result && info?.kind === "Text" ? (result.match(/https?:\/\/[^\s]+/g) ?? []) : [];
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
+  const copyLink = async (u: string) => {
+    try {
+      await navigator.clipboard.writeText(u);
+      setCopiedLink(u);
+      setTimeout(() => setCopiedLink(null), 1800);
+    } catch {
+      setError("Couldn't copy in this browser.");
+    }
+  };
 
   const copy = async () => {
     if (!result) return;
@@ -261,6 +273,32 @@ export function QRScanner() {
               </button>
             </div>
             <p className="font-mono text-sm text-white break-all whitespace-pre-wrap max-h-48 overflow-auto">{result}</p>
+            {links.length > 1 && (
+              <ul className="space-y-2">
+                {links.map((u) => (
+                  <li key={u} className="flex items-center gap-2 rounded-xl bg-slate-950/60 border border-slate-800 p-2.5">
+                    <span className="min-w-0 flex-1 text-xs font-mono text-slate-200 truncate">{u}</span>
+                    <button
+                      type="button"
+                      onClick={() => copyLink(u)}
+                      aria-label={`Copy ${u}`}
+                      className="shrink-0 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white"
+                    >
+                      {copiedLink === u ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                    </button>
+                    <a
+                      href={u}
+                      target="_blank"
+                      rel="noopener noreferrer nofollow"
+                      aria-label={`Open ${u}`}
+                      className="shrink-0 p-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
             {info.link && (
               <p className="text-xs text-amber-200/90">
                 This opens <strong>{info.host}</strong>. Only continue if you trust that site: fake QR codes are used for

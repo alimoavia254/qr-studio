@@ -25,7 +25,7 @@ import {
 import { Section, Field, Chip, Segmented, Toggle, ColorField, OptionTile, inputCls } from "./studio/ui";
 import { ContentPanel, CONTENT_TYPES } from "./studio/ContentPanel";
 import { QRDesignConfig, QRContentType, ThemeCategory, PosterTemplatePreset } from "@/types/qr";
-import { formatQRData } from "@/lib/qrDataFormatters";
+import { formatQRData, toQRBytes } from "@/lib/qrDataFormatters";
 import { evaluateScannability } from "@/lib/colorUtils";
 import { QR_PRESETS, SAMPLE_LOGOS } from "@/lib/qrPresets";
 import { jpegToPdf } from "@/lib/pdf";
@@ -89,7 +89,14 @@ const INITIAL_CONFIG: QRDesignConfig = {
     start: "2026-12-01T10:00",
     end: "2026-12-01T12:00",
   },
-  social: { platform: "instagram", username: "yourname" },
+  social: {
+    platform: "instagram",
+    username: "yourname",
+    mode: "single",
+    name: "Your Name",
+    tagline: "Actress • Model",
+    links: { instagram: "yourname", tiktok: "yourname", youtube: "yourname", facebook: "yourname" },
+  },
   crypto: { coin: "bitcoin", address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq", amount: "" },
   shape: "square",
   dotType: "rounded",
@@ -429,7 +436,7 @@ export function QRStudio({
       width: size,
       height: size,
       type,
-      data: qrData,
+      data: toQRBytes(qrData),
       image: config.logoUrl || undefined,
       shape: config.shape,
       margin: Math.round(size * 0.05),

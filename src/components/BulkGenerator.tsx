@@ -5,6 +5,7 @@ import { Download, FileUp, Loader2, Trash2, ImageIcon } from "lucide-react";
 import type { QRPreset } from "@/types/qr";
 import type { Options } from "qr-code-styling";
 import { QR_PRESETS } from "@/lib/qrPresets";
+import { toQRBytes } from "@/lib/qrDataFormatters";
 import { createZip } from "@/lib/zip";
 
 const MAX_ROWS = 200;
@@ -54,7 +55,7 @@ function buildOptions(p: QRPreset, data: string, size: number, type: "canvas" | 
     width: size,
     height: size,
     type,
-    data,
+    data: toQRBytes(data),
     image: logo || undefined,
     margin: Math.round(size * 0.05),
     qrOptions: { typeNumber: 0, mode: "Byte", errorCorrectionLevel: logo ? "H" : "Q" },

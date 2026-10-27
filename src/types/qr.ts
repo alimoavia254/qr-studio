@@ -56,12 +56,18 @@ export type SocialPlatform =
   | "telegram"
   | "x"
   | "linkedin"
-  | "snapchat";
+  | "snapchat"
+  | "whatsapp";
 
 export interface SocialData {
   platform: SocialPlatform;
   /** Username, or a full profile link */
   username: string;
+  /** "single" = one profile link, "all" = every profile listed in one QR */
+  mode?: "single" | "all";
+  name?: string;
+  tagline?: string;
+  links?: Partial<Record<SocialPlatform, string>>;
 }
 
 export type CryptoCoin = "bitcoin" | "litecoin" | "dogecoin" | "ethereum";

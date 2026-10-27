@@ -1,4 +1,5 @@
 import { QRDesignConfig } from "@/types/qr";
+import { socialUrl, socialsText } from "@/lib/social";
 import { formatCryptoAmount } from "@/lib/cryptoAddress";
 
 const digitsOnly = (v: string) => v.replace(/[^0-9+]/g, "");
@@ -135,7 +136,7 @@ export function formatQRData(config: QRDesignConfig): string {
       const la = ok ? lat : 31.5204;
       const ln = ok ? lng : 74.3587;
       return config.geo.linkStyle === "maps"
-        ? `https://www.google.com/maps?q=${la},${ln}`
+        ? `https://www.google.com/maps/place/${la}%2C${ln}`
         : `geo:${la},${ln}`;
     }
 
@@ -172,21 +173,11 @@ export function formatQRData(config: QRDesignConfig): string {
     }
 
     case "social": {
-      const { platform, username } = config.social;
-      const u = username.trim();
-      if (/^https?:\/\//i.test(u)) return u;
-      const h = u.replace(/^@+/, "").replace(/^\/+|\/+$/g, "") || "username";
-      const e = encodeURIComponent(h);
-      switch (platform) {
-        case "instagram": return `https://instagram.com/${e}`;
-        case "facebook": return `https://facebook.com/${e}`;
-        case "tiktok": return `https://www.tiktok.com/@${e}`;
-        case "youtube": return `https://youtube.com/@${e}`;
-        case "telegram": return `https://t.me/${e}`;
-        case "x": return `https://x.com/${e}`;
-        case "linkedin": return `https://linkedin.com/in/${e}`;
-        case "snapchat": return `https://snapchat.com/add/${e}`;
+      const { platform, username, mode, name, tagline, links } = config.social;
+      if (mode === "all") {
+        return socialsText(name ?? "", tagline ?? "", links ?? {}) || "Add your usernames to build the list.";
       }
+      return socialUrl(platform, username) ?? socialUrl(platform, "username") ?? "https://example.com";
     }
 
     case "crypto": {
@@ -201,4 +192,15 @@ export function formatQRData(config: QRDesignConfig): string {
     default:
       return config.text || "Hello from QR Vibe (qrvibe.online)!";
   }
+}
+
+/**
+ * qr-code-styling writes one byte per character (it drops the high byte of anything above U+00FF),
+ * which corrupts characters like "•", "é" or non-Latin text. Passing the UTF-8 bytes as a byte-string
+ * makes it store the right bytes, so phones decode the original text.
+ */
+export function toQRBytes(data: string): string {
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x00-\x7f]*$/.test(data)) return data;
+  return Array.from(new TextEncoder().encode(data), (b) => String.fromCharCode(b)).join("");
 }

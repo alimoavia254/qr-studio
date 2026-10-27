@@ -18,20 +18,10 @@ import {
   EyeOff,
   X,
 } from "lucide-react";
-import type { QRDesignConfig, QRContentType, SocialPlatform } from "@/types/qr";
+import type { QRDesignConfig, QRContentType } from "@/types/qr";
+import { SOCIAL_PLATFORMS, socialsText } from "@/lib/social";
 import { checkCryptoAddress } from "@/lib/cryptoAddress";
 import { Section, Field, Chip, Segmented, Toggle, OptionTile, inputCls } from "./ui";
-
-const SOCIAL_PLATFORMS: { id: SocialPlatform; label: string; hint: string }[] = [
-  { id: "instagram", label: "Instagram", hint: "instagram.com/" },
-  { id: "facebook", label: "Facebook", hint: "facebook.com/" },
-  { id: "tiktok", label: "TikTok", hint: "tiktok.com/@" },
-  { id: "youtube", label: "YouTube", hint: "youtube.com/@" },
-  { id: "telegram", label: "Telegram", hint: "t.me/" },
-  { id: "x", label: "X (Twitter)", hint: "x.com/" },
-  { id: "linkedin", label: "LinkedIn", hint: "linkedin.com/in/" },
-  { id: "snapchat", label: "Snapchat", hint: "snapchat.com/add/" },
-];
 
 export const CONTENT_TYPES: { id: QRContentType; label: string; icon: React.ElementType }[] = [
   { id: "url", label: "Website", icon: Globe },
@@ -395,7 +385,7 @@ export function ContentPanel({ config, update }: ContentPanelProps) {
       )}
 
       {config.contentType === "geo" && (
-        <Section title="Location" hint="Scanning opens the map at this exact spot. Right-click a place in Google Maps to copy its coordinates.">
+        <Section title="Location" hint="Scanning shows a tappable link. One tap and Google Maps opens with a pin on this exact spot. Right-click a place in Google Maps to copy its coordinates.">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Latitude">
               <input
@@ -507,30 +497,107 @@ export function ContentPanel({ config, update }: ContentPanelProps) {
       )}
 
       {config.contentType === "social" && (
-        <Section title="Social media profile" hint="Scanning opens the profile in the app (or the website if the app isn't installed).">
-          <div className="flex flex-wrap gap-2">
-            {SOCIAL_PLATFORMS.map((p) => (
-              <Chip
-                key={p.id}
-                active={config.social.platform === p.id}
-                onClick={() => update("social", { ...config.social, platform: p.id })}
-              >
-                {p.label}
-              </Chip>
-            ))}
-          </div>
-          <Field label="Username or profile link">
-            <input
-              type="text"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              value={config.social.username}
-              onChange={(e) => update("social", { ...config.social, username: e.target.value })}
-              placeholder={`${SOCIAL_PLATFORMS.find((p) => p.id === config.social.platform)?.hint}yourname`}
-              className={inputCls}
-            />
-          </Field>
+        <Section
+          title="Social media"
+          hint={
+            config.social.mode === "all"
+              ? "One QR with every profile. Scanners show the list, and people tap or copy the link they want."
+              : "Scanning opens the profile in the app (or the website if the app isn't installed)."
+          }
+        >
+          <Segmented
+            value={config.social.mode ?? "single"}
+            onChange={(v) => update("social", { ...config.social, mode: v })}
+            options={[
+              { value: "single", label: "One profile" },
+              { value: "all", label: "All profiles in one QR" },
+            ]}
+          />
+
+          {(config.social.mode ?? "single") === "single" ? (
+            <>
+              <div className="flex flex-wrap gap-2">
+                {SOCIAL_PLATFORMS.map((p) => (
+                  <Chip
+                    key={p.id}
+                    active={config.social.platform === p.id}
+                    onClick={() => update("social", { ...config.social, platform: p.id })}
+                  >
+                    {p.label}
+                  </Chip>
+                ))}
+              </div>
+              <Field label="Username or profile link">
+                <input
+                  type="text"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  value={config.social.username}
+                  onChange={(e) => update("social", { ...config.social, username: e.target.value })}
+                  placeholder={`${SOCIAL_PLATFORMS.find((p) => p.id === config.social.platform)?.hint}yourname`}
+                  className={inputCls}
+                />
+              </Field>
+            </>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="Name (optional)">
+                  <input
+                    type="text"
+                    value={config.social.name ?? ""}
+                    onChange={(e) => update("social", { ...config.social, name: e.target.value })}
+                    className={inputCls}
+                  />
+                </Field>
+                <Field label="Tagline (optional)">
+                  <input
+                    type="text"
+                    value={config.social.tagline ?? ""}
+                    onChange={(e) => update("social", { ...config.social, tagline: e.target.value })}
+                    className={inputCls}
+                  />
+                </Field>
+              </div>
+              <div className="space-y-2.5">
+                {SOCIAL_PLATFORMS.map((p) => (
+                  <Field key={p.id} label={p.label}>
+                    <input
+                      type="text"
+                      autoCapitalize="off"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      value={config.social.links?.[p.id] ?? ""}
+                      onChange={(e) =>
+                        update("social", {
+                          ...config.social,
+                          links: { ...config.social.links, [p.id]: e.target.value },
+                        })
+                      }
+                      placeholder={`${p.hint}username`}
+                      className={inputCls}
+                    />
+                  </Field>
+                ))}
+              </div>
+              {(() => {
+                const len = socialsText(
+                  config.social.name ?? "",
+                  config.social.tagline ?? "",
+                  config.social.links ?? {}
+                ).length;
+                return len > 450 ? (
+                  <p className="text-xs text-amber-300">
+                    This QR holds {len} characters, so it is very dense and slower to scan. Remove a profile, or skip the
+                    logo, for a cleaner code.
+                  </p>
+                ) : (
+                  <p className="text-xs text-slate-500">{len} characters. Leave a box empty to skip that platform.</p>
+                );
+              })()}
+            </>
+          )}
         </Section>
       )}
 
