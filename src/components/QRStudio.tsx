@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import confetti from "canvas-confetti";
 import {
   Globe,
   MessageCircle,
@@ -925,7 +924,7 @@ export function QRStudio({
       a.click();
       a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-      confetti({ particleCount: 80, spread: 60, origin: { y: 0.85 } });
+      void import("canvas-confetti").then(({ default: confetti }) => confetti({ particleCount: 80, spread: 60, origin: { y: 0.85 } }));
     } catch (err) {
       console.error("Export error:", err);
       showToast("Download failed. Please try again.");
