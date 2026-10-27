@@ -5,14 +5,14 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { JsonLd } from "@/components/JsonLd";
 import { GUIDES } from "@/lib/guides";
-import { SITE_URL } from "@/lib/seo";
+import { SITE_URL, pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/guides",
   title: "QR Code Guides - Sizes, Menus, Error Correction & Safety",
   description:
     "Practical QR code guides: print sizes, static vs dynamic codes, menu QR codes, error correction, scanning on iPhone and Android, and avoiding QR scams.",
-  alternates: { canonical: `${SITE_URL}/guides` },
-};
+});
 
 export default function GuidesPage() {
   const listSchema = {

@@ -5,24 +5,21 @@ import Footer from "@/components/Footer";
 import { Sparkles, Palette, ShieldCheck, Layers, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { PageFAQ } from "@/components/PageFAQ";
-import { PAGE_FAQS } from "@/lib/seo";
+import { PAGE_FAQS, breadcrumbSchema, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/custom-qr-code-generator",
   title: "Custom QR Code Generator - Dots, Corners & Gradients",
   description: "Design custom QR codes with rounded dots, sleek corner eye styles, modern color gradients, and brand frames with instant real-time scan verification.",
-  alternates: {
-    canonical: "https://qrvibe.online/custom-qr-code-generator",
-  },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Custom QR Code Generator | Aesthetic Brand Designer",
-    description: "Upgrade from boring square black-and-white barcodes to sleek, custom-designed branded QR codes.",
-  },
-};
+  socialTitle: "Custom QR Code Generator | Aesthetic Brand Designer",
+  socialDescription: "Upgrade from boring square black-and-white barcodes to sleek, custom-designed branded QR codes.",
+});
 
 export default function CustomQRPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-purple-500 selection:text-white">
+      <JsonLd data={breadcrumbSchema([{ name: "Custom QR Code Generator", path: "/custom-qr-code-generator" }])} />
       <Header />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">

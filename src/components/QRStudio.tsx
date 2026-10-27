@@ -2066,7 +2066,7 @@ export function QRStudio({
                 aria-selected={active}
                 onClick={() => selectTab(t.id)}
                 className={`relative flex flex-col items-center gap-1 pt-2.5 pb-2 text-[11px] font-semibold transition-colors ${
-                  active ? "text-white" : "text-slate-500"
+                  active ? "text-white" : "text-slate-400"
                 }`}
               >
                 <span

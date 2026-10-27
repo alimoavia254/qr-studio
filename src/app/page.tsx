@@ -1,6 +1,7 @@
 import { Header } from "@/components/Header";
 import { QRStudio } from "@/components/QRStudio";
 import { FeaturesSection } from "@/components/FeaturesSection";
+import { PopularGenerators } from "@/components/PopularGenerators";
 import { FAQSection } from "@/components/FAQSection";
 import { Footer } from "@/components/Footer";
 import { JsonLd } from "@/components/JsonLd";
@@ -91,6 +92,7 @@ export default function Home() {
         <div id="features">
           <FeaturesSection />
         </div>
+        <PopularGenerators />
         <div id="faq">
           <FAQSection />
         </div>

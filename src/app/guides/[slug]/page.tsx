@@ -29,6 +29,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description: guide.description,
       publishedTime: guide.published,
       modifiedTime: guide.updated,
+      siteName: SITE_NAME,
+      images: "/opengraph-image",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: guide.title,
+      description: guide.description,
+      images: "/twitter-image",
     },
   };
 }

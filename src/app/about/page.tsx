@@ -3,14 +3,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Sparkles, Code2, Heart, Award, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/about",
   title: "About Us - The Private QR Code Platform",
   description: "Learn why we built QR Vibe: to free creators from scammy subscription redirects and provide a fast, beautiful, 100% private QR generator.",
-  alternates: {
-    canonical: "https://qrvibe.online/about",
-  },
-};
+});
 
 export default function AboutPage() {
   return (
