@@ -479,6 +479,187 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "how-to-test-a-qr-code-before-printing",
+    title: "How to Test a QR Code Before You Print It (Checklist)",
+    description:
+      "A simple checklist to test a QR code before printing: scan on iPhone and Android, check size, contrast and logo, and confirm the link opens the right page.",
+    excerpt:
+      "Printing 500 flyers with a QR code that does not scan is an expensive mistake. Run through this checklist first.",
+    published: "2026-10-27",
+    updated: "2026-10-27",
+    readMinutes: 5,
+    tool: { href: "/", label: "Make a QR code with a live scan test" },
+    sections: [
+      {
+        heading: "Why testing matters",
+        paragraphs: [
+          "A QR code that looks fine on screen can still fail once it is printed small, on glossy paper, or in dim light. The only way to know it works is to scan the exact design you plan to print, on real phones, at the size you plan to print it.",
+          "Testing takes two minutes and costs nothing. Reprinting packaging, menus or signs costs real money.",
+        ],
+      },
+      {
+        heading: "The pre-print checklist",
+        paragraphs: ["Work through these checks in order before you send anything to a printer:"],
+        list: [
+          "Scan the final design with the built-in camera app on at least one iPhone and one Android phone.",
+          "Confirm the link opens the correct page, and that the page loads on mobile data, not only on your office Wi-Fi.",
+          "Check the preview text your phone shows before opening. It should be your own address, not an unfamiliar redirect domain.",
+          "Print a test copy at the real size and scan that paper copy, not the screen.",
+          "Scan it from the distance people will actually stand or sit, for example a table tent at arm's length.",
+          "Try it in poor light and with a slight angle. A good code should still read.",
+          "If you added a logo, confirm error correction is set to High (Level H) and the logo is not oversized.",
+          "Leave a clear blank margin around the code. Do not let text, borders or photos touch it.",
+        ],
+      },
+      {
+        heading: "Common reasons a code fails",
+        paragraphs: [
+          "Low contrast between the dots and the background is the most common cause. The dots should be clearly darker than the background. Very light colors, or colors that look different on screen than in print, can break scanning.",
+          "Other frequent causes are printing too small, a logo that covers too much of the pattern, stretched or distorted artwork, glare from glossy lamination, and a missing blank margin around the code.",
+        ],
+      },
+      {
+        heading: "Use a built-in scan check",
+        paragraphs: [
+          "QR Vibe decodes the preview in your browser while you design and shows whether it reads, plus a warning when contrast or logo size is risky. This catches most design mistakes early. It does not replace a real phone test of your printed copy, so still do the checklist above before a large print run.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I check if my QR code works?",
+        a: "Scan it with your phone's camera app, confirm the preview shows your own link and that the page opens. Then print a test copy at the real size and scan that too.",
+      },
+      {
+        q: "What size should I test at?",
+        a: "Test at the exact size you will print. A code that scans at 10 cm on screen may fail at 2 cm on a business card, especially with long links or logos.",
+      },
+      {
+        q: "Does a QR code work on any phone?",
+        a: "Current iPhone and Android phones can scan QR codes with the built-in camera. Always confirm on your own devices before printing.",
+      },
+    ],
+  },
+  {
+    slug: "best-colors-for-qr-codes",
+    title: "Best Colors for QR Codes: Contrast Rules That Still Scan",
+    description:
+      "Which QR code colors scan reliably? Learn contrast rules, why light-on-dark can fail, and how to use brand colors and gradients without breaking your code.",
+    excerpt:
+      "You can use brand colors on a QR code, but only if the contrast is strong. Here is how to keep it scannable.",
+    published: "2026-10-27",
+    updated: "2026-10-27",
+    readMinutes: 5,
+    tool: { href: "/custom-qr-code-generator", label: "Design a custom colored QR code" },
+    sections: [
+      {
+        heading: "The one rule that matters: contrast",
+        paragraphs: [
+          "A QR code is read by comparing dark modules (the dots) against a light background. Phone cameras need a clear difference in brightness between the two. Hue matters far less than lightness: a dark navy dot on a white background scans well, while a bright yellow dot on white does not, even though both are colorful.",
+          "A reliable starting point is dark dots on a light background, which is exactly what most printed QR codes use.",
+        ],
+      },
+      {
+        heading: "How QR Vibe rates your colors",
+        paragraphs: [
+          "QR Vibe calculates the contrast ratio between your dot color and background in real time. It treats a ratio of about 7:1 or higher as excellent, 4.5:1 or higher as good, 3:1 or higher as risky, and anything below 3:1 as likely to fail on many phones. These are the tool's own guidance thresholds, so treat them as a safe rule of thumb rather than a guarantee.",
+        ],
+      },
+      {
+        heading: "Colors and styles to be careful with",
+        paragraphs: ["These choices are the usual cause of failed scans:"],
+        list: [
+          "Light dots on a dark background (inverted codes). Some scanner apps do not read them, so test on your target phones.",
+          "Pastel or yellow dots on white.",
+          "Gradients that fade toward the background color. Keep the lightest part of the gradient dark enough.",
+          "Busy photo backgrounds behind the code.",
+          "Transparent backgrounds placed on top of patterned or colored surfaces.",
+        ],
+      },
+      {
+        heading: "Using brand colors safely",
+        paragraphs: [
+          "Pick your darkest brand color for the dots and keep the background white or very light. If your brand color is bright, use a darker shade of it for the code. Place your logo in the center with High error correction, and keep the logo small.",
+          "Finally, remember that printed colors can look different from your screen. Always scan a printed proof before a full print run.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Can I make a QR code in my brand colors?",
+        a: "Yes, as long as the dots are clearly darker than the background. Use a dark shade of your brand color on a white or very light background.",
+      },
+      {
+        q: "Do inverted QR codes with light dots scan?",
+        a: "Some scanners read them and some do not. For print, dark dots on a light background is the safest choice.",
+      },
+      {
+        q: "Can I use a gradient on a QR code?",
+        a: "Yes, but keep every part of the gradient dark enough against the background. QR Vibe warns you if contrast gets too low.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-make-an-email-qr-code",
+    title: "How to Make an Email QR Code (With Subject and Message)",
+    description:
+      "Create an email QR code that opens a new message with your address, subject and body filled in. Free, no sign-up, works on iPhone and Android.",
+    excerpt:
+      "Let people email you with one scan: the address, subject and message are already filled in.",
+    published: "2026-10-27",
+    updated: "2026-10-27",
+    readMinutes: 4,
+    tool: { href: "/", label: "Create an email QR code" },
+    sections: [
+      {
+        heading: "What an email QR code does",
+        paragraphs: [
+          "An email QR code stores a mailto link. When someone scans it, their phone opens the default email app with a new message already addressed to you. You can also pre-fill the subject line and the message body.",
+          "It is useful on business cards, flyers, product packaging, event posters and support leaflets, anywhere typing an email address by hand would put people off.",
+        ],
+      },
+      {
+        heading: "How to create one",
+        paragraphs: ["Follow these steps in QR Vibe:"],
+        list: [
+          "Open the generator and choose Email as the content type.",
+          "Enter the address people should write to.",
+          "Optionally add a subject and a short message.",
+          "Add your logo or colors in the Logo and Style tabs if you want.",
+          "Wait for the scan check to pass, then download PNG or SVG.",
+        ],
+      },
+      {
+        heading: "Tips for a better email QR code",
+        paragraphs: [
+          "Keep the pre-filled subject and message short. Longer text makes the QR pattern denser and harder to scan at small sizes. A clear subject such as Quote request or Event question also helps you sort incoming mail.",
+          "Use an address you will keep for years, because a printed static code cannot be edited. A shared role address is better than a personal one that may change.",
+          "Be aware that printing an email address in a QR code makes it easy to collect. If you worry about spam, use a dedicated address and a spam filter.",
+        ],
+      },
+      {
+        heading: "Will it work on every phone?",
+        paragraphs: [
+          "Current iPhone and Android phones scan QR codes with the built-in camera and open the default mail app. If no mail app is set up on the phone, the scan may not complete, so a phone number or website link is a good backup on printed material.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I make a QR code that opens an email?",
+        a: "Choose Email in QR Vibe, enter the address and optional subject and message, then download the code. Scanning it opens a new email with those details filled in.",
+      },
+      {
+        q: "Can I pre-fill the subject and message?",
+        a: "Yes. Add a subject and body and they will appear in the new email. Keep them short so the code stays easy to scan.",
+      },
+      {
+        q: "Does an email QR code expire?",
+        a: "No. It is a static code that stores the mailto link directly, so it keeps working as long as the email address does.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string) {
