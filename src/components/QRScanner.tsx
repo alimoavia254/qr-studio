@@ -1,29 +1,51 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, CameraOff, Copy, Check, ExternalLink, ImageUp, AlertTriangle, X } from "lucide-react";
+import { Camera, CameraOff, Download, Copy, Check, ExternalLink, ImageUp, AlertTriangle, X } from "lucide-react";
 
 /** Everything stays in the browser: frames are decoded locally with jsQR and never uploaded. */
 
-function describe(data: string): { kind: string; link: string | null; host: string | null } {
+interface Described {
+  kind: string;
+  /** Web link: shown with a scam warning */
+  link: string | null;
+  host: string | null;
+  /** Opens a phone app (dialer, messages, maps, mail) */
+  action: { label: string; href: string } | null;
+  /** Saves the content as a file (calendar event, contact card) */
+  file: { label: string; name: string; mime: string } | null;
+}
+
+function describe(data: string): Described {
   const t = data.trim();
+  const base: Described = { kind: "Text", link: null, host: null, action: null, file: null };
   if (/^https?:\/\//i.test(t)) {
     try {
-      return { kind: "Website link", link: t, host: new URL(t).hostname };
+      return { ...base, kind: "Website link", link: t, host: new URL(t).hostname };
     } catch {
-      return { kind: "Website link", link: null, host: null };
+      return { ...base, kind: "Website link" };
     }
   }
-  if (/^WIFI:/i.test(t)) return { kind: "Wi-Fi network", link: null, host: null };
-  if (/^BEGIN:VCARD/i.test(t)) return { kind: "Contact card", link: null, host: null };
-  if (/^BEGIN:VCALENDAR/i.test(t)) return { kind: "Calendar event", link: null, host: null };
-  if (/^(mailto:|MATMSG:)/i.test(t)) return { kind: "Email", link: null, host: null };
-  if (/^tel:/i.test(t)) return { kind: "Phone number", link: null, host: null };
-  if (/^(sms|smsto):/i.test(t)) return { kind: "Text message", link: null, host: null };
-  if (/^geo:/i.test(t)) return { kind: "Location", link: null, host: null };
-  if (/^upi:/i.test(t)) return { kind: "UPI payment", link: null, host: null };
-  if (/^(bitcoin|ethereum|litecoin|dogecoin):/i.test(t)) return { kind: "Crypto address", link: null, host: null };
-  return { kind: "Text", link: null, host: null };
+  if (/^WIFI:/i.test(t)) return { ...base, kind: "Wi-Fi network" };
+  if (/^BEGIN:VCARD/i.test(t))
+    return { ...base, kind: "Contact card", file: { label: "Save contact", name: "contact.vcf", mime: "text/vcard" } };
+  if (/^BEGIN:VCALENDAR/i.test(t))
+    return { ...base, kind: "Calendar event", file: { label: "Add to calendar", name: "event.ics", mime: "text/calendar" } };
+  if (/^mailto:/i.test(t)) return { ...base, kind: "Email", action: { label: "Write email", href: t } };
+  if (/^MATMSG:/i.test(t)) {
+    const to = /TO:([^;]*)/i.exec(t)?.[1];
+    return { ...base, kind: "Email", action: to ? { label: "Write email", href: `mailto:${to}` } : null };
+  }
+  if (/^tel:/i.test(t)) return { ...base, kind: "Phone number", action: { label: "Call", href: t } };
+  if (/^sms(?:to)?:/i.test(t)) {
+    const m = /^sms(?:to)?:([^:?]*)[:?]?(.*)$/i.exec(t);
+    const body = m?.[2] ? `?body=${encodeURIComponent(m[2].replace(/^body=/i, ""))}` : "";
+    return { ...base, kind: "Text message", action: m ? { label: "Send message", href: `sms:${m[1]}${body}` } : null };
+  }
+  const geo = /^geo:(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/i.exec(t);
+  if (geo) return { ...base, kind: "Location", action: { label: "Open in Maps", href: `https://www.google.com/maps?q=${geo[1]},${geo[2]}` } };
+  if (/^(bitcoin|ethereum|litecoin|dogecoin):/i.test(t)) return { ...base, kind: "Crypto address" };
+  return base;
 }
 
 export function QRScanner() {
@@ -53,6 +75,7 @@ export function QRScanner() {
 
   const scanFile = async (file: File) => {
     setError(null);
+    setResult(null);
     if (!file.type.startsWith("image/")) {
       setError("Please choose an image file (PNG, JPG, WebP).");
       return;
@@ -253,6 +276,31 @@ export function QRScanner() {
                 {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                 {copied ? "Copied" : "Copy"}
               </button>
+              {info.action && (
+                <a
+                  href={info.action.href}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold"
+                >
+                  {info.action.label}
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              )}
+              {info.file && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(new Blob([result], { type: info.file!.mime }));
+                    a.download = info.file!.name;
+                    a.click();
+                    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+                  }}
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold"
+                >
+                  {info.file.label}
+                  <Download className="w-4 h-4" />
+                </button>
+              )}
               {info.link && (
                 <a
                   href={info.link}

@@ -45,7 +45,7 @@ const RELATED = [
   { href: "/phone-call-qr-code-generator", label: "Phone Call QR Code" },
   { href: "/location-qr-code-generator", label: "Location QR Code" },
   { href: "/event-qr-code-generator", label: "Calendar Event QR Code" },
-  { href: "/upi-qr-code-generator", label: "UPI Payment QR Code" },
+  { href: "/social-media-qr-code-generator", label: "Social Media QR Code" },
   { href: "/bulk-qr-code-generator", label: "Bulk QR Code Generator" },
   { href: "/qr-code-scanner", label: "Free QR Code Scanner" },
 ];

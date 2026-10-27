@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { QrCode, ShieldCheck, ChevronDown, Sparkles, MessageSquare, Wifi, Palette, Contact, Menu, X, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, IndianRupee } from "lucide-react";
+import { QrCode, ShieldCheck, ChevronDown, Sparkles, MessageSquare, Wifi, Palette, Contact, Menu, X, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, Share2 } from "lucide-react";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -160,13 +160,13 @@ export function Header() {
                   </Link>
 
                   <Link
-                    href="/upi-qr-code-generator"
+                    href="/social-media-qr-code-generator"
                     className="flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
                   >
-                    <IndianRupee className="w-4 h-4 text-green-400 shrink-0" />
+                    <Share2 className="w-4 h-4 text-green-400 shrink-0" />
                     <div>
-                      <div className="text-xs font-semibold">UPI Payment QR</div>
-                      <div className="text-[10px] text-slate-500">GPay, PhonePe, Paytm</div>
+                      <div className="text-xs font-semibold">Social Media QR</div>
+                      <div className="text-[10px] text-slate-500">Instagram, TikTok, Facebook</div>
                     </div>
                   </Link>
                 </div>
@@ -290,11 +290,11 @@ export function Header() {
               <CalendarDays className="w-3.5 h-3.5 text-teal-400" /> Calendar Event QR
             </Link>
             <Link
-              href="/upi-qr-code-generator"
+              href="/social-media-qr-code-generator"
               onClick={() => setMobileMenuOpen(false)}
               className="px-3 py-3 rounded-lg hover:bg-slate-900 text-sm text-slate-300 hover:text-white flex items-center gap-2"
             >
-              <IndianRupee className="w-3.5 h-3.5 text-green-400" /> UPI Payment QR
+              <Share2 className="w-3.5 h-3.5 text-green-400" /> Social Media QR
             </Link>
           </div>
 

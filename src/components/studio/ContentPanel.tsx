@@ -12,14 +12,26 @@ import {
   Phone,
   MapPin,
   CalendarDays,
-  IndianRupee,
+  Share2,
   Bitcoin,
   Eye,
   EyeOff,
   X,
 } from "lucide-react";
-import type { QRDesignConfig, QRContentType } from "@/types/qr";
+import type { QRDesignConfig, QRContentType, SocialPlatform } from "@/types/qr";
+import { checkCryptoAddress } from "@/lib/cryptoAddress";
 import { Section, Field, Chip, Segmented, Toggle, OptionTile, inputCls } from "./ui";
+
+const SOCIAL_PLATFORMS: { id: SocialPlatform; label: string; hint: string }[] = [
+  { id: "instagram", label: "Instagram", hint: "instagram.com/" },
+  { id: "facebook", label: "Facebook", hint: "facebook.com/" },
+  { id: "tiktok", label: "TikTok", hint: "tiktok.com/@" },
+  { id: "youtube", label: "YouTube", hint: "youtube.com/@" },
+  { id: "telegram", label: "Telegram", hint: "t.me/" },
+  { id: "x", label: "X (Twitter)", hint: "x.com/" },
+  { id: "linkedin", label: "LinkedIn", hint: "linkedin.com/in/" },
+  { id: "snapchat", label: "Snapchat", hint: "snapchat.com/add/" },
+];
 
 export const CONTENT_TYPES: { id: QRContentType; label: string; icon: React.ElementType }[] = [
   { id: "url", label: "Website", icon: Globe },
@@ -32,7 +44,7 @@ export const CONTENT_TYPES: { id: QRContentType; label: string; icon: React.Elem
   { id: "phone", label: "Call", icon: Phone },
   { id: "geo", label: "Location", icon: MapPin },
   { id: "event", label: "Event", icon: CalendarDays },
-  { id: "upi", label: "UPI Pay", icon: IndianRupee },
+  { id: "social", label: "Social", icon: Share2 },
   { id: "crypto", label: "Crypto", icon: Bitcoin },
 ];
 
@@ -411,8 +423,8 @@ export function ContentPanel({ config, update }: ContentPanelProps) {
               value={config.geo.linkStyle}
               onChange={(v) => update("geo", { ...config.geo, linkStyle: v })}
               options={[
-                { value: "maps", label: "Google Maps link" },
-                { value: "geo", label: "Phone's map app" },
+                { value: "maps", label: "Google Maps link (recommended)" },
+                { value: "geo", label: "geo: link (some phones show text)" },
               ]}
             />
           </Field>
@@ -430,6 +442,21 @@ export function ContentPanel({ config, update }: ContentPanelProps) {
               className={inputCls}
             />
           </Field>
+          <Field label="QR type">
+            <Segmented
+              value={config.event.linkStyle ?? "gcal"}
+              onChange={(v) => update("event", { ...config.event, linkStyle: v })}
+              options={[
+                { value: "gcal", label: "Calendar link (recommended)" },
+                { value: "ics", label: "Raw .ics data" },
+              ]}
+            />
+          </Field>
+          <p className="text-xs text-slate-400 -mt-1">
+            {(config.event.linkStyle ?? "gcal") === "gcal"
+              ? "Opens Google Calendar with the event ready to save. Works on every phone camera."
+              : "Embeds the event itself. Only some phone cameras offer to add it, others just show text."}
+          </p>
           <Toggle
             checked={config.event.allDay}
             onChange={(v) =>
@@ -479,43 +506,28 @@ export function ContentPanel({ config, update }: ContentPanelProps) {
         </Section>
       )}
 
-      {config.contentType === "upi" && (
-        <Section title="UPI payment" hint="Scanning opens GPay, PhonePe, Paytm or any UPI app with the payee filled in. Works in India.">
-          <Field label="UPI ID">
+      {config.contentType === "social" && (
+        <Section title="Social media profile" hint="Scanning opens the profile in the app (or the website if the app isn't installed).">
+          <div className="flex flex-wrap gap-2">
+            {SOCIAL_PLATFORMS.map((p) => (
+              <Chip
+                key={p.id}
+                active={config.social.platform === p.id}
+                onClick={() => update("social", { ...config.social, platform: p.id })}
+              >
+                {p.label}
+              </Chip>
+            ))}
+          </div>
+          <Field label="Username or profile link">
             <input
               type="text"
               autoCapitalize="off"
-              value={config.upi.vpa}
-              onChange={(e) => update("upi", { ...config.upi, vpa: e.target.value })}
-              placeholder="shopname@okaxis"
-              className={inputCls}
-            />
-          </Field>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Field label="Payee name">
-              <input
-                type="text"
-                value={config.upi.name}
-                onChange={(e) => update("upi", { ...config.upi, name: e.target.value })}
-                className={inputCls}
-              />
-            </Field>
-            <Field label="Amount in ₹ (optional)">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={config.upi.amount}
-                onChange={(e) => update("upi", { ...config.upi, amount: e.target.value })}
-                placeholder="Leave empty to let payer enter"
-                className={inputCls}
-              />
-            </Field>
-          </div>
-          <Field label="Note (optional)">
-            <input
-              type="text"
-              value={config.upi.note}
-              onChange={(e) => update("upi", { ...config.upi, note: e.target.value })}
+              autoCorrect="off"
+              spellCheck={false}
+              value={config.social.username}
+              onChange={(e) => update("social", { ...config.social, username: e.target.value })}
+              placeholder={`${SOCIAL_PLATFORMS.find((p) => p.id === config.social.platform)?.hint}yourname`}
               className={inputCls}
             />
           </Field>
@@ -546,6 +558,14 @@ export function ContentPanel({ config, update }: ContentPanelProps) {
               onChange={(e) => update("crypto", { ...config.crypto, address: e.target.value })}
               className={`${inputCls} font-mono`}
             />
+            {config.crypto.address.trim() &&
+              (checkCryptoAddress(config.crypto.coin, config.crypto.address) === "valid" ? (
+                <span className="block mt-1.5 text-xs text-emerald-400">Address format looks correct for {config.crypto.coin}.</span>
+              ) : (
+                <span className="block mt-1.5 text-xs text-rose-300">
+                  This doesn&apos;t look like a valid {config.crypto.coin} address. Check the coin and copy it again.
+                </span>
+              ))}
           </Field>
           {config.crypto.coin !== "ethereum" && (
             <Field label="Amount (optional)">

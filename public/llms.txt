@@ -1,6 +1,6 @@
 # QR Vibe
 
-> QR Vibe (https://qrvibe.online) is a free online QR code generator with logo. It makes branded, scan-tested QR codes for websites, WhatsApp, Wi-Fi, business cards (vCard), email, text, SMS, phone calls, locations, calendar events, UPI payments and crypto wallets. No sign-up, no watermark, and codes never expire because they are static. Everything runs in the browser, so logos and Wi-Fi passwords are never uploaded.
+> QR Vibe (https://qrvibe.online) is a free online QR code generator with logo. It makes branded, scan-tested QR codes for websites, WhatsApp, Wi-Fi, business cards (vCard), email, text, SMS, phone calls, locations, calendar events, social media profiles and crypto wallets. No sign-up, no watermark, and codes never expire because they are static. Everything runs in the browser, so logos and Wi-Fi passwords are never uploaded.
 
 ## Key facts
 - Price: 100% free, unlimited downloads
@@ -24,7 +24,7 @@
 - [Phone call QR code generator](https://qrvibe.online/phone-call-qr-code-generator): opens the dialer with your number
 - [Location QR code generator](https://qrvibe.online/location-qr-code-generator): opens Google Maps or a map app at exact coordinates
 - [Calendar event QR code generator](https://qrvibe.online/event-qr-code-generator): adds an event to the phone calendar
-- [UPI payment QR code generator](https://qrvibe.online/upi-qr-code-generator): UPI payment QR for GPay, PhonePe and Paytm
+- [Social media QR code generator](https://qrvibe.online/social-media-qr-code-generator): Instagram, TikTok, Facebook, YouTube, Telegram and X profile QR codes
 - [Bulk QR code generator](https://qrvibe.online/bulk-qr-code-generator): up to 200 QR codes from a list or CSV, downloaded as a ZIP
 - [QR code scanner](https://qrvibe.online/qr-code-scanner): scan with a camera or an uploaded image, entirely in the browser
 

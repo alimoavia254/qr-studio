@@ -18,7 +18,7 @@ export type QRContentType =
   | "phone"
   | "geo"
   | "event"
-  | "upi"
+  | "social"
   | "crypto";
 
 export interface SmsData {
@@ -41,16 +41,27 @@ export interface EventData {
   location: string;
   description: string;
   allDay: boolean;
+  /** "gcal" = Google Calendar link (opens everywhere), "ics" = raw calendar data */
+  linkStyle: "gcal" | "ics";
   /** "YYYY-MM-DDTHH:mm" (or "YYYY-MM-DD" when allDay) */
   start: string;
   end: string;
 }
 
-export interface UpiData {
-  vpa: string;
-  name: string;
-  amount: string;
-  note: string;
+export type SocialPlatform =
+  | "instagram"
+  | "facebook"
+  | "tiktok"
+  | "youtube"
+  | "telegram"
+  | "x"
+  | "linkedin"
+  | "snapchat";
+
+export interface SocialData {
+  platform: SocialPlatform;
+  /** Username, or a full profile link */
+  username: string;
 }
 
 export type CryptoCoin = "bitcoin" | "litecoin" | "dogecoin" | "ethereum";
@@ -162,7 +173,7 @@ export interface QRDesignConfig {
   phone: PhoneData;
   geo: GeoData;
   event: EventData;
-  upi: UpiData;
+  social: SocialData;
   crypto: CryptoData;
 
   // Visual Styles

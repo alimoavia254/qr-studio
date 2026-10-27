@@ -97,7 +97,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     },
     {
-      url: `${baseUrl}/upi-qr-code-generator`,
+      url: `${baseUrl}/social-media-qr-code-generator`,
       lastModified,
       changeFrequency: "weekly",
       priority: 0.85,

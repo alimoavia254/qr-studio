@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { QrCode, ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact, Camera, Star, UtensilsCrossed, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, IndianRupee } from "lucide-react";
+import { QrCode, ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact, Camera, Star, UtensilsCrossed, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, Share2 } from "lucide-react";
 
 export function Footer() {
   const currentYear = 2026;
@@ -99,8 +99,8 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/upi-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
-                  <IndianRupee className="w-3.5 h-3.5 text-green-400" /> UPI Payment QR
+                <Link href="/social-media-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <Share2 className="w-3.5 h-3.5 text-green-400" /> Social Media QR
                 </Link>
               </li>
             </ul>

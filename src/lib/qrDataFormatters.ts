@@ -1,4 +1,5 @@
 import { QRDesignConfig } from "@/types/qr";
+import { formatCryptoAmount } from "@/lib/cryptoAddress";
 
 const digitsOnly = (v: string) => v.replace(/[^0-9+]/g, "");
 
@@ -12,6 +13,12 @@ const icsDate = (v: string, allDay: boolean) => {
   const date = d.replace(/-/g, "");
   if (allDay) return date;
   return `${date}T${(t || "00:00").replace(/:/g, "").padEnd(6, "0").slice(0, 6)}`;
+};
+
+const addDay = (ymd: string) => {
+  const d = new Date(`${ymd.slice(0, 10)}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
 };
 
 export function formatQRData(config: QRDesignConfig): string {
@@ -135,7 +142,21 @@ export function formatQRData(config: QRDesignConfig): string {
     case "event": {
       const e = config.event;
       const start = e.start || (e.allDay ? "2026-12-01" : "2026-12-01T10:00");
-      const end = e.end || start;
+      let end = e.end || start;
+      // iCalendar and Google both treat an all-day end date as exclusive
+      if (e.allDay) end = addDay(end);
+
+      if (e.linkStyle !== "ics") {
+        const params = [
+          "action=TEMPLATE",
+          `text=${encodeURIComponent(e.title || "Event")}`,
+          `dates=${icsDate(start, e.allDay)}/${icsDate(end, e.allDay)}`,
+        ];
+        if (e.description) params.push(`details=${encodeURIComponent(e.description)}`);
+        if (e.location) params.push(`location=${encodeURIComponent(e.location)}`);
+        return `https://calendar.google.com/calendar/render?${params.join("&")}`;
+      }
+
       const lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
@@ -150,26 +171,30 @@ export function formatQRData(config: QRDesignConfig): string {
       return lines.join("\n");
     }
 
-    case "upi": {
-      const u = config.upi;
-      const params = [`pa=${encodeURIComponent(u.vpa.trim() || "name@bank")}`];
-      if (u.name.trim()) params.push(`pn=${encodeURIComponent(u.name.trim())}`);
-      const amount = parseFloat(u.amount);
-      if (Number.isFinite(amount) && amount > 0) params.push(`am=${amount.toFixed(2)}`);
-      params.push("cu=INR");
-      if (u.note.trim()) params.push(`tn=${encodeURIComponent(u.note.trim())}`);
-      return `upi://pay?${params.join("&")}`;
+    case "social": {
+      const { platform, username } = config.social;
+      const u = username.trim();
+      if (/^https?:\/\//i.test(u)) return u;
+      const h = u.replace(/^@+/, "").replace(/^\/+|\/+$/g, "") || "username";
+      const e = encodeURIComponent(h);
+      switch (platform) {
+        case "instagram": return `https://instagram.com/${e}`;
+        case "facebook": return `https://facebook.com/${e}`;
+        case "tiktok": return `https://www.tiktok.com/@${e}`;
+        case "youtube": return `https://youtube.com/@${e}`;
+        case "telegram": return `https://t.me/${e}`;
+        case "x": return `https://x.com/${e}`;
+        case "linkedin": return `https://linkedin.com/in/${e}`;
+        case "snapchat": return `https://snapchat.com/add/${e}`;
+      }
     }
 
     case "crypto": {
       const c = config.crypto;
-      const address = c.address.trim() || "bc1qexampleaddress";
-      // Ethereum amounts are in wei, so only the address is encoded for it.
-      const amount = parseFloat(c.amount);
-      if (c.coin !== "ethereum" && Number.isFinite(amount) && amount > 0) {
-        return `${c.coin}:${address}?amount=${amount}`;
-      }
-      return `${c.coin}:${address}`;
+      const address = c.address.trim() || "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq";
+      // BIP-21 style URI. Ethereum amounts are in wei (EIP-681), so only the address is encoded for it.
+      const amount = c.coin === "ethereum" ? null : formatCryptoAmount(c.amount);
+      return amount ? `${c.coin}:${address}?amount=${amount}` : `${c.coin}:${address}`;
     }
 
     case "text":

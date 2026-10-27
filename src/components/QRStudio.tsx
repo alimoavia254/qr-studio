@@ -85,10 +85,11 @@ const INITIAL_CONFIG: QRDesignConfig = {
     location: "Main Street, Lahore",
     description: "Join us for the opening day.",
     allDay: false,
+    linkStyle: "gcal",
     start: "2026-12-01T10:00",
     end: "2026-12-01T12:00",
   },
-  upi: { vpa: "shopname@okaxis", name: "My Shop", amount: "", note: "" },
+  social: { platform: "instagram", username: "yourname" },
   crypto: { coin: "bitcoin", address: "bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq", amount: "" },
   shape: "square",
   dotType: "rounded",
@@ -1388,7 +1389,14 @@ export function QRStudio({
                 <button
                   type="button"
                   onClick={() => {
-                    setConfig(d.config);
+                    setConfig((prev) => ({
+                      ...prev,
+                      ...d.config,
+                      social: d.config.social ?? prev.social,
+                      contentType: CONTENT_TYPES.some((t) => t.id === d.config.contentType)
+                        ? d.config.contentType
+                        : prev.contentType,
+                    }));
                     showToast(`Opened "${d.name}".`);
                   }}
                   className="flex items-center gap-3 min-w-0 flex-1 text-left"
