@@ -69,8 +69,8 @@ export default function Home() {
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
       {/* Background ambient gradient glow */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[400px] bg-gradient-to-tr from-indigo-600/15 via-purple-600/15 to-pink-600/10 blur-[130px] rounded-full" />
-        <div className="absolute top-[45%] -right-40 w-[500px] h-[400px] bg-indigo-500/10 blur-[140px] rounded-full" />
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[600px] rounded-full [background:radial-gradient(closest-side,rgba(99,102,241,0.18),rgba(168,85,247,0.08)_55%,transparent)]" />
+        <div className="absolute top-[45%] -right-40 w-[700px] h-[600px] rounded-full [background:radial-gradient(closest-side,rgba(99,102,241,0.12),transparent)]" />
       </div>
 
       <JsonLd data={homeSchema} />
