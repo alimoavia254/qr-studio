@@ -28,6 +28,7 @@ export interface UseCasePageProps {
 
 const RELATED = [
   { href: "/qr-code-generator-with-logo", label: "QR Code with Logo" },
+  { href: "/free-qr-code-generator-no-expiry", label: "QR Codes That Never Expire" },
   { href: "/instagram-qr-code-generator", label: "Instagram QR Code" },
   { href: "/google-review-qr-code-generator", label: "Google Review QR Code" },
   { href: "/menu-qr-code-generator", label: "Restaurant Menu QR" },
