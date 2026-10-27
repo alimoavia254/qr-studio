@@ -18,6 +18,7 @@
 - [Instagram QR code generator](https://qrvibe.online/instagram-qr-code-generator): branded QR codes for Instagram profiles, posts and reels
 - [Google review QR code generator](https://qrvibe.online/google-review-qr-code-generator): opens your Google Business review form in one scan
 - [Restaurant menu QR code generator](https://qrvibe.online/menu-qr-code-generator): contactless menu QR codes for restaurants and cafes
+- [Free QR code generator that never expires](https://qrvibe.online/free-qr-code-generator-no-expiry): static QR codes with no sign-up, watermark, scan limit or subscription
 - [Custom QR code generator](https://qrvibe.online/custom-qr-code-generator): custom colors, dots, corners and frames
 
 ## Guides
