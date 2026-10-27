@@ -12,7 +12,7 @@ export function formatQRData(config: QRDesignConfig): string {
     }
 
     case "whatsapp": {
-      let cc = config.whatsapp.countryCode.replace(/[^0-9]/g, "");
+      const cc = config.whatsapp.countryCode.replace(/[^0-9]/g, "");
       let phone = config.whatsapp.phone.replace(/[^0-9]/g, "");
 
       // Automatically strip leading zero (e.g. 0300... -> 300...)
