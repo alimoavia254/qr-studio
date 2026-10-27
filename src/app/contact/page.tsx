@@ -5,6 +5,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Mail, MessageSquare, Send, CheckCircle2, Clock } from "lucide-react";
 
+const CONTACT_EMAIL = "Aeink7@gmail.com";
+
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", subject: "", message: "" });
@@ -12,6 +14,9 @@ export default function ContactPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.message) return;
+    // No backend: open the visitor's email app with the message pre-filled.
+    const body = `${formData.message}\n\n-- ${formData.name} (${formData.email})`;
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(body)}`;
     setSubmitted(true);
   };
 
@@ -61,9 +66,10 @@ export default function ContactPage() {
                 <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Message Received!</h3>
+                <h3 className="text-xl font-bold text-white mb-2">Almost there: send it from your email app</h3>
                 <p className="text-sm text-slate-400 max-w-sm mx-auto mb-6">
-                  Thank you for reaching out, {formData.name}. Our support team will get back to you at {formData.email}.
+                  We opened your email app with your message ready to send. Press send there to reach us. If nothing opened, email{" "}
+                  <a href={`mailto:${CONTACT_EMAIL}`} className="text-indigo-300 hover:underline">{CONTACT_EMAIL}</a> directly.
                 </p>
                 <button
                   onClick={() => {
@@ -72,11 +78,15 @@ export default function ContactPage() {
                   }}
                   className="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors"
                 >
-                  Send Another Message
+                  Write Another Message
                 </button>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
+                <p className="text-sm text-slate-400">
+                  You can also email us directly at{" "}
+                  <a href={`mailto:${CONTACT_EMAIL}`} className="text-indigo-300 hover:underline">{CONTACT_EMAIL}</a>.
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-300 mb-1.5">
