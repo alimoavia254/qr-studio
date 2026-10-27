@@ -42,7 +42,7 @@ import type {
 
 const INITIAL_CONFIG: QRDesignConfig = {
   contentType: "url",
-  url: "https://crownixbet.com/",
+  url: "https://qrvibe.online/",
   text: "Hello from QR Vibe (qrvibe.online)!",
   wifi: {
     ssid: "Office_5G",
