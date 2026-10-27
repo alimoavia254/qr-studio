@@ -127,7 +127,9 @@ export type PosterTemplateId =
   | "vibrant-retro"
   | "luxury-event"
   | "social-creator"
-  | "modern-cyber";
+  | "modern-cyber"
+  | "offer-sale"
+  | "review-stars";
 
 export interface QRCardFrameConfig {
   enabled: boolean;
@@ -152,7 +154,7 @@ export interface QRCardFrameConfig {
 export interface PosterTemplatePreset {
   id: PosterTemplateId;
   name: string;
-  category: "Business" | "Dining & Cafe" | "Events" | "Tech & Wi-Fi" | "Creative";
+  category: "Business" | "Marketing" | "Dining & Cafe" | "Events" | "Tech & Wi-Fi" | "Creative";
   tagline: string;
   title: string;
   subtitle: string;

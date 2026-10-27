@@ -29,6 +29,8 @@ import { formatQRData, toQRBytes } from "@/lib/qrDataFormatters";
 import { evaluateScannability } from "@/lib/colorUtils";
 import { QR_PRESETS, SAMPLE_LOGOS } from "@/lib/qrPresets";
 import { jpegToPdf } from "@/lib/pdf";
+import { drawPoster, posterSize, type PosterSpec } from "@/lib/posterRenderer";
+import { PosterCanvas } from "./studio/PosterCanvas";
 import {
   loadSavedDesigns,
   persistSavedDesigns,
@@ -147,8 +149,7 @@ const PDF_SIZES_CM = [3, 5, 10, 15] as const;
 const FORMAT_EXT: Record<ExportFormat, string> = { png: "png", jpeg: "jpg", webp: "webp", svg: "svg", pdf: "pdf" };
 const FORMAT_LABEL: Record<ExportFormat, string> = { png: "PNG", jpeg: "JPG", webp: "WebP", svg: "SVG", pdf: "PDF" };
 
-const PREVIEW_SIZE = 300;
-const STEPS_TEXT = "1. Open Camera   •   2. Point at QR   •   3. Tap Link";
+const PREVIEW_SIZE = 420;
 
 const TABS: { id: StudioTab; label: string; icon: React.ElementType }[] = [
   { id: "content", label: "Content", icon: Globe },
@@ -264,23 +265,6 @@ const EYE_CENTERS: { id: CornerDotType; label: string }[] = [
   { id: "square", label: "Square" },
 ];
 
-/* Shrinks the font until the text fits the given width (used for poster export). */
-function fitText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  weight: string,
-  startSize: number,
-  maxWidth: number
-) {
-  let size = startSize;
-  ctx.font = `${weight} ${size}px sans-serif`;
-  while (size > 8 && ctx.measureText(text).width > maxWidth) {
-    size -= 1;
-    ctx.font = `${weight} ${size}px sans-serif`;
-  }
-  return size;
-}
-
 export interface QRStudioProps {
   initialContentType?: QRContentType;
   initialTab?: StudioTab;
@@ -303,6 +287,8 @@ export function QRStudio({
   const [pdfCm, setPdfCm] = useState<number>(5);
   const [saved, setSaved] = useState<SavedDesign[]>([]);
   const [saveName, setSaveName] = useState("");
+  const [qrTick, setQrTick] = useState(0);
+  const [posterCat, setPosterCat] = useState<string>("All");
   const [busy, setBusy] = useState<null | "download" | "share" | "copy">(null);
   const [copied, setCopied] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -339,6 +325,21 @@ export function QRStudio({
   );
 
   const qrData = useMemo(() => formatQRData(config), [config]);
+  const posterSpec = useMemo<PosterSpec>(() => {
+    const f = config.frame;
+    return {
+      templateId: f.templateId,
+      title: f.text,
+      subtitle: f.subtext,
+      brand: f.brandName,
+      footer: f.footerNote,
+      showViewfinder: f.showViewfinder,
+      showSteps: f.showStepsBadge,
+      card: f.cardBgColor,
+      text: f.cardTextColor,
+      accent: f.accentColor,
+    };
+  }, [config.frame]);
   const testableLink = /^(https?:|mailto:)/i.test(qrData) ? qrData : null;
 
   const scannability = useMemo(() => {
@@ -503,6 +504,7 @@ export function QRStudio({
       }
       qrContainerRef.current.innerHTML = "";
       qrCodeInstanceRef.current.append(qrContainerRef.current);
+      setQrTick((n) => n + 1);
     }, 120);
     return () => {
       isMounted = false;
@@ -669,116 +671,20 @@ export function QRStudio({
       img.src = imgUrl;
     });
 
-    const f = config.frame;
-    const W = size;
-    const H = Math.round(size * 1.42);
+    const { W, H } = posterSize(config.frame.templateId, size);
     const canvas = document.createElement("canvas");
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
 
-    const isDarkText = f.cardTextColor !== "#ffffff";
-    const radius = Math.round(W * 0.04);
-    const roundRect = (x: number, y: number, w: number, h: number, r: number) => {
-      ctx.beginPath();
-      if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
-      else ctx.rect(x, y, w, h);
-    };
-
-    // JPEG has no transparency, so fill the corners
+    // JPEG has no transparency, so fill the rounded corners
     if (format === "jpeg") {
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, W, H);
     }
-
-    // Card
-    ctx.fillStyle = f.cardBgColor || "#ffffff";
-    roundRect(0, 0, W, H, radius);
-    ctx.fill();
-    ctx.strokeStyle = isDarkText ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.12)";
-    ctx.lineWidth = Math.round(W * 0.005);
-    roundRect(0, 0, W, H, radius);
-    ctx.stroke();
-
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    const maxText = W * 0.86;
-
-    const topY = Math.round(H * 0.11);
-    if (f.brandName) {
-      ctx.fillStyle = f.accentColor || "#4f46e5";
-      fitText(ctx, f.brandName.toUpperCase(), "bold", Math.round(W * 0.028), maxText);
-      ctx.fillText(f.brandName.toUpperCase(), W / 2, topY);
-    }
-
-    const titleY = topY + Math.round(H * 0.07);
-    const title = (f.text || "SCAN HERE").toUpperCase();
-    ctx.fillStyle = f.cardTextColor || "#0f172a";
-    fitText(ctx, title, "900", Math.round(W * 0.068), maxText);
-    ctx.fillText(title, W / 2, titleY);
-
-    let subY = titleY;
-    if (f.subtext) {
-      subY = titleY + Math.round(H * 0.045);
-      ctx.fillStyle = isDarkText ? "rgba(15,23,42,0.65)" : "rgba(255,255,255,0.75)";
-      fitText(ctx, f.subtext, "500", Math.round(W * 0.03), maxText);
-      ctx.fillText(f.subtext, W / 2, subY);
-    }
-
-    const qrSize = Math.round(W * 0.58);
-    const qrX = (W - qrSize) / 2;
-    const qrY = subY + Math.round(H * 0.08);
-    const pad = Math.round(qrSize * 0.05);
-
-    ctx.fillStyle = "#ffffff";
-    roundRect(qrX - pad, qrY - pad, qrSize + pad * 2, qrSize + pad * 2, Math.round(qrSize * 0.06));
-    ctx.fill();
-
-    if (f.showViewfinder) {
-      const vfPad = Math.round(qrSize * 0.08);
-      const x0 = qrX - vfPad;
-      const y0 = qrY - vfPad;
-      const x1 = qrX + qrSize + vfPad;
-      const y1 = qrY + qrSize + vfPad;
-      const arm = Math.round(qrSize * 0.16);
-      ctx.strokeStyle = f.accentColor || "#4f46e5";
-      ctx.lineWidth = Math.round(W * 0.012);
-      ctx.lineCap = "round";
-      const corner = (pts: [number, number][]) => {
-        ctx.beginPath();
-        ctx.moveTo(...pts[0]);
-        ctx.lineTo(...pts[1]);
-        ctx.lineTo(...pts[2]);
-        ctx.stroke();
-      };
-      corner([[x0, y0 + arm], [x0, y0], [x0 + arm, y0]]);
-      corner([[x1 - arm, y0], [x1, y0], [x1, y0 + arm]]);
-      corner([[x0, y1 - arm], [x0, y1], [x0 + arm, y1]]);
-      corner([[x1 - arm, y1], [x1, y1], [x1, y1 - arm]]);
-    }
-
-    ctx.drawImage(img, qrX, qrY, qrSize, qrSize);
+    drawPoster(ctx, W, H, posterSpec, img);
     URL.revokeObjectURL(imgUrl);
-
-    let footY = qrY + qrSize + pad + Math.round(H * 0.06);
-    if (f.showStepsBadge) {
-      const bw = Math.round(W * 0.82);
-      const bh = Math.round(H * 0.048);
-      ctx.fillStyle = f.accentColor || "#4f46e5";
-      roundRect((W - bw) / 2, footY, bw, bh, Math.round(bh / 2));
-      ctx.fill();
-      ctx.fillStyle = "#ffffff";
-      fitText(ctx, STEPS_TEXT, "bold", Math.round(W * 0.026), bw * 0.92);
-      ctx.fillText(STEPS_TEXT, W / 2, footY + bh / 2);
-      footY += bh + Math.round(H * 0.04);
-    }
-
-    if (f.footerNote) {
-      ctx.fillStyle = isDarkText ? "rgba(15,23,42,0.6)" : "rgba(255,255,255,0.7)";
-      fitText(ctx, f.footerNote, "500", Math.round(W * 0.026), maxText);
-      ctx.fillText(f.footerNote, W / 2, footY);
-    }
 
     return await new Promise<Blob | null>((res) =>
       canvas.toBlob((b) => res(b), format === "jpeg" ? "image/jpeg" : format === "webp" ? "image/webp" : "image/png", 0.95)
@@ -1197,35 +1103,59 @@ export function QRStudio({
           checked={config.frame.enabled}
           onChange={(v) => updateFrame({ enabled: v })}
           label="Printable poster"
-          hint="Adds a heading, scan guide and frame around your QR (PNG/JPG)."
+          hint="Turns your QR into a ready-to-print poster (PNG, JPG, WebP or PDF)."
         />
       </div>
 
-      <Section title="Poster templates" hint="Tap one to apply its colors and text.">
-        <div className="grid grid-cols-2 gap-2">
-          {POSTER_TEMPLATES.map((tpl) => {
+      <Section title="Poster templates" hint="Every template has its own design. What you see here is what you get.">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+          {["All", ...Array.from(new Set(POSTER_TEMPLATES.map((t) => t.category)))].map((c) => (
+            <Chip key={c} active={posterCat === c} onClick={() => setPosterCat(c)}>
+              {c}
+            </Chip>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {POSTER_TEMPLATES.filter((t) => posterCat === "All" || t.category === posterCat).map((tpl) => {
             const active = config.frame.enabled && config.frame.templateId === tpl.id;
             return (
-              <OptionTile
+              <button
                 key={tpl.id}
-                active={active}
+                type="button"
                 onClick={() => applyPosterTemplate(tpl)}
-                className="flex items-center gap-3 p-2.5 text-left"
+                aria-pressed={active}
+                className={`group text-left rounded-2xl border p-2 transition-all active:scale-[0.98] ${
+                  active
+                    ? "bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500/50"
+                    : "bg-slate-950/60 border-slate-800 hover:border-slate-600"
+                }`}
               >
-                <span
-                  className="w-10 h-14 rounded-lg shrink-0 flex flex-col items-center justify-center gap-1 border border-white/10"
-                  style={{ background: tpl.cardBgColor }}
-                >
-                  <span className="w-6 h-1 rounded-full" style={{ background: tpl.accentColor }} />
-                  <span className="w-6 h-6 rounded bg-white grid place-items-center">
-                    <span className="w-4 h-4 rounded-sm" style={{ background: tpl.dotsColor }} />
+                <PosterCanvas
+                  px={300}
+                  spec={{
+                    templateId: tpl.id,
+                    title: tpl.title,
+                    subtitle: tpl.subtitle,
+                    brand: tpl.brandName,
+                    footer: tpl.footerNote,
+                    showViewfinder: tpl.showViewfinder,
+                    showSteps: tpl.showStepsBadge,
+                    card: tpl.cardBgColor,
+                    text: tpl.cardTextColor,
+                    accent: tpl.accentColor,
+                  }}
+                  fake={{ dark: tpl.dotsColor, eye: tpl.cornerSquareColor }}
+                  className="w-full h-auto rounded-xl shadow-md shadow-black/40"
+                  label={`${tpl.name} preview`}
+                />
+                <span className="mt-2 flex items-start justify-between gap-1.5 px-0.5">
+                  <span className="min-w-0">
+                    <span className="block text-xs font-bold text-white leading-snug">{tpl.name}</span>
+                    <span className="block text-[11px] text-slate-400 leading-snug mt-0.5 line-clamp-2">{tpl.tagline}</span>
                   </span>
+                  {active && <Check className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />}
                 </span>
-                <span className="min-w-0">
-                  <span className="block text-xs font-bold text-white leading-snug line-clamp-2">{tpl.name}</span>
-                  <span className="block text-[11px] text-slate-400 mt-0.5">{tpl.category}</span>
-                </span>
-              </OptionTile>
+              </button>
             );
           })}
         </div>
@@ -1454,55 +1384,30 @@ export function QRStudio({
 
   const previewCard = (
     <div className="rounded-3xl bg-slate-900/80 max-lg:bg-gradient-to-b max-lg:from-indigo-950/70 max-lg:via-slate-900/90 max-lg:to-slate-900/90 border border-slate-800 p-4 sm:p-6 shadow-2xl shadow-black/30">
-      {/* QR / poster */}
+      {/* QR / poster. With the poster on, the real QR is rendered off-screen and drawn into the poster canvas. */}
+      {f.enabled && (
+        <PosterCanvas
+          spec={posterSpec}
+          px={720}
+          tick={qrTick}
+          getQr={() => qrContainerRef.current?.querySelector("canvas") ?? null}
+          className={`mx-auto w-full h-auto rounded-2xl shadow-xl shadow-black/40 ${
+            f.templateId === "social-creator" ? "max-w-[220px] sm:max-w-[280px]" : "max-w-[250px] sm:max-w-[320px]"
+          }`}
+          label="Poster preview"
+        />
+      )}
       <div
-        className={`mx-auto w-full max-w-[250px] sm:max-w-[320px] rounded-2xl flex flex-col items-center ${f.enabled ? "p-5 border" : "p-3 bg-slate-950 border border-slate-800"}`}
-        style={
+        className={
           f.enabled
-            ? {
-                background: f.cardBgColor,
-                color: f.cardTextColor,
-                borderColor: f.cardTextColor === "#ffffff" ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.12)",
-              }
-            : undefined
+            ? "hidden"
+            : "mx-auto w-full max-w-[250px] sm:max-w-[320px] rounded-2xl p-3 bg-slate-950 border border-slate-800"
         }
       >
-        {f.enabled && (
-          <div className="w-full text-center mb-3">
-            {f.brandName && (
-              <p className="text-[10px] font-extrabold uppercase tracking-widest mb-1" style={{ color: f.accentColor }}>
-                {f.brandName}
-              </p>
-            )}
-            <h3 className="text-lg font-black uppercase tracking-wide leading-tight">{f.text || "SCAN HERE"}</h3>
-            {f.subtext && <p className="text-[11px] opacity-75 font-medium mt-1">{f.subtext}</p>}
-          </div>
-        )}
-
-        <div className={`relative w-full ${f.enabled ? "max-w-[170px] sm:max-w-[200px] p-2 rounded-xl bg-white" : ""}`}>
-          {f.enabled && f.showViewfinder && (
-            <>
-              {["-top-2 -left-2 border-t-4 border-l-4 rounded-tl-lg", "-top-2 -right-2 border-t-4 border-r-4 rounded-tr-lg", "-bottom-2 -left-2 border-b-4 border-l-4 rounded-bl-lg", "-bottom-2 -right-2 border-b-4 border-r-4 rounded-br-lg"].map((pos) => (
-                <span key={pos} className={`absolute w-6 h-6 pointer-events-none ${pos}`} style={{ borderColor: f.accentColor }} />
-              ))}
-            </>
-          )}
-          <div
-            ref={qrContainerRef}
-            className="aspect-square w-full flex items-center justify-center [&_canvas]:!w-full [&_canvas]:!h-auto [&_canvas]:rounded-lg"
-          />
-        </div>
-
-        {f.enabled && (
-          <div className="w-full text-center mt-3 space-y-2">
-            {f.showStepsBadge && (
-              <div className="py-1.5 px-3 rounded-full text-[10px] font-bold text-white" style={{ background: f.accentColor }}>
-                1. Open Camera • 2. Point • 3. Tap
-              </div>
-            )}
-            {f.footerNote && <p className="text-[10px] opacity-70 font-medium">{f.footerNote}</p>}
-          </div>
-        )}
+        <div
+          ref={qrContainerRef}
+          className="aspect-square w-full flex items-center justify-center [&_canvas]:!w-full [&_canvas]:!h-auto [&_canvas]:rounded-lg"
+        />
       </div>
 
       {/* Scan check */}
