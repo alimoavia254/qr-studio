@@ -9,7 +9,7 @@ export function Header() {
   const [toolsDropdown, setToolsDropdown] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-950/85 border-b border-slate-800/80">
+    <header className="sticky top-0 z-50 bg-slate-950/95 border-b border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 lg:h-16 flex items-center justify-between">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">

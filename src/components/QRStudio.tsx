@@ -1974,7 +1974,7 @@ export function QRStudio({
 
         {/* Controls */}
         <div className="order-1 lg:col-span-7 lg:order-1 min-w-0">
-          <div id="studio-tabs" className="hidden lg:block sticky top-16 z-20 py-2 bg-slate-950/90 backdrop-blur-xl">
+          <div id="studio-tabs" className="hidden lg:block sticky top-16 z-20 py-2 bg-slate-950/95">
             <div role="tablist" className="grid grid-cols-5 gap-1 p-1 rounded-2xl bg-slate-900 border border-slate-800">
               {TABS.map((t) => {
                 const Icon = t.icon;
