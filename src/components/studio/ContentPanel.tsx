@@ -10,6 +10,7 @@ import {
   FileText,
   MessageSquare,
   Phone,
+  Star,
   MapPin,
   CalendarDays,
   Share2,
@@ -35,6 +36,7 @@ export const CONTENT_TYPES: { id: QRContentType; label: string; icon: React.Elem
   { id: "geo", label: "Location", icon: MapPin },
   { id: "event", label: "Event", icon: CalendarDays },
   { id: "social", label: "Social", icon: Share2 },
+  { id: "review", label: "Review", icon: Star },
   { id: "crypto", label: "Crypto", icon: Bitcoin },
 ];
 
@@ -56,17 +58,19 @@ const EMAIL_TEMPLATES = [
 const COUNTRY_CODES = ["+92", "+971", "+966", "+44", "+1", "+91"];
 
 interface ContentPanelProps {
+  /** The standalone WhatsApp tile is only shown on the WhatsApp page; elsewhere WhatsApp lives under Social. */
+  showWhatsApp?: boolean;
   config: QRDesignConfig;
   update: <K extends keyof QRDesignConfig>(key: K, value: QRDesignConfig[K]) => void;
 }
 
-export function ContentPanel({ config, update }: ContentPanelProps) {
+export function ContentPanel({ config, update, showWhatsApp = false }: ContentPanelProps) {
   const [wifiShowPass, setWifiShowPass] = useState(false);
   return (
     <div className="space-y-6">
       <Section title="What should the QR open?">
         <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-          {CONTENT_TYPES.map((t) => {
+          {CONTENT_TYPES.filter((t) => t.id !== "whatsapp" || showWhatsApp).map((t) => {
             const Icon = t.icon;
             return (
               <OptionTile
@@ -527,7 +531,7 @@ export function ContentPanel({ config, update }: ContentPanelProps) {
                   </Chip>
                 ))}
               </div>
-              <Field label="Username or profile link">
+              <Field label={config.social.platform === "whatsapp" ? "Phone number with country code" : "Username or profile link"}>
                 <input
                   type="text"
                   autoCapitalize="off"
@@ -539,6 +543,17 @@ export function ContentPanel({ config, update }: ContentPanelProps) {
                   className={inputCls}
                 />
               </Field>
+              {config.social.platform === "whatsapp" && (
+                <Field label="Message (optional)">
+                  <textarea
+                    rows={2}
+                    value={config.social.message ?? ""}
+                    onChange={(e) => update("social", { ...config.social, message: e.target.value })}
+                    placeholder="Hello, I want to ask about…"
+                    className={inputCls}
+                  />
+                </Field>
+              )}
             </>
           ) : (
             <>
@@ -598,6 +613,35 @@ export function ContentPanel({ config, update }: ContentPanelProps) {
               })()}
             </>
           )}
+        </Section>
+      )}
+
+      {config.contentType === "review" && (
+        <Section title="Google review" hint="Scanning opens the review box for your business. More reviews help you rank higher on Google Maps.">
+          <Field label="Review link or Place ID">
+            <input
+              type="text"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              value={config.review.value}
+              onChange={(e) => update("review", { value: e.target.value })}
+              placeholder="ChIJ… or https://g.page/r/…/review"
+              className={inputCls}
+            />
+          </Field>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Easiest: open your business on Google Maps, tap <strong>Share</strong> and copy the link, or find your{" "}
+            <a
+              href="https://developers.google.com/maps/documentation/places/web-service/place-id"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-300 underline"
+            >
+              Place ID
+            </a>{" "}
+            (it starts with ChIJ) and paste it here. Empty = sample business.
+          </p>
         </Section>
       )}
 

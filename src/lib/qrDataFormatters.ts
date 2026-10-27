@@ -173,11 +173,19 @@ export function formatQRData(config: QRDesignConfig): string {
     }
 
     case "social": {
-      const { platform, username, mode, name, tagline, links } = config.social;
+      const { platform, username, mode, name, tagline, links, message } = config.social;
       if (mode === "all") {
         return socialsText(name ?? "", tagline ?? "", links ?? {}) || "Add your usernames to build the list.";
       }
-      return socialUrl(platform, username) ?? socialUrl(platform, "username") ?? "https://example.com";
+      return socialUrl(platform, username, message) ?? socialUrl(platform, "username") ?? "https://example.com";
+    }
+
+    case "review": {
+      const v = config.review.value.trim();
+      if (/^https?:\/\//i.test(v)) return v;
+      // Google Place IDs start with "ChIJ" (others with "Ei"/"GhIJ") and contain only URL-safe characters
+      const id = /^[A-Za-z0-9_-]{20,}$/.test(v) ? v : "ChIJN1t_tDeuEmsRUsoyG83frY4";
+      return `https://search.google.com/local/writereview?placeid=${id}`;
     }
 
     case "crypto": {

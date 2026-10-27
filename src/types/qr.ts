@@ -19,11 +19,17 @@ export type QRContentType =
   | "geo"
   | "event"
   | "social"
+  | "review"
   | "crypto";
 
 export interface SmsData {
   phone: string;
   message: string;
+}
+
+export interface ReviewData {
+  /** A Google review link, or a Google Place ID (starts with ChIJ) */
+  value: string;
 }
 
 export interface PhoneData {
@@ -65,6 +71,8 @@ export interface SocialData {
   username: string;
   /** "single" = one profile link, "all" = every profile listed in one QR */
   mode?: "single" | "all";
+  /** Pre-filled chat message (WhatsApp, single-profile mode only) */
+  message?: string;
   name?: string;
   tagline?: string;
   links?: Partial<Record<SocialPlatform, string>>;
@@ -180,6 +188,7 @@ export interface QRDesignConfig {
   geo: GeoData;
   event: EventData;
   social: SocialData;
+  review: ReviewData;
   crypto: CryptoData;
 
   // Visual Styles

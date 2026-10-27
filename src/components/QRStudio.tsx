@@ -89,6 +89,7 @@ const INITIAL_CONFIG: QRDesignConfig = {
     start: "2026-12-01T10:00",
     end: "2026-12-01T12:00",
   },
+  review: { value: "" },
   social: {
     platform: "instagram",
     username: "yourname",
@@ -889,7 +890,7 @@ export function QRStudio({
   /* ================================================================ */
 
   const contentPanel = (
- <ContentPanel config={config} update={update} />
+ <ContentPanel config={config} update={update} showWhatsApp={initialContentType === "whatsapp"} />
  );
 
 

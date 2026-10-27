@@ -15,6 +15,7 @@ export default function GoogleReviewQRPage() {
   return (
     <UseCasePage
       path="/google-review-qr-code-generator"
+      contentType="review"
       badgeIcon={Star}
       badge="For Google Business Profile"
       titleLead="Google Review"
@@ -30,7 +31,7 @@ export default function GoogleReviewQRPage() {
       steps={[
         "Sign in to your Google Business Profile (search your business name on Google while logged in, or open business.google.com).",
         "Click 'Ask for reviews' (or 'Get more reviews') and copy the review link it shows.",
-        "Paste that link into the Website link box above.",
+        "Paste that link, or your Place ID, into the Review box above.",
         "Add your logo, choose a frame with 'Review us' text in the Poster tab, then download and print.",
       ]}
       tipsTitle="Tips for Getting More Google Reviews"
