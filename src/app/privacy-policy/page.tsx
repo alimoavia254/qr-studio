@@ -49,8 +49,8 @@ export default function PrivacyPolicyPage() {
           <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-start gap-3">
             <EyeOff className="w-5 h-5 text-cyan-400 shrink-0 mt-0.5" />
             <div>
-              <h2 className="text-sm font-semibold text-white">Zero Tracking Cookies</h2>
-              <p className="text-xs text-slate-400 mt-1">Clean session management with no invasive cross-site profiling.</p>
+              <h2 className="text-sm font-semibold text-white">No Account Tracking</h2>
+              <p className="text-xs text-slate-400 mt-1">QR Vibe sets no sign-in or profiling cookies of its own. Third-party ad partners may use cookies, as described in section 4.</p>
             </div>
           </div>
         </div>
