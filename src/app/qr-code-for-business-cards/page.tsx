@@ -5,24 +5,21 @@ import Footer from "@/components/Footer";
 import { Contact, CreditCard, ShieldCheck, Printer, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { PageFAQ } from "@/components/PageFAQ";
-import { PAGE_FAQS } from "@/lib/seo";
+import { PAGE_FAQS, breadcrumbSchema, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/qr-code-for-business-cards",
   title: "QR Code Generator for Business Cards (vCard)",
   description: "Create professional vCard QR codes for physical business cards. One scan lets clients instantly save your phone number, email, company, and portfolio.",
-  alternates: {
-    canonical: "https://qrvibe.online/qr-code-for-business-cards",
-  },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Business Card QR Code Generator | vCard Digital Contact",
-    description: "Generate print-ready vCard QR codes for your paper business cards. Works natively with iOS Contacts and Android Google Contacts.",
-  },
-};
+  socialTitle: "Business Card QR Code Generator | vCard Digital Contact",
+  socialDescription: "Generate print-ready vCard QR codes for your paper business cards. Works natively with iOS Contacts and Android Google Contacts.",
+});
 
 export default function BusinessCardQRPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-amber-500 selection:text-white">
+      <JsonLd data={breadcrumbSchema([{ name: "QR Code Generator for Business Cards", path: "/qr-code-for-business-cards" }])} />
       <Header />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">

@@ -2,14 +2,13 @@ import { Metadata } from "next";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Scale, CheckCircle2, AlertTriangle } from "lucide-react";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/terms",
   title: "Terms of Service",
   description: "Terms and conditions of use for QR Vibe free online QR code generation utilities.",
-  alternates: {
-    canonical: "https://qrvibe.online/terms",
-  },
-};
+});
 
 export default function TermsPage() {
   return (

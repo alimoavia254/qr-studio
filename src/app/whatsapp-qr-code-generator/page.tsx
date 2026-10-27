@@ -5,24 +5,21 @@ import Footer from "@/components/Footer";
 import { MessageSquare, ShieldCheck, Zap, Smartphone, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { PageFAQ } from "@/components/PageFAQ";
-import { PAGE_FAQS } from "@/lib/seo";
+import { PAGE_FAQS, breadcrumbSchema, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/whatsapp-qr-code-generator",
   title: "WhatsApp QR Code Generator - Direct Chat Link",
   description: "Create direct-to-chat WhatsApp QR codes with pre-filled custom messages. Fast, free, scannable by any mobile camera, with 100% private in-browser generation.",
-  alternates: {
-    canonical: "https://qrvibe.online/whatsapp-qr-code-generator",
-  },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free WhatsApp QR Code Generator | Instant Chat Opener",
-    description: "Generate WhatsApp QR codes that open direct chats without forcing customers to save your number first.",
-  },
-};
+  socialTitle: "Free WhatsApp QR Code Generator | Instant Chat Opener",
+  socialDescription: "Generate WhatsApp QR codes that open direct chats without forcing customers to save your number first.",
+});
 
 export default function WhatsAppQRPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white">
+      <JsonLd data={breadcrumbSchema([{ name: "WhatsApp QR Code Generator", path: "/whatsapp-qr-code-generator" }])} />
       <Header />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">

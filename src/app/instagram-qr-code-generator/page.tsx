@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { AtSign, Camera, Palette, Printer } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/instagram-qr-code-generator",
   title: "Instagram QR Code Generator - Free, With Logo",
-  description:
-    "Make a free Instagram QR code for your profile, post or reel. Add your logo, match your brand colors, test the scan and download PNG or SVG. No sign-up.",
-  alternates: { canonical: "https://qrvibe.online/instagram-qr-code-generator" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Instagram QR Code Generator | QR Vibe",
-    description: "Turn your Instagram profile, post or reel link into a branded, scan-tested QR code.",
-  },
-};
+  description: "Make a free Instagram QR code for your profile, post or reel. Add your logo, match your brand colors, test the scan and download PNG or SVG. No sign-up.",
+  socialTitle: "Free Instagram QR Code Generator | QR Vibe",
+  socialDescription: "Turn your Instagram profile, post or reel link into a branded, scan-tested QR code.",
+});
 
 export default function InstagramQRPage() {
   return (

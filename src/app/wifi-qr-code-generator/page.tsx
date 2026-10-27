@@ -5,24 +5,21 @@ import Footer from "@/components/Footer";
 import { Wifi, ShieldCheck, Printer, KeyRound, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { PageFAQ } from "@/components/PageFAQ";
-import { PAGE_FAQS } from "@/lib/seo";
+import { PAGE_FAQS, breadcrumbSchema, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/wifi-qr-code-generator",
   title: "Wi-Fi QR Code Generator - One-Tap Auto Connect",
   description: "Generate free Wi-Fi QR codes for Airbnb hosts, cafes, and offices. Guests scan to auto-connect without typing complex network passwords.",
-  alternates: {
-    canonical: "https://qrvibe.online/wifi-qr-code-generator",
-  },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free Wi-Fi QR Code Generator | Auto Connect Scanner",
-    description: "Connect guests instantly to your Wi-Fi network. Scannable by any iOS and Android camera.",
-  },
-};
+  socialTitle: "Free Wi-Fi QR Code Generator | Auto Connect Scanner",
+  socialDescription: "Connect guests instantly to your Wi-Fi network. Scannable by any iOS and Android camera.",
+});
 
 export default function WiFiQRPage() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-cyan-500 selection:text-white">
+      <JsonLd data={breadcrumbSchema([{ name: "Wi-Fi QR Code Generator", path: "/wifi-qr-code-generator" }])} />
       <Header />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
@@ -90,7 +87,7 @@ export default function WiFiQRPage() {
               <ul className="space-y-2.5 my-4">
                 <li className="flex items-start gap-2.5">
                   <CheckCircle className="w-4 h-4 text-cyan-400 shrink-0 mt-1" />
-                  <span><strong>Choose WPA/WPA2 (Most Common):</strong> 98% of home routers and hotel gateways utilize WPA or WPA2 Personal authentication.</span>
+                  <span><strong>Choose WPA/WPA2 (Most Common):</strong> WPA or WPA2 Personal is the default on most home routers and hotel gateways. Check your router settings if you are unsure.</span>
                 </li>
                 <li className="flex items-start gap-2.5">
                   <CheckCircle className="w-4 h-4 text-cyan-400 shrink-0 mt-1" />

@@ -1,18 +1,15 @@
 import type { Metadata } from "next";
 import { Infinity as InfinityIcon, ShieldCheck, Ban } from "lucide-react";
 import { UseCasePage } from "@/components/UseCasePage";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/free-qr-code-generator-no-expiry",
   title: "Free QR Code Generator That Never Expires (No Sign-up)",
-  description:
-    "Make free QR codes that never expire: static codes with no sign-up, no watermark, no scan limits and no subscription. Add your logo and download PNG or SVG.",
-  alternates: { canonical: "https://qrvibe.online/free-qr-code-generator-no-expiry" },
-  openGraph: {
-    images: "/opengraph-image",
-    title: "Free QR Code Generator That Never Expires | QR Vibe",
-    description: "Static QR codes that keep working forever. No account, no watermark, no trial.",
-  },
-};
+  description: "Make free QR codes that never expire: static codes with no sign-up, no watermark, no scan limits and no subscription. Add your logo and download PNG or SVG.",
+  socialTitle: "Free QR Code Generator That Never Expires | QR Vibe",
+  socialDescription: "Static QR codes that keep working forever. No account, no watermark, no trial.",
+});
 
 export default function NoExpiryQRPage() {
   return (

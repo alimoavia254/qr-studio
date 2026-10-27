@@ -20,6 +20,5 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: AI_BOTS, allow: "/" },
     ],
     sitemap: "https://qrvibe.online/sitemap.xml",
-    host: "https://qrvibe.online",
   };
 }

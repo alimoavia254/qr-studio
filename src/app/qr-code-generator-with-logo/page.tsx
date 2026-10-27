@@ -4,22 +4,16 @@ import { Footer } from "@/components/Footer";
 import { QRStudio } from "@/components/QRStudio";
 import { ShieldCheck, Sparkles, CheckCircle2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { breadcrumbSchema, pageMetadata } from "@/lib/seo";
+import { JsonLd } from "@/components/JsonLd";
 
-export const metadata: Metadata = {
-  title: "QR Code Generator with Logo - Free & Scan-Guaranteed",
-  description:
-    "Generate custom branded QR codes with your company logo centered. Verified with real-time in-browser computer-vision decoder and Level-H 30% error correction.",
-  keywords: [
-    "qr code generator with logo",
-    "custom qr code with logo free",
-    "brand qr code generator",
-    "scannable qr code with logo",
-    "high resolution qr code logo",
-  ],
-  alternates: {
-    canonical: "https://qrvibe.online/qr-code-generator-with-logo",
-  },
-};
+export const metadata: Metadata = pageMetadata({
+  path: "/qr-code-generator-with-logo",
+  title: "QR Code Generator with Logo - Free & Scan-Tested",
+  description: "Generate custom branded QR codes with your company logo centered. Verified with real-time in-browser computer-vision decoder and Level-H 30% error correction.",
+  socialTitle: "QR Code Generator with Logo | Free & Scan-Tested",
+  keywords: ["qr code generator with logo", "custom qr code with logo free", "brand qr code generator", "scannable qr code with logo", "high resolution qr code logo"],
+});
 
 export default function LogoQRPage() {
   const faqSchema = {
@@ -59,6 +53,7 @@ export default function LogoQRPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
+      <JsonLd data={breadcrumbSchema([{ name: "QR Code Generator with Logo", path: "/qr-code-generator-with-logo" }])} />
       <Header />
 
       <main className="flex-1 pb-16">
