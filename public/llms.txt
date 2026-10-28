@@ -38,6 +38,8 @@
 - [How to Test a QR Code Before You Print It (Checklist)](https://qrvibe.online/guides/how-to-test-a-qr-code-before-printing)
 - [Best Colors for QR Codes: Contrast Rules That Still Scan](https://qrvibe.online/guides/best-colors-for-qr-codes)
 - [How to Make an Email QR Code (With Subject and Message)](https://qrvibe.online/guides/how-to-make-an-email-qr-code)
+- [How to Make a QR Code for a PDF (Free, Never Expires)](https://qrvibe.online/guides/how-to-make-a-qr-code-for-a-pdf)
+- [How to Share Wi-Fi With a QR Code (iPhone and Android)](https://qrvibe.online/guides/how-to-share-wifi-with-a-qr-code)
 
 ## About
 - [About QR Vibe](https://qrvibe.online/about)

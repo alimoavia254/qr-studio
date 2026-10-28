@@ -660,6 +660,124 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "how-to-make-a-qr-code-for-a-pdf",
+    title: "How to Make a QR Code for a PDF (Free, Never Expires)",
+    description:
+      "Make a QR code that opens a PDF: upload the file online, copy its public link, and turn the link into a static QR code. Free, no sign-up, no expiry.",
+    excerpt:
+      "A QR code cannot hold a PDF itself. Here is the simple two-step way to link one, and how to keep it working.",
+    published: "2026-10-28",
+    updated: "2026-10-28",
+    readMinutes: 5,
+    tool: { href: "/", label: "Turn your PDF link into a QR code" },
+    sections: [
+      {
+        heading: "How a PDF QR code really works",
+        paragraphs: [
+          "A QR code stores only a small amount of data, so it cannot contain a PDF file. Instead, the QR code stores the web address of a PDF that is already online. When someone scans it, their phone opens that address and shows the PDF.",
+          "That means you need two things: the PDF uploaded somewhere with a public link, and a QR code that points to that link.",
+        ],
+      },
+      {
+        heading: "Step by step",
+        paragraphs: ["Follow these steps:"],
+        list: [
+          "Upload your PDF to a place that gives it a public link, such as your own website, or a file-sharing service where you can set the file to Anyone with the link can view.",
+          "Open the link in a private browser window to confirm it opens without signing in.",
+          "Copy the link and paste it into the Website link box in QR Vibe.",
+          "Add your logo or colors if you like, and wait for the scan check to pass.",
+          "Download PNG or SVG, then scan the final design with a phone before you print.",
+        ],
+      },
+      {
+        heading: "Keep the link working",
+        paragraphs: [
+          "A static QR code never expires, but the page it points to can. If you move, rename or delete the PDF, or change its sharing settings, the printed code will open an error page. Choose a stable location and do not rename the file after printing.",
+          "If you may need to replace the PDF later, upload the new version to the same link when your hosting allows it, so the printed code keeps working. Be careful with free file-hosting services that may remove files or change links over time.",
+        ],
+      },
+      {
+        heading: "Make the PDF easy to open on a phone",
+        paragraphs: [
+          "Most people will open it on a small screen, so keep the file size modest and use a readable font size. A short, single-column layout works better on mobile than a wide print layout. Put the most important information on the first page.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Can a QR code contain a PDF file?",
+        a: "No. A QR code stores a link to the PDF, not the file itself. Upload the PDF online and make a QR code from its public link.",
+      },
+      {
+        q: "Will my PDF QR code expire?",
+        a: "The static QR code itself never expires, but it only works as long as the PDF link stays online. Do not move, rename or delete the file.",
+      },
+      {
+        q: "Can I change the PDF after printing?",
+        a: "Only if you replace the file at the same link. A static QR code cannot be edited, so keep the link stable.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-share-wifi-with-a-qr-code",
+    title: "How to Share Wi-Fi With a QR Code (iPhone and Android)",
+    description:
+      "Share your Wi-Fi password with a QR code: create the code, print it, and let guests join by scanning. Works on iPhone and Android, with safety tips.",
+    excerpt:
+      "Stop spelling out long Wi-Fi passwords. Make a QR code guests can scan to join in a second.",
+    published: "2026-10-28",
+    updated: "2026-10-28",
+    readMinutes: 5,
+    tool: { href: "/wifi-qr-code-generator", label: "Make a Wi-Fi QR code" },
+    sections: [
+      {
+        heading: "What a Wi-Fi QR code does",
+        paragraphs: [
+          "A Wi-Fi QR code stores your network name (SSID), password and security type in a standard format. When a guest scans it with their phone camera, the phone offers to join the network without typing anything.",
+          "It is ideal for homes, rental properties, cafes, waiting rooms and offices.",
+        ],
+      },
+      {
+        heading: "How to make one",
+        paragraphs: ["Use these steps:"],
+        list: [
+          "Open the Wi-Fi QR code generator and choose Wi-Fi.",
+          "Type your network name exactly as it appears, including capital letters and symbols.",
+          "Enter the password and choose the security type. WPA or WPA2 is the usual choice for home routers.",
+          "If your network is hidden, turn on the hidden network option.",
+          "Download the code and print it, or display it on a stand or frame.",
+        ],
+      },
+      {
+        heading: "How guests scan it",
+        paragraphs: [
+          "On current iPhones (iOS 11 or newer) and Android phones (Android 10 or newer), guests open the camera app, point it at the code and tap the join prompt. Older Android versions may need a QR scanner app.",
+        ],
+      },
+      {
+        heading: "Safety tips",
+        paragraphs: [
+          "Anyone who can see the QR code can join the network, because the password is stored inside it. For public or semi-public places, create a separate guest network on your router and use that password for the QR code, so your main devices stay private.",
+          "If you change your Wi-Fi password, the old printed code stops working and you must make and print a new one. QR Vibe creates the code in your browser, so your password is not uploaded to a server.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I share my Wi-Fi with a QR code?",
+        a: "Create a Wi-Fi QR code with your network name, password and security type, then let guests scan it with their phone camera to join.",
+      },
+      {
+        q: "Does a Wi-Fi QR code work on iPhone and Android?",
+        a: "Yes. iPhones with iOS 11 or newer and Android phones with Android 10 or newer can join from the built-in camera.",
+      },
+      {
+        q: "What happens if I change my Wi-Fi password?",
+        a: "The old QR code stops working. Generate a new code with the new password and replace the printed copy.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string) {
