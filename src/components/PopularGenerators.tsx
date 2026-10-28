@@ -37,6 +37,41 @@ const ITEMS = [
     text: "Turn a profile, post or reel link into a branded code for flyers, packaging and shop windows.",
   },
   {
+    href: "/sms-qr-code-generator",
+    title: "SMS QR code",
+    text: "Open a text message to your number with the message already typed.",
+  },
+  {
+    href: "/phone-call-qr-code-generator",
+    title: "Phone call QR code",
+    text: "Scan to open the dialer with your number ready to call.",
+  },
+  {
+    href: "/location-qr-code-generator",
+    title: "Location QR code",
+    text: "Open your place in Google Maps for directions in one scan.",
+  },
+  {
+    href: "/event-qr-code-generator",
+    title: "Calendar event QR code",
+    text: "Add an event to the phone calendar with date, time and place filled in.",
+  },
+  {
+    href: "/social-media-qr-code-generator",
+    title: "Social media QR code",
+    text: "Link your Instagram, TikTok, YouTube or other profile from one branded code.",
+  },
+  {
+    href: "/bulk-qr-code-generator",
+    title: "Bulk QR code generator",
+    text: "Make many QR codes at once from a list and download them as a ZIP.",
+  },
+  {
+    href: "/qr-code-scanner",
+    title: "Online QR code scanner",
+    text: "Scan a QR code with your camera or an image to see where it leads before you open it.",
+  },
+  {
     href: "/free-qr-code-generator-no-expiry",
     title: "QR codes that never expire",
     text: "Static codes hold your link directly, so there is no trial, scan limit or subscription that can switch them off.",
