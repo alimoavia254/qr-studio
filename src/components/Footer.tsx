@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact, Camera, Star, UtensilsCrossed, Layers, ScanLine, MessageCircle, MapPin, CalendarDays, Share2 } from "lucide-react";
+import { ShieldCheck, Heart, Sparkles, MessageSquare, Wifi, Palette, Contact, Camera, Star, UtensilsCrossed, Layers, ScanLine, MessageCircle, Phone, MapPin, CalendarDays, Share2 } from "lucide-react";
 
 export function Footer() {
   const currentYear = 2026;
@@ -84,6 +84,11 @@ export function Footer() {
               <li>
                 <Link href="/qr-code-scanner" className="hover:text-white flex items-center gap-2 transition-colors">
                   <ScanLine className="w-3.5 h-3.5 text-lime-400" /> QR Code Scanner
+                </Link>
+              </li>
+              <li>
+                <Link href="/phone-call-qr-code-generator" className="hover:text-white flex items-center gap-2 transition-colors">
+                  <Phone className="w-3.5 h-3.5 text-emerald-400" /> Phone Call QR Code
                 </Link>
               </li>
               <li>
