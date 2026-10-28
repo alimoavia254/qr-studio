@@ -10,6 +10,7 @@
     "indexnow": "node scripts/indexnow.mjs"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "canvas-confetti": "^1.9.4",
     "jsqr": "^1.4.0",
     "lucide-react": "^1.61.0",
