@@ -778,6 +778,246 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "qr-code-vs-barcode",
+    title: "QR Code vs Barcode: What Is the Difference?",
+    description:
+      "QR code vs barcode explained: how they store data, what each is used for, how much they hold, and which one to choose for products, menus and marketing.",
+    excerpt:
+      "Both are black and white patterns a scanner can read, but they work differently. Here is when to use which.",
+    published: "2026-10-29",
+    updated: "2026-10-29",
+    readMinutes: 5,
+    tool: { href: "/", label: "Create a free QR code" },
+    sections: [
+      {
+        heading: "The short answer",
+        paragraphs: [
+          "A traditional barcode is a row of vertical lines (one-dimensional) that usually stores a short number, such as a product code. A QR code is a square grid of dots (two-dimensional) that can store much more, including web links, Wi-Fi details, contact cards and text.",
+          "Use a barcode for retail product identification and stock systems. Use a QR code when you want a phone to open a link, join a network or save a contact.",
+        ],
+      },
+      {
+        heading: "How they store data",
+        paragraphs: [
+          "A one-dimensional barcode encodes data in the widths of its lines and spaces, and it is read along a single direction. A QR code encodes data across both the horizontal and vertical directions of its grid, which is why it can hold far more in a small area.",
+          "QR codes also include error correction, so a code can still be read when part of it is dirty or covered. That is why a small logo in the center of a QR code can still scan.",
+        ],
+      },
+      {
+        heading: "Capacity",
+        paragraphs: [
+          "A standard QR code can hold thousands of characters depending on the content type and error correction level, while a typical retail barcode holds a short numeric code. In practice, most QR codes carry a short link, because shorter data makes a simpler code that scans faster.",
+        ],
+      },
+      {
+        heading: "How each one is scanned",
+        paragraphs: [
+          "Barcodes are traditionally read by dedicated laser or camera scanners at checkouts and in warehouses. QR codes are designed to be read by ordinary smartphone cameras, so people can scan them without installing anything on current iPhone and Android phones.",
+        ],
+      },
+      {
+        heading: "Which one should you use?",
+        paragraphs: ["A quick guide:"],
+        list: [
+          "Selling physical products through retail stores: a barcode is required by most retailers.",
+          "Linking to a website, menu, social profile or review page: use a QR code.",
+          "Sharing Wi-Fi, a contact card or a calendar event: use a QR code.",
+          "Tracking inventory internally: either can work, depending on your scanner.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Is a QR code a type of barcode?",
+        a: "A QR code is a two-dimensional barcode. People usually say barcode for the older one-dimensional line codes and QR code for the square dot pattern.",
+      },
+      {
+        q: "Which holds more data, a QR code or a barcode?",
+        a: "A QR code holds much more than a typical one-dimensional barcode because it stores data in two directions.",
+      },
+      {
+        q: "Can a phone scan a barcode?",
+        a: "Some scanner apps can, but the built-in camera of current phones is designed mainly for QR codes.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-make-a-qr-code-for-a-youtube-video",
+    title: "How to Make a QR Code for a YouTube Video or Channel",
+    description:
+      "Create a free QR code that opens your YouTube video or channel: copy the link, make the code, add your logo, and test the scan before you print.",
+    excerpt:
+      "Send viewers straight to your video or channel from a flyer, product box or shop window.",
+    published: "2026-10-29",
+    updated: "2026-10-29",
+    readMinutes: 4,
+    tool: { href: "/social-media-qr-code-generator", label: "Make a YouTube QR code" },
+    sections: [
+      {
+        heading: "What you need",
+        paragraphs: [
+          "A YouTube QR code is a normal QR code that stores a YouTube link. When someone scans it, their phone opens the video or channel in the YouTube app if it is installed, or in the browser if not.",
+        ],
+      },
+      {
+        heading: "Steps",
+        paragraphs: ["Follow these steps:"],
+        list: [
+          "Open your video or channel on YouTube and copy the link from the Share button.",
+          "Open QR Vibe and paste the link into the Website link box, or use the social media generator.",
+          "Add your logo and brand colors in the Logo and Style tabs.",
+          "Wait for the scan check to pass.",
+          "Download PNG or SVG and test the final design on a phone.",
+        ],
+      },
+      {
+        heading: "Video link or channel link?",
+        paragraphs: [
+          "A single video link is good for a campaign, product demo or event. A channel link stays useful for longer, because you can keep adding videos and the printed code still leads to your latest content. For long-lived printed material, the channel link is usually the safer choice.",
+        ],
+      },
+      {
+        heading: "Tips to get more scans",
+        paragraphs: [
+          "Add a short call to action next to the code, such as Watch the demo. People scan more when they know what they will get. Print the code large enough to scan from where people will stand, and leave a clear blank margin around it.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I make a QR code for a YouTube video?",
+        a: "Copy the video link from YouTube, paste it into QR Vibe, add your logo or colors, and download the code.",
+      },
+      {
+        q: "Will the QR code stop working if I upload new videos?",
+        a: "A channel QR code keeps working as you upload. A single-video code works as long as that video stays public.",
+      },
+      {
+        q: "Is a YouTube QR code free?",
+        a: "Yes. QR Vibe is free with no sign-up, and the codes are static, so they never expire.",
+      },
+    ],
+  },
+  {
+    slug: "qr-code-ideas-for-small-business",
+    title: "QR Code Ideas for Small Business: 10 Practical Uses",
+    description:
+      "10 practical QR code ideas for small business: menus, reviews, Wi-Fi, contact cards, WhatsApp orders, social profiles and more, with tips for each.",
+    excerpt:
+      "Ten simple ways a shop, cafe or service business can use QR codes without a subscription.",
+    published: "2026-10-29",
+    updated: "2026-10-29",
+    readMinutes: 6,
+    tool: { href: "/", label: "Create a QR code for your business" },
+    sections: [
+      {
+        heading: "Why QR codes work for small business",
+        paragraphs: [
+          "A QR code connects a printed surface, such as a sign, menu or receipt, to something on a phone. It removes typing, which is where most people give up. Static codes cost nothing to keep running, which suits a small budget.",
+        ],
+      },
+      {
+        heading: "Ten ideas",
+        paragraphs: ["Each of these can be made in QR Vibe:"],
+        list: [
+          "Menu: link a PDF or online menu on table cards and the door.",
+          "Google reviews: link your review page on the counter and receipts.",
+          "Wi-Fi: let customers join without asking staff for the password.",
+          "WhatsApp ordering or enquiries: open a chat with a pre-filled message.",
+          "Business card: a contact QR that saves your details in one tap.",
+          "Social profiles: grow followers from shop windows and packaging.",
+          "Location: open directions in Google Maps from flyers and ads.",
+          "Events: add a sale or workshop to a customer's calendar.",
+          "Call or text: open the dialer or messages app with your number ready.",
+          "Product pages: link to a how-to video or manual from packaging.",
+        ],
+      },
+      {
+        heading: "Make them work well",
+        paragraphs: [
+          "Place the code where people wait or look, such as tables, counters and entrances. Add a short call to action next to it. Print it large enough and always test the printed copy on a phone before you print many.",
+          "Use static codes for printed material so you are never dependent on a third party for the code to keep working.",
+        ],
+      },
+      {
+        heading: "Measure what works",
+        paragraphs: [
+          "Static QR codes do not count scans on their own. If you want to see results, link to a page where you can track visits, or use different pages for different placements and compare visits in your own analytics.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "What can a small business use QR codes for?",
+        a: "Menus, reviews, Wi-Fi, WhatsApp chats, contact cards, social profiles, locations, events and product information.",
+      },
+      {
+        q: "Do I need to pay for a QR code?",
+        a: "Not with QR Vibe. Static codes are free and never expire.",
+      },
+      {
+        q: "Can I track scans with a static QR code?",
+        a: "A static code does not count scans by itself. Track visits on the page it links to, using your own analytics.",
+      },
+    ],
+  },
+  {
+    slug: "qr-code-for-wedding-invitations",
+    title: "QR Codes for Wedding Invitations: Ideas and Print Tips",
+    description:
+      "Use QR codes on wedding invitations for RSVP links, maps, schedules and photo albums. Learn what to link and how to print the code so every guest can scan it.",
+    excerpt:
+      "A small QR code can replace a pile of inserts: RSVP, directions, schedule and photos.",
+    published: "2026-10-29",
+    updated: "2026-10-29",
+    readMinutes: 5,
+    tool: { href: "/custom-qr-code-generator", label: "Design a custom QR code" },
+    sections: [
+      {
+        heading: "What to link from an invitation",
+        paragraphs: [
+          "A QR code lets you keep the invitation clean while giving guests the details they need. Common choices are an RSVP form, the venue location in a maps app, the day's schedule, a gift or registry page, and a shared photo album.",
+        ],
+      },
+      {
+        heading: "Pick links that will last",
+        paragraphs: [
+          "A printed QR code cannot be edited. Use links you control and will not change, and check that each one opens on a phone without needing a login. If you may update details later, link to a single page you can edit, such as a simple wedding website.",
+        ],
+      },
+      {
+        heading: "Style it to match",
+        paragraphs: [
+          "Pick a dark shade from your color scheme for the dots on a light background so the code stays easy to scan. Keep any logo or monogram small. Avoid pastel dots, and test a printed proof on more than one phone.",
+        ],
+      },
+      {
+        heading: "Printing tips",
+        paragraphs: ["Before you print the full run:"],
+        list: [
+          "Print the code at least 2 x 2 cm and keep a blank margin around it.",
+          "Avoid placing it over textures, foil or glitter that can reduce contrast.",
+          "Scan a printed test copy with an iPhone and an Android phone.",
+          "Add a short label such as RSVP here, so guests know what the code does.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Can I put a QR code on a wedding invitation?",
+        a: "Yes. Use it for an RSVP page, venue location, schedule or photo album, and add a short label so guests know what it opens.",
+      },
+      {
+        q: "What size should the QR code be?",
+        a: "Print it at least 2 x 2 cm with a blank margin, and test a printed copy before printing all invitations.",
+      },
+      {
+        q: "Will older guests be able to scan it?",
+        a: "Most current phones scan QR codes with the camera. Also print the web address in small text as a backup.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string) {
