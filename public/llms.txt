@@ -40,6 +40,10 @@
 - [How to Make an Email QR Code (With Subject and Message)](https://qrvibe.online/guides/how-to-make-an-email-qr-code)
 - [How to Make a QR Code for a PDF (Free, Never Expires)](https://qrvibe.online/guides/how-to-make-a-qr-code-for-a-pdf)
 - [How to Share Wi-Fi With a QR Code (iPhone and Android)](https://qrvibe.online/guides/how-to-share-wifi-with-a-qr-code)
+- [QR Code vs Barcode: What Is the Difference?](https://qrvibe.online/guides/qr-code-vs-barcode)
+- [How to Make a QR Code for a YouTube Video or Channel](https://qrvibe.online/guides/how-to-make-a-qr-code-for-a-youtube-video)
+- [QR Code Ideas for Small Business: 10 Practical Uses](https://qrvibe.online/guides/qr-code-ideas-for-small-business)
+- [QR Codes for Wedding Invitations: Ideas and Print Tips](https://qrvibe.online/guides/qr-code-for-wedding-invitations)
 
 ## About
 - [About QR Vibe](https://qrvibe.online/about)
