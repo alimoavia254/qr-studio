@@ -22,9 +22,9 @@ export type Guide = {
 export const GUIDES: Guide[] = [
   {
     slug: "static-vs-dynamic-qr-codes",
-    title: "Static vs Dynamic QR Codes: Which One Should You Use?",
+    title: "What Is a Static QR Code? Static vs Dynamic Explained",
     description:
-      "Static vs dynamic QR codes explained: why some 'free' QR codes stop working, and how to pick the right type for print, menus and marketing.",
+      "What is a static QR code? Static vs dynamic QR codes explained: why some 'free' codes stop working and which type to pick for print, menus and marketing.",
     excerpt:
       "Why some free QR codes suddenly stop working, and how to pick a type that will still scan in five years.",
     published: "2026-10-26",
@@ -89,6 +89,14 @@ export const GUIDES: Guide[] = [
     ],
     faqs: [
       {
+        q: "What is a static QR code?",
+        a: "A static QR code stores your content (a link, Wi-Fi login, contact or text) directly in the pattern. It does not use a redirect, so it never expires and needs no subscription, but you cannot edit it after printing.",
+      },
+      {
+        q: "What is the difference between a static and a dynamic QR code?",
+        a: "A static code holds your data itself. A dynamic code holds a short redirect link owned by the generator, which lets you change the destination and track scans, but stops working if the service ends or your plan lapses.",
+      },
+      {
         q: "Do static QR codes expire?",
         a: "No. A static QR code stores its content inside the pattern itself, so there is no server or subscription that can expire. It works as long as the destination (for example your website) is online.",
       },
@@ -104,9 +112,9 @@ export const GUIDES: Guide[] = [
   },
   {
     slug: "qr-code-size-for-printing",
-    title: "What Size Should a QR Code Be? Print Size Guide",
+    title: "Minimum QR Code Size: Business Cards, Flyers & Posters",
     description:
-      "Minimum QR code print sizes for business cards, flyers, posters and signs, plus the 10:1 distance rule, quiet zone and best file format.",
+      "How big should a QR code be? Minimum print sizes for business cards, flyers, posters and signs, plus the 10:1 distance rule, quiet zone and file format.",
     excerpt:
       "Minimum sizes in cm and inches for business cards, flyers, posters and signs, plus the simple 10:1 distance rule.",
     published: "2026-10-26",
@@ -168,6 +176,14 @@ export const GUIDES: Guide[] = [
       },
     ],
     faqs: [
+      {
+        q: "What size should a QR code be on a business card?",
+        a: "Print it at least 2 x 2 cm (0.8 x 0.8 in), and 2.5 cm is more comfortable. Keep the link short and leave a blank margin around the code.",
+      },
+      {
+        q: "How big do QR codes need to be?",
+        a: "Use the 10:1 rule: the code should be at least one tenth of the scanning distance. A code scanned from 1 metre should be about 10 cm wide.",
+      },
       {
         q: "What is the smallest size a QR code can be printed?",
         a: "Around 2 x 2 cm (0.8 x 0.8 in) for a short URL scanned up close. Smaller codes can work with very little data and high-quality printing, but they are less reliable.",
