@@ -29,8 +29,8 @@
 - [QR code scanner](https://qrvibe.online/qr-code-scanner): scan with a camera or an uploaded image, entirely in the browser
 
 ## Guides
-- [Static vs Dynamic QR Codes: Which One Should You Use?](https://qrvibe.online/guides/static-vs-dynamic-qr-codes)
-- [What Size Should a QR Code Be? Print Size Guide](https://qrvibe.online/guides/qr-code-size-for-printing)
+- [What Is a Static QR Code? Static vs Dynamic Explained](https://qrvibe.online/guides/static-vs-dynamic-qr-codes)
+- [Minimum QR Code Size: Business Cards, Flyers & Posters](https://qrvibe.online/guides/qr-code-size-for-printing)
 - [How to Make a QR Code for a Restaurant Menu (Free)](https://qrvibe.online/guides/how-to-make-a-qr-code-for-a-restaurant-menu)
 - [QR Code Error Correction Levels Explained (L, M, Q, H)](https://qrvibe.online/guides/qr-code-error-correction-levels)
 - [How to Scan a QR Code on iPhone and Android (No App Needed)](https://qrvibe.online/guides/how-to-scan-a-qr-code-on-iphone-and-android)

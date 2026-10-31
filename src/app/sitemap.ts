@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 import { GUIDES } from "@/lib/guides";
 
-const CONTENT_UPDATED = "2026-10-29";
+const CONTENT_UPDATED = "2026-10-31";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = "https://qrvibe.online";
