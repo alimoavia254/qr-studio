@@ -1034,6 +1034,70 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "how-to-scan-a-qr-code-from-an-image-or-screenshot",
+    title: "How to Scan a QR Code From an Image or Screenshot",
+    description:
+      "Scan a QR code that is in a screenshot, photo or PDF without a second device. Steps for iPhone, Android and desktop, plus what to check before opening the link.",
+    excerpt:
+      "When the QR code is on your own screen, you cannot point a camera at it. Here is how to scan it anyway.",
+    published: "2026-11-02",
+    updated: "2026-11-02",
+    readMinutes: 4,
+    tool: { href: "/qr-code-scanner", label: "Open the free QR code scanner" },
+    sections: [
+      {
+        heading: "Why you cannot just point the camera",
+        paragraphs: [
+          "A QR code sent as a screenshot, a WhatsApp image or a PDF is on the same phone you would scan with. The camera app cannot scan its own screen, so you either scan from a saved image or use a second device.",
+        ],
+      },
+      {
+        heading: "iPhone",
+        paragraphs: ["Recent iPhones can read QR codes in saved photos:"],
+        list: [
+          "Open the screenshot or image in the Photos app.",
+          "Touch and hold the QR code until the yellow outline appears, or tap the small scan icon in the corner if it shows.",
+          "Tap the link or action that appears. If nothing appears, try Google Lens in the Google app.",
+        ],
+      },
+      {
+        heading: "Android",
+        paragraphs: ["Many Android phones can do this with Google Lens:"],
+        list: [
+          "Open the image in Google Photos and tap Lens, or open the Google app and choose Search with your camera, then pick the image.",
+          "Wait for the link to be detected and tap it.",
+          "On some phones the Gallery or Samsung Internet app has a built-in QR option as well.",
+        ],
+      },
+      {
+        heading: "Computer",
+        paragraphs: [
+          "On a laptop or desktop, the easiest option is a browser-based scanner. You can scan with the webcam or by choosing an image file. Because it runs in the browser, the image does not need to be installed or sent to an app. Use a scanner you trust and avoid pasting private images into unknown websites.",
+        ],
+      },
+      {
+        heading: "Check the link before you open it",
+        paragraphs: [
+          "A QR code can hide a long or shortened link. Read the full address that appears before you tap. Be careful with codes that ask for a password, payment or an app install you did not expect.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I scan a QR code from a screenshot?",
+        a: "On iPhone, open the screenshot in Photos and touch and hold the code. On Android, open it in Google Photos and tap Lens. On a computer, use a browser-based QR scanner and choose the image file.",
+      },
+      {
+        q: "Can I scan a QR code without a second phone?",
+        a: "Yes. Save the QR code as an image, then scan it from Photos, Google Lens or an online scanner instead of using the live camera.",
+      },
+      {
+        q: "Why will my phone not read the QR code in the image?",
+        a: "The image may be too small, blurry or cropped. Zoom in, make sure the whole code and its blank border are visible, or save a higher quality copy.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string) {
