@@ -5,8 +5,8 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   path: "/location-qr-code-generator",
-  title: "Location QR Code Generator - Free Google Maps QR Code",
-  description: "Make a free location QR code that opens Google Maps or the phone map app at exact coordinates. Add your logo, download PNG, SVG or PDF. No sign-up.",
+  title: "Location QR Code Generator - QR Code for Any Address (Free)",
+  description: "Make a free QR code for a location or address. It opens Google Maps or the phone map app at exact coordinates. Add your logo, download PNG, SVG or PDF. No sign-up.",
   socialTitle: "Free Location QR Code Generator | QR Vibe",
   socialDescription: "Send people straight to your shop, venue or meeting point on the map.",
 });
@@ -44,6 +44,8 @@ export default function LocationQRPage() {
       faqs={[
         { q: "How do I make a QR code for a Google Maps location?", a: "Copy the latitude and longitude from Google Maps, choose Location in QR Vibe, paste them, and download the QR code." },
         { q: "What is the difference between the two link styles?", a: "The Google Maps link opens in any browser. The geo link opens the phone's default map app, which is faster but depends on the device." },
+        { q: "How do I make a QR code for an address?", a: "Search the address in Google Maps, right-click the pin and copy the latitude and longitude, then paste them into the Location tab. Alternatively, copy the Google Maps share link and use the URL tab." },
+        { q: "How do I scan a location QR code?", a: "Open the phone camera and point it at the code, or use the free QR scanner on QR Vibe. A location QR code opens the map at the saved pin." },
         { q: "Will it expire?", a: "No. The coordinates are stored inside the QR code, so it works forever." },
       ]}
     />
