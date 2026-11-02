@@ -85,7 +85,7 @@ export default function PrivacyPolicyPage() {
               Like most web hosts, our hosting provider (Vercel Inc.) maintains standard access logs when your browser requests web assets (HTML, CSS, JS bundles). These logs include internet protocol (IP) addresses, browser type, internet service provider (ISP), date/time stamps, and referring/exit pages. This data is not linked to any personally identifiable information and is utilized strictly for system uptime, DDOS mitigation, and CDN performance monitoring.
             </p>
             <p className="mt-3">
-              We also use Vercel Web Analytics to count visitors and page views. It reports aggregate page-view statistics and does not use cookies or track you across other websites. The content of the QR codes you create is never sent to analytics.
+              We also use Vercel Web Analytics to count visitors and page views. It reports aggregate page-view statistics and does not use cookies or track you across other websites. We also use Google Analytics 4 to understand how the site is used (pages viewed, approximate location, device and browser). It sets cookies and sends this usage data to Google. You can opt out with the Google Analytics opt-out browser add-on or by blocking cookies. The content of the QR codes you create is never sent to analytics.
             </p>
           </section>
 
