@@ -10,7 +10,7 @@ import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = pageMetadata({
   path: "/qr-code-for-business-cards",
-  title: "QR Code Generator for Business Cards (vCard)",
+  title: "QR Code for Business Cards & Visiting Cards (vCard, Free)",
   description: "Create professional vCard QR codes for physical business cards. One scan lets clients instantly save your phone number, email, company, and portfolio.",
   socialTitle: "Business Card QR Code Generator | vCard Digital Contact",
   socialDescription: "Generate print-ready vCard QR codes for your paper business cards. Works natively with iOS Contacts and Android Google Contacts.",

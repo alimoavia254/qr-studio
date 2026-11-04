@@ -112,6 +112,10 @@ export const PAGE_FAQS: Record<string, Faq[]> = {
   ],
   businessCard: [
     {
+      q: "How do I make a QR code for a visiting card?",
+      a: "A visiting card is the same as a business card. Enter your name, phone, email and website in the vCard tab, download the QR code, and print it on the card at least 2 x 2 cm.",
+    },
+    {
       q: "What is a vCard QR code?",
       a: "A vCard QR code stores your contact details (name, phone, email, company, website) in the standard vCard format. When scanned, the phone offers to save you as a contact in one tap.",
     },
