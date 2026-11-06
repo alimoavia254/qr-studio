@@ -777,6 +777,17 @@ export function QRStudio({
     }
   };
 
+  // After picking a poster/theme: bring the live preview and the edit controls back into view (mobile)
+  const scrollToEditor = () => {
+    if (window.innerWidth >= 1024) return;
+    setTimeout(() => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const barBottom = document.getElementById("mobile-preview")?.getBoundingClientRect().bottom ?? 64;
+      window.scrollBy({ top: panel.getBoundingClientRect().top - barBottom - 8, behavior: "smooth" });
+    }, 80);
+  };
+
   const selectTab = (id: StudioTab) => {
     setActiveTab(id);
     // If the panel's top is hidden under the sticky tab bar, bring it back into view
@@ -1108,53 +1119,9 @@ export function QRStudio({
         />
       </div>
 
-      <Section title="Poster templates" hint="Every template has its own design. What you see here is what you get.">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-          {["All", ...POSTER_CATEGORIES].map((c) => (
-            <Chip key={c} active={posterCat === c} onClick={() => setPosterCat(c)}>
-              {c}
-            </Chip>
-          ))}
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {POSTER_TEMPLATES.filter((t) => posterCat === "All" || t.category === posterCat).map((tpl) => {
-            const active = config.frame.enabled && config.frame.templateId === tpl.id;
-            return (
-              <button
-                key={tpl.id}
-                type="button"
-                onClick={() => applyPosterTemplate(tpl)}
-                aria-pressed={active}
-                className={`group text-left rounded-2xl border p-2 transition-all active:scale-[0.98] ${
-                  active
-                    ? "bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500/50"
-                    : "bg-slate-950/60 border-slate-800 hover:border-slate-600"
-                }`}
-              >
-                <PosterCanvas
-                  px={300}
-                  lazy
-                  spec={templateSpec(tpl)}
-                  fake={{ dark: tpl.dotsColor, eye: tpl.cornerSquareColor }}
-                  className="w-full h-auto rounded-xl shadow-md shadow-black/40"
-                  label={`${tpl.name} preview`}
-                />
-                <span className="mt-2 flex items-start justify-between gap-1.5 px-0.5">
-                  <span className="min-w-0">
-                    <span className="block text-xs font-bold text-white leading-snug">{tpl.name}</span>
-                    <span className="block text-[11px] text-slate-400 leading-snug mt-0.5 line-clamp-2">{tpl.tagline}</span>
-                  </span>
-                  {active && <Check className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </Section>
-
       {config.frame.enabled && (
         <>
-          <Section title="Poster text">
+          <Section title="Edit your poster" hint="Changes show in the live preview above.">
             <Field label="Heading">
               <input
                 type="text"
@@ -1214,6 +1181,53 @@ export function QRStudio({
           </Section>
         </>
       )}
+
+      <Section title={config.frame.enabled ? "Change template" : "Poster templates"} hint="Tap a template to switch. The preview updates at the top.">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+          {["All", ...POSTER_CATEGORIES].map((c) => (
+            <Chip key={c} active={posterCat === c} onClick={() => setPosterCat(c)}>
+              {c}
+            </Chip>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {POSTER_TEMPLATES.filter((t) => posterCat === "All" || t.category === posterCat).map((tpl) => {
+            const active = config.frame.enabled && config.frame.templateId === tpl.id;
+            return (
+              <button
+                key={tpl.id}
+                type="button"
+                onClick={() => {
+                  applyPosterTemplate(tpl);
+                  scrollToEditor();
+                }}
+                aria-pressed={active}
+                className={`group text-left rounded-2xl border p-2 transition-all active:scale-[0.98] ${
+                  active
+                    ? "bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500/50"
+                    : "bg-slate-950/60 border-slate-800 hover:border-slate-600"
+                }`}
+              >
+                <PosterCanvas
+                  px={300}
+                  lazy
+                  spec={templateSpec(tpl)}
+                  fake={{ dark: tpl.dotsColor, eye: tpl.cornerSquareColor }}
+                  className="w-full h-auto rounded-xl shadow-md shadow-black/40"
+                  label={`${tpl.name} preview`}
+                />
+                <span className="mt-2 flex items-start justify-between gap-1.5 px-0.5">
+                  <span className="min-w-0">
+                    <span className="block text-xs font-bold text-white leading-snug">{tpl.name}</span>
+                    <span className="block text-[11px] text-slate-400 leading-snug mt-0.5 line-clamp-2">{tpl.tagline}</span>
+                  </span>
+                  {active && <Check className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </Section>
     </div>
   );
 
@@ -1244,7 +1258,7 @@ export function QRStudio({
           {QR_PRESETS.filter((p) => themeCategory === "all" || p.category === themeCategory).map((p) => {
             const active = isPresetActive(p);
             return (
-              <OptionTile key={p.id} active={active} onClick={() => applyPreset(p)} className="flex items-center gap-2.5 p-2.5 text-left">
+              <OptionTile key={p.id} active={active} onClick={() => { applyPreset(p); scrollToEditor(); }} className="flex items-center gap-2.5 p-2.5 text-left">
                 <span
                   className="w-10 h-10 rounded-lg shrink-0 grid place-items-center border border-white/10"
                   style={{ background: p.bgColor }}
