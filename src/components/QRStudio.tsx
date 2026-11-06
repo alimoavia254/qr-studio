@@ -16,6 +16,8 @@ import {
   ExternalLink,
   LayoutTemplate,
   Share2,
+  ChevronUp,
+  ChevronDown,
   Loader2,
   CheckCircle2,
   Save,
@@ -296,6 +298,7 @@ export function QRStudio({
   const [themeCategory, setThemeCategory] = useState<"all" | ThemeCategory>("all");
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
   const [studioInView, setStudioInView] = useState(true);
+  const [previewBig, setPreviewBig] = useState(true);
   const [thumb, setThumb] = useState<string | null>(null);
   // `design` changes identity on every edit; a result for an older design means "still checking"
   const design = useMemo(() => ({ config }), [config]);
@@ -774,10 +777,6 @@ export function QRStudio({
     }
   };
 
-  const scrollToPreview = () => {
-    previewRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  };
-
   const selectTab = (id: StudioTab) => {
     setActiveTab(id);
     // If the panel's top is hidden under the sticky tab bar, bring it back into view
@@ -787,7 +786,7 @@ export function QRStudio({
       const isMobile = window.innerWidth < 1024;
       const bar = document.getElementById("studio-tabs");
       // Mobile: tabs live in the bottom nav, so align under the site header
-      const limit = isMobile ? 140 : (bar?.getBoundingClientRect().bottom ?? 0) + 8;
+      const limit = isMobile ? (document.getElementById("mobile-preview")?.getBoundingClientRect().bottom ?? 64) + 8 : (bar?.getBoundingClientRect().bottom ?? 0) + 8;
       const gap = panel.getBoundingClientRect().top - limit;
       if (gap < 0) window.scrollBy({ top: gap, behavior: "smooth" });
     });
@@ -1593,56 +1592,83 @@ export function QRStudio({
           </div>
 
           {/* Mobile: sticky live preview, so every change is visible without scrolling down */}
-          <div className="lg:hidden sticky top-14 z-30 -mx-4 px-4 py-2 mb-3 bg-slate-950/95 border-b border-slate-800/80 backdrop-blur">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={scrollToPreview}
-                aria-label="Show full QR preview"
-                className="relative shrink-0 w-14 h-14 rounded-xl bg-white p-1 border border-slate-700 overflow-hidden grid place-items-center"
-              >
-                {f.enabled ? (
-                  <PosterCanvas
-                    spec={posterSpec}
-                    px={160}
-                    tick={qrTick}
-                    getQr={() => qrContainerRef.current?.querySelector("canvas") ?? null}
-                    className="h-full w-auto max-w-full rounded-md"
-                    label="Poster mini preview"
-                  />
-                ) : thumb ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={thumb} alt="QR preview" className="w-full h-full rounded-md" />
-                ) : null}
-              </button>
-              <div className="min-w-0 flex-1" aria-live="polite">
-                <p className="text-sm font-bold text-white leading-tight">Live preview</p>
-                <p
-                  className={`mt-0.5 flex items-center gap-1 text-xs font-semibold ${
-                    decoder.checking ? "text-slate-400" : decoder.ok ? "text-emerald-400" : "text-rose-400"
-                  }`}
-                >
-                  {decoder.checking ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : decoder.ok ? (
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  ) : (
-                    <AlertTriangle className="w-3.5 h-3.5" />
-                  )}
-                  {decoder.checking ? "Checking scan…" : decoder.ok ? "Scans OK" : "May not scan"}
-                </p>
-              </div>
+          {(() => {
+            const big = previewBig && activeTab !== "content";
+            const statusCls = decoder.checking ? "text-slate-400" : decoder.ok ? "text-emerald-400" : "text-rose-400";
+            const StatusIcon = decoder.checking ? Loader2 : decoder.ok ? CheckCircle2 : AlertTriangle;
+            const statusText = decoder.checking ? "Checking scan…" : decoder.ok ? "Scans OK" : "May not scan";
+            const saveBtn = (
               <button
                 type="button"
                 onClick={downloadQR}
                 disabled={busy !== null}
-                className="shrink-0 h-11 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 disabled:opacity-60"
+                className="h-11 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 disabled:opacity-60"
               >
                 {busy === "download" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                Save
+                Save {FORMAT_LABEL[exportFormat]}
               </button>
-            </div>
-          </div>
+            );
+            return (
+              <div id="mobile-preview" className="lg:hidden sticky top-14 z-30 -mx-4 px-4 py-2.5 mb-3 bg-slate-950/95 border-b border-slate-800/80 backdrop-blur">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`relative shrink-0 rounded-2xl bg-slate-900 border border-slate-700 grid place-items-center overflow-hidden transition-all ${
+                      big ? `h-[188px] p-2 ${f.enabled ? "" : "w-[188px]"}` : "h-14 w-14 p-1"
+                    }`}
+                  >
+                    {f.enabled ? (
+                      <div style={{ width: `${Math.round(((big ? 172 : 48) / posterAspect(posterSpec.layout)) * 10) / 10}px` }}>
+                        <PosterCanvas
+                          spec={posterSpec}
+                          px={480}
+                          tick={qrTick}
+                          getQr={() => qrContainerRef.current?.querySelector("canvas") ?? null}
+                          className="w-full h-auto rounded-lg"
+                          label="Poster live preview"
+                        />
+                      </div>
+                    ) : thumb ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={thumb} alt="QR live preview" className="w-full h-full rounded-lg object-contain" />
+                    ) : null}
+                  </div>
+                  <div className="min-w-0 flex-1" aria-live="polite">
+                    <p className="text-sm font-bold text-white leading-tight">Live preview</p>
+                    <p className={`mt-0.5 flex items-center gap-1 text-xs font-semibold ${statusCls}`}>
+                      <StatusIcon className={`w-3.5 h-3.5 ${decoder.checking ? "animate-spin" : ""}`} />
+                      {statusText}
+                    </p>
+                    {big && (
+                      <div className="mt-3 grid gap-2">
+                        {saveBtn}
+                        <button
+                          type="button"
+                          onClick={shareQR}
+                          disabled={busy !== null}
+                          className="h-10 rounded-xl text-xs font-semibold bg-slate-800 border border-slate-700 text-white flex items-center justify-center gap-1.5 disabled:opacity-60"
+                        >
+                          <Share2 className="w-4 h-4" />
+                          Share
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {!big && <div className="shrink-0">{saveBtn}</div>}
+                </div>
+                {activeTab !== "content" && (
+                  <button
+                    type="button"
+                    onClick={() => setPreviewBig((v) => !v)}
+                    aria-expanded={big}
+                    className="mt-1.5 mx-auto flex items-center gap-1 text-[11px] font-semibold text-slate-400"
+                  >
+                    {big ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    {big ? "Smaller preview" : "Bigger preview"}
+                  </button>
+                )}
+              </div>
+            );
+          })()}
 
           <div
             ref={panelRef}
