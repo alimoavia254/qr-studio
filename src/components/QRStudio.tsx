@@ -16,6 +16,8 @@ import {
   ExternalLink,
   LayoutTemplate,
   Share2,
+  ChevronUp,
+  ChevronDown,
   Loader2,
   CheckCircle2,
   Save,
@@ -296,7 +298,7 @@ export function QRStudio({
   const [themeCategory, setThemeCategory] = useState<"all" | ThemeCategory>("all");
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
   const [studioInView, setStudioInView] = useState(true);
-  const [previewInView, setPreviewInView] = useState(true);
+  const [previewBig, setPreviewBig] = useState(true);
   const [thumb, setThumb] = useState<string | null>(null);
   // `design` changes identity on every edit; a result for an older design means "still checking"
   const design = useMemo(() => ({ config }), [config]);
@@ -428,14 +430,9 @@ export function QRStudio({
     const studioObs = new IntersectionObserver(([e]) => setStudioInView(e.isIntersecting), {
       rootMargin: "0px 0px -120px 0px",
     });
-    const previewObs = new IntersectionObserver(([e]) => setPreviewInView(e.isIntersecting), {
-      threshold: 0.35,
-    });
     if (studioRef.current) studioObs.observe(studioRef.current);
-    if (previewRef.current) previewObs.observe(previewRef.current);
     return () => {
       studioObs.disconnect();
-      previewObs.disconnect();
     };
   }, []);
 
@@ -780,8 +777,15 @@ export function QRStudio({
     }
   };
 
-  const scrollToPreview = () => {
-    previewRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  // After picking a poster/theme: bring the live preview and the edit controls back into view (mobile)
+  const scrollToEditor = () => {
+    if (window.innerWidth >= 1024) return;
+    setTimeout(() => {
+      const panel = panelRef.current;
+      if (!panel) return;
+      const barBottom = document.getElementById("mobile-preview")?.getBoundingClientRect().bottom ?? 64;
+      window.scrollBy({ top: panel.getBoundingClientRect().top - barBottom - 8, behavior: "smooth" });
+    }, 80);
   };
 
   const selectTab = (id: StudioTab) => {
@@ -793,7 +797,7 @@ export function QRStudio({
       const isMobile = window.innerWidth < 1024;
       const bar = document.getElementById("studio-tabs");
       // Mobile: tabs live in the bottom nav, so align under the site header
-      const limit = isMobile ? 64 : (bar?.getBoundingClientRect().bottom ?? 0) + 8;
+      const limit = isMobile ? (document.getElementById("mobile-preview")?.getBoundingClientRect().bottom ?? 64) + 8 : (bar?.getBoundingClientRect().bottom ?? 0) + 8;
       const gap = panel.getBoundingClientRect().top - limit;
       if (gap < 0) window.scrollBy({ top: gap, behavior: "smooth" });
     });
@@ -1115,53 +1119,9 @@ export function QRStudio({
         />
       </div>
 
-      <Section title="Poster templates" hint="Every template has its own design. What you see here is what you get.">
-        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
-          {["All", ...POSTER_CATEGORIES].map((c) => (
-            <Chip key={c} active={posterCat === c} onClick={() => setPosterCat(c)}>
-              {c}
-            </Chip>
-          ))}
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          {POSTER_TEMPLATES.filter((t) => posterCat === "All" || t.category === posterCat).map((tpl) => {
-            const active = config.frame.enabled && config.frame.templateId === tpl.id;
-            return (
-              <button
-                key={tpl.id}
-                type="button"
-                onClick={() => applyPosterTemplate(tpl)}
-                aria-pressed={active}
-                className={`group text-left rounded-2xl border p-2 transition-all active:scale-[0.98] ${
-                  active
-                    ? "bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500/50"
-                    : "bg-slate-950/60 border-slate-800 hover:border-slate-600"
-                }`}
-              >
-                <PosterCanvas
-                  px={300}
-                  lazy
-                  spec={templateSpec(tpl)}
-                  fake={{ dark: tpl.dotsColor, eye: tpl.cornerSquareColor }}
-                  className="w-full h-auto rounded-xl shadow-md shadow-black/40"
-                  label={`${tpl.name} preview`}
-                />
-                <span className="mt-2 flex items-start justify-between gap-1.5 px-0.5">
-                  <span className="min-w-0">
-                    <span className="block text-xs font-bold text-white leading-snug">{tpl.name}</span>
-                    <span className="block text-[11px] text-slate-400 leading-snug mt-0.5 line-clamp-2">{tpl.tagline}</span>
-                  </span>
-                  {active && <Check className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-      </Section>
-
       {config.frame.enabled && (
         <>
-          <Section title="Poster text">
+          <Section title="Edit your poster" hint="Changes show in the live preview above.">
             <Field label="Heading">
               <input
                 type="text"
@@ -1221,6 +1181,53 @@ export function QRStudio({
           </Section>
         </>
       )}
+
+      <Section title={config.frame.enabled ? "Change template" : "Poster templates"} hint="Tap a template to switch. The preview updates at the top.">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+          {["All", ...POSTER_CATEGORIES].map((c) => (
+            <Chip key={c} active={posterCat === c} onClick={() => setPosterCat(c)}>
+              {c}
+            </Chip>
+          ))}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {POSTER_TEMPLATES.filter((t) => posterCat === "All" || t.category === posterCat).map((tpl) => {
+            const active = config.frame.enabled && config.frame.templateId === tpl.id;
+            return (
+              <button
+                key={tpl.id}
+                type="button"
+                onClick={() => {
+                  applyPosterTemplate(tpl);
+                  scrollToEditor();
+                }}
+                aria-pressed={active}
+                className={`group text-left rounded-2xl border p-2 transition-all active:scale-[0.98] ${
+                  active
+                    ? "bg-indigo-600/15 border-indigo-500 ring-1 ring-indigo-500/50"
+                    : "bg-slate-950/60 border-slate-800 hover:border-slate-600"
+                }`}
+              >
+                <PosterCanvas
+                  px={300}
+                  lazy
+                  spec={templateSpec(tpl)}
+                  fake={{ dark: tpl.dotsColor, eye: tpl.cornerSquareColor }}
+                  className="w-full h-auto rounded-xl shadow-md shadow-black/40"
+                  label={`${tpl.name} preview`}
+                />
+                <span className="mt-2 flex items-start justify-between gap-1.5 px-0.5">
+                  <span className="min-w-0">
+                    <span className="block text-xs font-bold text-white leading-snug">{tpl.name}</span>
+                    <span className="block text-[11px] text-slate-400 leading-snug mt-0.5 line-clamp-2">{tpl.tagline}</span>
+                  </span>
+                  {active && <Check className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </Section>
     </div>
   );
 
@@ -1251,7 +1258,7 @@ export function QRStudio({
           {QR_PRESETS.filter((p) => themeCategory === "all" || p.category === themeCategory).map((p) => {
             const active = isPresetActive(p);
             return (
-              <OptionTile key={p.id} active={active} onClick={() => applyPreset(p)} className="flex items-center gap-2.5 p-2.5 text-left">
+              <OptionTile key={p.id} active={active} onClick={() => { applyPreset(p); scrollToEditor(); }} className="flex items-center gap-2.5 p-2.5 text-left">
                 <span
                   className="w-10 h-10 rounded-lg shrink-0 grid place-items-center border border-white/10"
                   style={{ background: p.bgColor }}
@@ -1598,6 +1605,85 @@ export function QRStudio({
             </div>
           </div>
 
+          {/* Mobile: sticky live preview, so every change is visible without scrolling down */}
+          {(() => {
+            const big = previewBig && activeTab !== "content";
+            const statusCls = decoder.checking ? "text-slate-400" : decoder.ok ? "text-emerald-400" : "text-rose-400";
+            const StatusIcon = decoder.checking ? Loader2 : decoder.ok ? CheckCircle2 : AlertTriangle;
+            const statusText = decoder.checking ? "Checking scan…" : decoder.ok ? "Scans OK" : "May not scan";
+            const saveBtn = (
+              <button
+                type="button"
+                onClick={downloadQR}
+                disabled={busy !== null}
+                className="h-11 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-600/30 flex items-center justify-center gap-1.5 disabled:opacity-60"
+              >
+                {busy === "download" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                Save {FORMAT_LABEL[exportFormat]}
+              </button>
+            );
+            return (
+              <div id="mobile-preview" className="lg:hidden sticky top-14 z-30 -mx-4 px-4 py-2.5 mb-3 bg-slate-950/95 border-b border-slate-800/80 backdrop-blur">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`relative shrink-0 rounded-2xl bg-slate-900 border border-slate-700 grid place-items-center overflow-hidden transition-all ${
+                      big ? `h-[188px] p-2 ${f.enabled ? "" : "w-[188px]"}` : "h-14 w-14 p-1"
+                    }`}
+                  >
+                    {f.enabled ? (
+                      <div style={{ width: `${Math.round(((big ? 172 : 48) / posterAspect(posterSpec.layout)) * 10) / 10}px` }}>
+                        <PosterCanvas
+                          spec={posterSpec}
+                          px={480}
+                          tick={qrTick}
+                          getQr={() => qrContainerRef.current?.querySelector("canvas") ?? null}
+                          className="w-full h-auto rounded-lg"
+                          label="Poster live preview"
+                        />
+                      </div>
+                    ) : thumb ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={thumb} alt="QR live preview" className="w-full h-full rounded-lg object-contain" />
+                    ) : null}
+                  </div>
+                  <div className="min-w-0 flex-1" aria-live="polite">
+                    <p className="text-sm font-bold text-white leading-tight">Live preview</p>
+                    <p className={`mt-0.5 flex items-center gap-1 text-xs font-semibold ${statusCls}`}>
+                      <StatusIcon className={`w-3.5 h-3.5 ${decoder.checking ? "animate-spin" : ""}`} />
+                      {statusText}
+                    </p>
+                    {big && (
+                      <div className="mt-3 grid gap-2">
+                        {saveBtn}
+                        <button
+                          type="button"
+                          onClick={shareQR}
+                          disabled={busy !== null}
+                          className="h-10 rounded-xl text-xs font-semibold bg-slate-800 border border-slate-700 text-white flex items-center justify-center gap-1.5 disabled:opacity-60"
+                        >
+                          <Share2 className="w-4 h-4" />
+                          Share
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {!big && <div className="shrink-0">{saveBtn}</div>}
+                </div>
+                {activeTab !== "content" && (
+                  <button
+                    type="button"
+                    onClick={() => setPreviewBig((v) => !v)}
+                    aria-expanded={big}
+                    className="mt-1.5 mx-auto flex items-center gap-1 text-[11px] font-semibold text-slate-400"
+                  >
+                    {big ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                    {big ? "Smaller preview" : "Bigger preview"}
+                  </button>
+                )}
+              </div>
+            );
+          })()}
+
           <div
             ref={panelRef}
             className="lg:mt-3 lg:p-6 lg:rounded-3xl lg:bg-slate-900/60 lg:border lg:border-slate-800 scroll-mt-16"
@@ -1620,26 +1706,6 @@ export function QRStudio({
           </div>
         </div>
       </div>
-
-      {/* Mobile: floating live mini preview while the big preview is off screen */}
-      {thumb && (
-        <button
-          type="button"
-          onClick={scrollToPreview}
-          aria-label="Show QR preview"
-          className={`lg:hidden fixed right-4 z-40 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] w-[72px] h-[72px] p-1.5 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl shadow-black/60 transition-all duration-300 ${
-            !previewInView && studioInView ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none"
-          }`}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={thumb} alt="" className="w-full h-full rounded-lg" />
-          <span
-            className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-slate-900 ${
-              decoder.checking ? "bg-slate-500" : decoder.ok ? "bg-emerald-400" : "bg-rose-400"
-            }`}
-          />
-        </button>
-      )}
 
       {/* Mobile: app-style bottom tab bar */}
       <nav
