@@ -296,7 +296,6 @@ export function QRStudio({
   const [themeCategory, setThemeCategory] = useState<"all" | ThemeCategory>("all");
   const [isDraggingLogo, setIsDraggingLogo] = useState(false);
   const [studioInView, setStudioInView] = useState(true);
-  const [previewInView, setPreviewInView] = useState(true);
   const [thumb, setThumb] = useState<string | null>(null);
   // `design` changes identity on every edit; a result for an older design means "still checking"
   const design = useMemo(() => ({ config }), [config]);
@@ -428,14 +427,9 @@ export function QRStudio({
     const studioObs = new IntersectionObserver(([e]) => setStudioInView(e.isIntersecting), {
       rootMargin: "0px 0px -120px 0px",
     });
-    const previewObs = new IntersectionObserver(([e]) => setPreviewInView(e.isIntersecting), {
-      threshold: 0.35,
-    });
     if (studioRef.current) studioObs.observe(studioRef.current);
-    if (previewRef.current) previewObs.observe(previewRef.current);
     return () => {
       studioObs.disconnect();
-      previewObs.disconnect();
     };
   }, []);
 
@@ -793,7 +787,7 @@ export function QRStudio({
       const isMobile = window.innerWidth < 1024;
       const bar = document.getElementById("studio-tabs");
       // Mobile: tabs live in the bottom nav, so align under the site header
-      const limit = isMobile ? 64 : (bar?.getBoundingClientRect().bottom ?? 0) + 8;
+      const limit = isMobile ? 140 : (bar?.getBoundingClientRect().bottom ?? 0) + 8;
       const gap = panel.getBoundingClientRect().top - limit;
       if (gap < 0) window.scrollBy({ top: gap, behavior: "smooth" });
     });
@@ -1598,6 +1592,58 @@ export function QRStudio({
             </div>
           </div>
 
+          {/* Mobile: sticky live preview, so every change is visible without scrolling down */}
+          <div className="lg:hidden sticky top-14 z-30 -mx-4 px-4 py-2 mb-3 bg-slate-950/95 border-b border-slate-800/80 backdrop-blur">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={scrollToPreview}
+                aria-label="Show full QR preview"
+                className="relative shrink-0 w-14 h-14 rounded-xl bg-white p-1 border border-slate-700 overflow-hidden grid place-items-center"
+              >
+                {f.enabled ? (
+                  <PosterCanvas
+                    spec={posterSpec}
+                    px={160}
+                    tick={qrTick}
+                    getQr={() => qrContainerRef.current?.querySelector("canvas") ?? null}
+                    className="h-full w-auto max-w-full rounded-md"
+                    label="Poster mini preview"
+                  />
+                ) : thumb ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={thumb} alt="QR preview" className="w-full h-full rounded-md" />
+                ) : null}
+              </button>
+              <div className="min-w-0 flex-1" aria-live="polite">
+                <p className="text-sm font-bold text-white leading-tight">Live preview</p>
+                <p
+                  className={`mt-0.5 flex items-center gap-1 text-xs font-semibold ${
+                    decoder.checking ? "text-slate-400" : decoder.ok ? "text-emerald-400" : "text-rose-400"
+                  }`}
+                >
+                  {decoder.checking ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : decoder.ok ? (
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  ) : (
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                  )}
+                  {decoder.checking ? "Checking scan…" : decoder.ok ? "Scans OK" : "May not scan"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={downloadQR}
+                disabled={busy !== null}
+                className="shrink-0 h-11 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-600/30 flex items-center gap-1.5 disabled:opacity-60"
+              >
+                {busy === "download" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                Save
+              </button>
+            </div>
+          </div>
+
           <div
             ref={panelRef}
             className="lg:mt-3 lg:p-6 lg:rounded-3xl lg:bg-slate-900/60 lg:border lg:border-slate-800 scroll-mt-16"
@@ -1620,26 +1666,6 @@ export function QRStudio({
           </div>
         </div>
       </div>
-
-      {/* Mobile: floating live mini preview while the big preview is off screen */}
-      {thumb && (
-        <button
-          type="button"
-          onClick={scrollToPreview}
-          aria-label="Show QR preview"
-          className={`lg:hidden fixed right-4 z-40 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] w-[72px] h-[72px] p-1.5 rounded-2xl bg-slate-900 border border-slate-700 shadow-2xl shadow-black/60 transition-all duration-300 ${
-            !previewInView && studioInView ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none"
-          }`}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={thumb} alt="" className="w-full h-full rounded-lg" />
-          <span
-            className={`absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-slate-900 ${
-              decoder.checking ? "bg-slate-500" : decoder.ok ? "bg-emerald-400" : "bg-rose-400"
-            }`}
-          />
-        </button>
-      )}
 
       {/* Mobile: app-style bottom tab bar */}
       <nav
