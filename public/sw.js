@@ -1,5 +1,5 @@
 /* QR Vibe service worker: lets the generator open offline once it has been visited. */
-const VERSION = "v2";
+const VERSION = "v3";
 const STATIC_CACHE = `qrvibe-static-${VERSION}`;
 const PAGE_CACHE = `qrvibe-pages-${VERSION}`;
 
