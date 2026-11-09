@@ -1098,6 +1098,68 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "how-to-make-a-qr-code-for-a-google-form",
+    title: "How to Make a QR Code for a Google Form (Free)",
+    description:
+      "Turn a Google Form link into a QR code for surveys, sign-ups and RSVPs. Get the right link, set sharing correctly, add a logo and test it before you print.",
+    excerpt:
+      "Print the form once and let people scan to fill it in on their phones.",
+    published: "2026-11-09",
+    updated: "2026-11-09",
+    readMinutes: 4,
+    tool: { href: "/", label: "Make a QR code now" },
+    sections: [
+      {
+        heading: "Step 1: get the form link",
+        paragraphs: [
+          "Open your form in Google Forms and click Send. Choose the link tab, copy the link, and tick the option to shorten the URL if it is offered. A shorter link makes a simpler QR code that scans more easily when printed small.",
+        ],
+      },
+      {
+        heading: "Step 2: check who can fill it in",
+        paragraphs: [
+          "Open the link in a private or incognito window on your phone. If it asks people to sign in, go to the form settings and check the Responses options. Forms that require a Google sign-in or limit answers to your organisation will stop most scanners from submitting.",
+        ],
+      },
+      {
+        heading: "Step 3: make the QR code",
+        paragraphs: [
+          "Paste the link into the website box in QR Vibe, add your logo and colors if you like, wait for the live scan check to pass, and download PNG or SVG. The code stores the link directly, so it does not expire.",
+        ],
+      },
+      {
+        heading: "Where to use it",
+        paragraphs: ["Google Form QR codes work well for:"],
+        list: [
+          "Event sign-ups and RSVPs on posters and invitations.",
+          "Customer feedback forms on receipts, tables and packaging.",
+          "Class, workshop and meeting attendance sheets.",
+          "Job application or volunteer forms on flyers.",
+        ],
+      },
+      {
+        heading: "Keep it working",
+        paragraphs: [
+          "The QR code points to the form link, so keep the form open. If you close responses or delete the form, scanning will show an error. Do not recreate the form under a new link after printing, because the printed code still points to the old one.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I make a QR code for a Google Form?",
+        a: "Copy the form link from Send in Google Forms, paste it into a QR code generator such as QR Vibe, and download the QR code. Test it with your phone before printing.",
+      },
+      {
+        q: "Will the QR code stop working if I edit the form?",
+        a: "No. Editing questions keeps the same link. It stops working only if you delete the form or stop accepting responses.",
+      },
+      {
+        q: "Can people fill in the form without a Google account?",
+        a: "Yes, unless you turned on a setting that requires sign-in. Test the link in a private window to be sure.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string) {
