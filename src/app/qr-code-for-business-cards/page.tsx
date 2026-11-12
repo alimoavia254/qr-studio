@@ -10,7 +10,7 @@ import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = pageMetadata({
   path: "/qr-code-for-business-cards",
-  title: "QR Code for Business Card, Visiting Card & Name Card (Free vCard)",
+  title: "Visiting Card QR Code Generator - Free vCard",
   description: "Free QR code for a business card, visiting card or name card. Make a vCard QR so one scan saves your name, phone, email and website. Print-ready SVG, no signup.",
   socialTitle: "Business Card QR Code Generator | vCard Digital Contact",
   socialDescription: "Generate print-ready vCard QR codes for your paper business cards. Works natively with iOS Contacts and Android Google Contacts.",
@@ -30,7 +30,7 @@ export default function BusinessCardQRPage() {
             Standard vCard 3.0 Protocol
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mb-4">
-            QR Code Generator for <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">Business Cards</span>
+            Visiting Card &amp; <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400">Business Card</span> QR Code Generator
           </h1>
           <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
             Never lose a networking connection to a lost paper card. Turn your physical business card into an interactive digital handshake that saves directly into your client&apos;s phone contacts.
