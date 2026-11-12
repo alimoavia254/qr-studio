@@ -40,6 +40,7 @@ export default function NoExpiryQRPage() {
         { label: "Static is right for most uses", text: "Business cards, Wi-Fi, menus with a stable link, packaging and posters all work well with static codes. Choose dynamic only if you need scan analytics or must change the destination later." },
         { label: "Keep your destination alive", text: "A static code never expires, but it can only open what it points to. Keep the website or file at that link online." },
       ]}
+      guides={["static-vs-dynamic-qr-codes", "qr-code-scams-how-to-stay-safe", "how-to-make-a-qr-code-for-a-pdf"]}
       faqTitle="QR Code Expiry FAQ"
       faqs={[
         { q: "Do QR codes expire?", a: "Static QR codes never expire because the data is stored inside the code. Dynamic QR codes can stop working if the service that redirects them is cancelled or a free trial ends." },

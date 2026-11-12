@@ -40,6 +40,7 @@ export default function GoogleReviewQRPage() {
         { label: "Keep it visible", text: "Put it at eye level on the counter or table, printed at least 5 x 5 cm." },
         { label: "Follow Google's rules", text: "Don't offer rewards for reviews or only ask happy customers; Google's policies don't allow incentivised or filtered reviews." },
       ]}
+      guides={["qr-code-ideas-for-small-business", "qr-code-size-for-printing"]}
       faqTitle="Google Review QR Code FAQ"
       faqs={[
         { q: "How do I create a QR code for Google reviews?", a: "Copy your review link from Google Business Profile ('Ask for reviews'), paste it into QR Vibe, and download the QR code. Customers who scan it land on your review form." },

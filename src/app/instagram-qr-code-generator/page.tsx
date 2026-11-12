@@ -39,6 +39,7 @@ export default function InstagramQRPage() {
         { label: "Link the profile, not a post", text: "Profile links stay useful for years; a single post or reel link is best for campaigns." },
         { label: "Size it right", text: "Print at least 2 x 2 cm on cards and 5 x 5 cm or more on posters and shop windows." },
       ]}
+      guides={["qr-code-ideas-for-small-business", "best-colors-for-qr-codes"]}
       faqTitle="Instagram QR Code FAQ"
       faqs={[
         { q: "How do I make a QR code for my Instagram?", a: "Copy your profile link (instagram.com/yourname), paste it into QR Vibe, optionally add your logo and colors, and download the QR code. It's free and needs no sign-up." },

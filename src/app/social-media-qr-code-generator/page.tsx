@@ -40,6 +40,7 @@ export default function SocialQRPage() {
         { label: "Link the profile, not a post", text: "Profile links stay useful for years; post links are best for campaigns." },
         { label: "Size it right", text: "Print at least 2 x 2 cm on cards and 5 x 5 cm or more on posters." },
       ]}
+      guides={["how-to-make-a-qr-code-for-a-youtube-video", "qr-code-ideas-for-small-business"]}
       faqTitle="Social Media QR Code FAQ"
       faqs={[
         { q: "How do I make a QR code for my Instagram or TikTok?", a: "Choose Social in QR Vibe, pick the platform, type your username, and download the QR code. It's free and needs no sign-up." },

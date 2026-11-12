@@ -40,6 +40,7 @@ export default function EventQRPage() {
         { label: "Add the location", text: "A venue name helps guests open directions straight from the calendar." },
         { label: "Keep the title short", text: "Short titles read well on a lock-screen reminder." },
       ]}
+      guides={["qr-code-for-wedding-invitations", "how-to-make-a-qr-code-for-a-google-form"]}
       faqTitle="Event QR Code FAQ"
       faqs={[
         { q: "How do I make a QR code that adds an event to a calendar?", a: "Choose Event in QR Vibe, fill in the title, dates and location, and download the QR code. Scanning offers to save the event to the calendar." },

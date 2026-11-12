@@ -40,11 +40,29 @@ export default function PhoneQRPage() {
         { label: "Make it big enough", text: "Use at least 2 x 2 cm on cards and 5 x 5 cm or more on signs." },
         { label: "Test it", text: "Scan it with an iPhone and an Android phone before you print a large batch." },
       ]}
+      deepDive={[
+        {
+          "heading": "How a phone call QR code works",
+          "paragraphs": [
+            "QR Vibe stores your number as a tel: link. When someone scans it, their phone shows the number and offers to call it. Nothing is dialled until the scanner confirms, so the code is safe to place on posters, vans and shop windows.",
+            "Always write the number with its country code, for example +44 or +1, so it also works for people calling from another country."
+          ]
+        },
+        {
+          "heading": "Where a call QR code helps",
+          "paragraphs": [
+            "Use it on a delivery van, a for-rent sign, a market stall banner or a flyer, anywhere a person is on the move and typing a number is awkward. A short line such as \"Scan to call\" next to the code tells people what will happen.",
+            "If you want people to leave a written message or to open a chat instead, the SMS and WhatsApp generators do that with the same free tools."
+          ]
+        }
+      ]}
+      guides={["qr-code-ideas-for-small-business", "qr-code-size-for-printing"]}
       faqTitle="Phone Call QR Code FAQ"
       faqs={[
         { q: "How do I make a QR code that calls a number?", a: "Choose Call in QR Vibe, enter the phone number, and download the QR code. Scanning opens the dialer with your number ready to call." },
         { q: "Will the call start automatically?", a: "No. The phone shows the number and the person taps call, so nobody is dialled by accident." },
         { q: "Is it free?", a: "Yes, with unlimited downloads, no watermark and no sign-up." },
+        { q: "How do I make a QR code that calls a phone number?", a: "Open the Call tab, enter the number with its country code, and download the QR code. Scanning it shows the number on the phone and offers to call it." },
       ]}
     />
   );

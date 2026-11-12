@@ -39,6 +39,7 @@ export default function MenuQRPage() {
         { label: "Make the menu phone-friendly", text: "Use large text and a single-column layout; a phone-sized page converts better than a tiny A3 PDF." },
         { label: "Print size", text: "At least 3 x 3 cm on table tents, with good contrast and a white margin, so phones focus easily in dim light." },
       ]}
+      guides={["how-to-make-a-qr-code-for-a-restaurant-menu", "how-to-make-a-qr-code-for-a-pdf", "how-to-test-a-qr-code-before-printing"]}
       faqTitle="Menu QR Code FAQ"
       faqs={[
         { q: "How do I make a QR code for my restaurant menu?", a: "Upload your menu as a web page or shared PDF, copy its link, paste it into QR Vibe, and download the QR code. Add your logo and a 'Scan for menu' frame for better results." },

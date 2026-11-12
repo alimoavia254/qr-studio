@@ -41,12 +41,36 @@ export default function QRScannerPage() {
         { label: "Hold steady", text: "Keep the code flat and fill about half of the frame." },
         { label: "Scanning a screenshot", text: "Use Upload image. It works with screenshots, saved photos and downloaded QR codes." },
       ]}
+      deepDive={[
+        {
+          "heading": "What the scanner can read",
+          "paragraphs": [
+            "The scanner decodes QR codes from your camera or from an image you upload. After scanning it tells you what the code contains: a website link, Wi-Fi details, a contact card, a calendar event, an email, a phone number, a text message or a location. Contact cards and calendar events can be saved as files, and links show the website name before you open anything.",
+            "Decoding happens in your browser. The camera frames and uploaded photos are not sent to a server."
+          ]
+        },
+        {
+          "heading": "If a QR code will not scan",
+          "paragraphs": [
+            "Check the basics first: the code should be fully in the frame, in focus and well lit, with a clear white margin around it. Reflections on glossy paper, a very small print size or low contrast between the dots and the background are the usual causes.",
+            "If the camera is unavailable in your browser, take a photo or screenshot of the code and use the image upload instead. Crop the picture close to the code if it still fails."
+          ]
+        },
+        {
+          "heading": "Look before you open a link",
+          "paragraphs": [
+            "A QR code can hide any web address, so read the domain shown after scanning before you continue, especially for codes on stickers or letters. Never enter passwords or payment details on a page you reached from an unknown code."
+          ]
+        }
+      ]}
+      guides={["qr-code-scams-how-to-stay-safe", "how-to-scan-a-qr-code-from-an-image-or-screenshot", "how-to-scan-a-qr-code-on-iphone-and-android", "how-to-test-a-qr-code-before-printing"]}
       faqTitle="QR Code Scanner FAQ"
       faqs={[
         { q: "How do I scan a QR code without an app?", a: "Open this page, tap Start camera, and point at the QR code. Phones also have a built-in scanner in the camera app. This page is useful on laptops or for QR codes inside images." },
         { q: "Can I scan a QR code from a screenshot or image?", a: "Yes. Tap Upload image and choose the screenshot or photo. The QR code is read directly in your browser." },
         { q: "Is it safe to scan unknown QR codes?", a: "Scanning only reads the content. The risk is opening a malicious link, so always check the website name shown before you tap Open link." },
         { q: "Are my images or camera feed uploaded?", a: "No. Everything is processed on your device and nothing is sent to a server." },
+        { q: "Can I scan a QR code from a screenshot or a saved image?", a: "Yes. Use the image upload on this page and choose the screenshot or photo (PNG, JPG or WebP). The code is decoded in your browser and the result is shown on screen." },
       ]}
     />
   );
