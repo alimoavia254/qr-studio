@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   path: "/location-qr-code-generator",
-  title: "Location & Address QR Code Generator (Free, Google Maps)",
+  title: "Address & Location QR Code Generator - Free",
   description: "Make a free QR code for a location or address. It opens Google Maps or the phone map app at exact coordinates. Add your logo, download PNG, SVG or PDF. No sign-up.",
   socialTitle: "Free Location QR Code Generator | QR Vibe",
   socialDescription: "Send people straight to your shop, venue or meeting point on the map.",
