@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { Wifi, ShieldCheck, Printer, KeyRound, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { PageFAQ } from "@/components/PageFAQ";
+import { DeepDive, GuideLinks } from "@/components/PageExtras";
 import { PAGE_FAQS, breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
@@ -101,7 +102,32 @@ export default function WiFiQRPage() {
             </div>
           </div>
 
+          <DeepDive sections={[
+            {
+              "heading": "Which security type should I choose?",
+              "paragraphs": [
+                "QR Vibe offers WPA/WPA2, WEP and no password. Most home routers, cafes and hotels use WPA or WPA2 Personal, so that is the right choice unless your router settings say otherwise. Choose no password only for an open network, and WEP only if an old router still requires it.",
+                "If the security type in the code does not match the router, the phone will fail to join even though the password is correct. Check the router page if a scan connects slowly or not at all."
+              ]
+            },
+            {
+              "heading": "Use a guest network for public places",
+              "paragraphs": [
+                "Anyone who scans a Wi-Fi QR code can join the network, and the password is readable from the code. For a cafe, shop or Airbnb, create a separate guest network on your router and print that one, so your main devices stay private.",
+                "If you change the password, the printed code stops working and you need to generate and print a new one. Keep the SVG so you can reprint quickly."
+              ]
+            },
+            {
+              "heading": "If guests cannot connect",
+              "paragraphs": [
+                "Confirm the network name and password are typed exactly, including capital letters and symbols. Turn on the hidden network option only if your router really hides its name. Older phones may not offer to join from the camera, in which case they can type the password manually."
+              ]
+            }
+          ]} />
+
           <PageFAQ title="Wi-Fi QR Code FAQ" faqs={PAGE_FAQS.wifi} />
+
+          <GuideLinks slugs={["how-to-share-wifi-with-a-qr-code", "how-to-test-a-qr-code-before-printing", "qr-code-size-for-printing"]} />
 
           {/* Quick Links */}
           <div className="text-center">

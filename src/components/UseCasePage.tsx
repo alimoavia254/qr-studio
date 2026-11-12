@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { PageFAQ } from "@/components/PageFAQ";
 import { JsonLd } from "@/components/JsonLd";
+import { DeepDive, GuideLinks, type DeepDiveSection } from "@/components/PageExtras";
 import type { QRContentType } from "@/types/qr";
 import { SITE_URL, breadcrumbSchema, type Faq } from "@/lib/seo";
 
@@ -28,6 +29,10 @@ export interface UseCasePageProps {
   steps: string[];
   tipsTitle: string;
   tips: { label: string; text: string }[];
+  /** Extra page-specific sections between the tips and the FAQ. */
+  deepDive?: DeepDiveSection[];
+  /** Slugs of guides to feature below the FAQ. */
+  guides?: string[];
   faqTitle: string;
   faqs: Faq[];
 }
@@ -124,7 +129,11 @@ export function UseCasePage(p: UseCasePageProps) {
             </ul>
           </div>
 
+          {p.deepDive && <DeepDive sections={p.deepDive} />}
+
           <PageFAQ title={p.faqTitle} faqs={p.faqs} />
+
+          {p.guides && <GuideLinks slugs={p.guides} />}
 
           <div className="text-center">
             <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500 mb-4">Explore More Dedicated Generators</h3>

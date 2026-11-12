@@ -24,7 +24,7 @@ export default function BulkQRPage() {
       intro="Paste a list of links or upload a CSV, choose one style, and download every QR code in a single ZIP. Ideal for table numbers, product labels, tickets and staff badges."
       features={[
         { icon: Layers, title: "Hundreds in One Go", text: "Generate up to 200 QR codes per batch, all in the same style, with optional logo in the middle." },
-        { icon: FileArchive, title: "Named Files in a ZIP", text: "Add a name column to control file names like table-1.png, or let us number them 001, 002, 003." },
+        { icon: FileArchive, title: "Named Files in a ZIP", text: "Add a name column to name each file (for example 001-table-1.png), or let us number them 001, 002, 003." },
         { icon: Lock, title: "Your List Stays Private", text: "Everything runs in your browser. Your links and CSV are never uploaded." },
       ]}
       howToName="How to make QR codes in bulk"
@@ -41,12 +41,36 @@ export default function BulkQRPage() {
         { label: "Use SVG for print", text: "Vector files stay sharp at any size. Use PNG for screens." },
         { label: "Keep high contrast", text: "Dark dots on a light background scan most reliably in bulk." },
       ]}
+      deepDive={[
+        {
+          "heading": "Example: table numbers for a restaurant",
+          "paragraphs": [
+            "Write one line per table in the name,link format, for example table-1,https://example.com/menu?t=1, table-2,https://example.com/menu?t=2 and so on. Tick the file-name checkbox and the ZIP will contain numbered files such as 001-table-1.png and 002-table-2.png, ready to drop into a print layout.",
+            "The same approach works for product labels, event tickets, staff badges, plant tags or asset stickers. Each line becomes its own QR code with the style, size and logo you chose once."
+          ]
+        },
+        {
+          "heading": "CSV and TXT input",
+          "paragraphs": [
+            "You can paste your list or upload a CSV or TXT file. Put one entry per line. If a line has a name before the first comma and you tick the file-name checkbox, it is used in the file name. Batches are limited to 200 codes, so a longer list should be split into several uploads.",
+            "Everything is generated in your browser. Your list is not uploaded, which matters when the links are private or contain customer numbers."
+          ]
+        },
+        {
+          "heading": "Check before you print a batch",
+          "paragraphs": [
+            "Scan the sample code, and then scan a few more from the ZIP on different phones. A mistake in a single link repeated across hundreds of labels is expensive to fix, so test first and print second."
+          ]
+        }
+      ]}
+      guides={["how-to-test-a-qr-code-before-printing", "qr-code-size-for-printing", "how-to-make-a-qr-code-for-a-restaurant-menu", "qr-code-error-correction-levels"]}
       faqTitle="Bulk QR Code Generator FAQ"
       faqs={[
         { q: "How do I create many QR codes at once?", a: "Paste one link per line, or upload a CSV, pick a style, and download the ZIP. Every line becomes its own QR code file." },
         { q: "Is there a limit?", a: "Each batch can include up to 200 QR codes. For more, run several batches." },
         { q: "Can I name each file?", a: "Yes. Tick the file-name checkbox and write each line as name,content, for example table-5,https://example.com/menu?t=5." },
         { q: "Is the bulk generator really free?", a: "Yes. There is no sign-up, no watermark and no limit on how many batches you make." },
+        { q: "Can I make QR codes for a list of URLs from a spreadsheet?", a: "Yes. Export the spreadsheet as CSV or copy the column, paste or upload it, and QR Vibe makes one QR code per line. Use a name,link layout if you want custom file names." },
       ]}
     />
   );

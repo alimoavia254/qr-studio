@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import { MessageSquare, ShieldCheck, Zap, Smartphone, CheckCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { PageFAQ } from "@/components/PageFAQ";
+import { DeepDive, GuideLinks } from "@/components/PageExtras";
 import { PAGE_FAQS, breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
 
@@ -101,7 +102,26 @@ export default function WhatsAppQRPage() {
             </div>
           </div>
 
+          <DeepDive sections={[
+            {
+              "heading": "How a WhatsApp QR code works",
+              "paragraphs": [
+                "QR Vibe builds a wa.me link from your number and an optional message. When someone scans the code, WhatsApp opens a chat with you and the message is already typed, so they only press send. They do not need to save your number first.",
+                "Write the number with its country code and no plus sign or spaces, for example 923001234567. A wrong or missing country code is the most common reason the chat does not open."
+              ]
+            },
+            {
+              "heading": "Good places for a WhatsApp QR code",
+              "paragraphs": [
+                "Add it to a shop window, a product label, a menu, a business card or a flyer, with a short line such as \"Scan to chat on WhatsApp\". A pre-filled message like \"Hi, I would like to order\" tells you why the customer is writing.",
+                "If the message is long, keep it short instead: a denser QR code is harder to scan from a distance. If you prefer a normal text message or a phone call, use the SMS or Call generators."
+              ]
+            }
+          ]} />
+
           <PageFAQ title="WhatsApp QR Code FAQ" faqs={PAGE_FAQS.whatsapp} />
+
+          <GuideLinks slugs={["qr-code-ideas-for-small-business", "how-to-test-a-qr-code-before-printing"]} />
 
           {/* Quick Links to other generators */}
           <div className="text-center">
