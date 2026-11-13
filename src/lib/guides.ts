@@ -1160,6 +1160,71 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "can-a-qr-code-be-rectangular",
+    title: "Can a QR Code Be Rectangular? Shapes, Frames and What Scans",
+    description:
+      "Can a QR code be rectangular? Standard QR codes are square. Learn what a rectangular QR code really is, how to fit one on a wide label and what still scans.",
+    excerpt:
+      "Standard QR codes are square. Here is what that means for wide labels, banners and business cards, and how to get a rectangular look that still scans.",
+    published: "2026-11-13",
+    updated: "2026-11-13",
+    readMinutes: 5,
+    tool: { href: "/", label: "Make a QR code with a frame" },
+    sections: [
+      {
+        heading: "The short answer",
+        paragraphs: [
+          "A standard QR code is always square. The pattern is a grid with the same number of modules across and down, and phone cameras expect that shape. If you stretch a normal QR code into a rectangle, the modules become distorted and many scanners will fail to read it.",
+          "What you can make rectangular is the area around the code: a frame, a label or a sticker that holds a square QR code plus a call to action such as Scan me.",
+        ],
+      },
+      {
+        heading: "Is there a real rectangular QR code?",
+        paragraphs: [
+          "Yes, there is a separate standard called rectangular Micro QR code (rMQR), published as ISO/IEC 23941. It is designed for long, thin spaces such as cable labels. It is much less widely supported than the normal QR code, and many phone camera apps cannot read it without a dedicated scanner app.",
+          "QR Vibe generates standard square QR codes, not rMQR. For anything printed for the public, a standard square code is the safer choice because every modern phone camera can read it.",
+        ],
+      },
+      {
+        heading: "How to fit a QR code on a wide label",
+        paragraphs: ["Keep the code square and design the space around it:"],
+        list: [
+          "Place the square QR code at one end of the label and put your text or logo beside it.",
+          "Leave a clear white margin around the code, about four modules wide, so the scanner can find its edges.",
+          "Keep the code at least 2 x 2 cm for close-range scanning and larger for posters or banners.",
+          "Add a short call to action in the frame so people know why to scan.",
+        ],
+      },
+      {
+        heading: "Do not stretch or crop the code",
+        paragraphs: [
+          "Resizing an image of a QR code with different width and height settings is the most common mistake. Always scale it proportionally, or download the SVG and place it in your design tool with the aspect ratio locked.",
+          "Cropping the margin is the second most common mistake. Without the quiet zone, a scanner may not detect where the code starts.",
+        ],
+      },
+      {
+        heading: "Always test the printed result",
+        paragraphs: [
+          "Whatever layout you choose, scan the final printed proof with more than one phone before ordering. If it scans quickly from the distance your audience will use, it is ready.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Can I make a rectangular QR code?",
+        a: "Standard QR codes are square. You can place a square code inside a rectangular frame or label. A true rectangular format (rMQR) exists but is not supported by most phone cameras, and QR Vibe does not generate it.",
+      },
+      {
+        q: "Why does my stretched QR code not scan?",
+        a: "Scanners expect equal width and height. Stretching distorts the modules, so the code cannot be decoded. Scale it proportionally instead.",
+      },
+      {
+        q: "What is the best QR code size for a wide banner?",
+        a: "Keep it square and size it by scanning distance. A common rule is about 1 cm of code width for every 10 cm of distance, with a minimum of 2 x 2 cm.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string) {
