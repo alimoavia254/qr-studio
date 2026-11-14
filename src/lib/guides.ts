@@ -1225,6 +1225,70 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "vcard-qr-code-for-business-cards",
+    title: "vCard QR Code: Put Your Contact Details on a Business Card",
+    description:
+      "How to make a vCard QR code for a business card, visiting card or name card. See which fields to include, vCard vs website link, print size and how to test it.",
+    excerpt:
+      "One scan saves your name, phone, email and website as a new contact. Here is how to set it up on a business card and what to check before printing.",
+    published: "2026-11-14",
+    updated: "2026-11-14",
+    readMinutes: 5,
+    tool: { href: "/qr-code-for-business-cards", label: "Make a business card QR code" },
+    sections: [
+      {
+        heading: "What a vCard QR code does",
+        paragraphs: [
+          "A vCard is the standard format phones use for contact cards. A vCard QR code stores your details directly inside the code. When someone scans it with their camera, the phone offers to save you as a new contact, so they do not have to type your number.",
+          "Business card, visiting card and name card all mean the same thing here. The same QR code works on any of them.",
+        ],
+      },
+      {
+        heading: "Step by step",
+        paragraphs: ["In QR Vibe the whole process takes a minute:"],
+        list: [
+          "Open the vCard tab.",
+          "Fill in your first and last name, then add phone, email, company, job title, website and address. Only the name is needed; add the fields people will actually use.",
+          "Add your colors or logo if you like and wait for the live scan check to pass.",
+          "Download PNG for quick use or SVG for print, then place it on your card design.",
+        ],
+      },
+      {
+        heading: "vCard or website link: which should you use?",
+        paragraphs: [
+          "A vCard saves your details on the phone and works without an internet connection, because the data is inside the code. The trade-off is that it is fixed. If your phone number or email changes, you need a new QR code and new cards.",
+          "A website link is better if you want people to see a portfolio or booking page. Many people print both: a vCard for saving contact details and a second code for the website. Keep each code clearly labelled so people know what they will get.",
+        ],
+      },
+      {
+        heading: "Keep it short so it scans easily",
+        paragraphs: [
+          "Every extra field makes the QR code denser, with smaller squares. On a small business card, a dense code is harder to scan. Leave out anything that is not needed, such as a long street address, and keep the code at least 2 x 2 cm.",
+        ],
+      },
+      {
+        heading: "Test before you print",
+        paragraphs: [
+          "Scan the proof with an iPhone and an Android phone. Check that the name, number and email appear correctly in the contact preview, and that the code scans quickly from normal reading distance. You can also use the QR Vibe scanner to read back what the code contains.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How do I make a QR code for my business card?",
+        a: "Open the vCard tab in QR Vibe, enter your name and contact details, download the QR code and add it to your card design. Test it with your phone before printing.",
+      },
+      {
+        q: "Can I change the details after printing the cards?",
+        a: "No. The details are stored inside the code, so changing them means making a new QR code. The upside is that the code never expires and does not depend on a service staying online.",
+      },
+      {
+        q: "How big should a QR code be on a business card?",
+        a: "At least 2 x 2 cm. Keep the white margin around it and avoid adding too many fields, because a denser code needs more space to scan reliably.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string) {
