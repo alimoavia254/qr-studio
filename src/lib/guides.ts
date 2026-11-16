@@ -1289,6 +1289,68 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "qr-code-on-product-packaging",
+    title: "QR Codes on Product Packaging: What to Link and How to Print",
+    description:
+      "Put a QR code on product packaging for instructions, reviews or reorders. Learn what to link, the best size and placement, and how to avoid codes that fail to scan.",
+    excerpt:
+      "Packaging has little space and rough surfaces. Here is how to make a QR code that still scans.",
+    published: "2026-11-16",
+    updated: "2026-11-16",
+    readMinutes: 5,
+    tool: { href: "/custom-qr-code-generator", label: "Design a custom QR code" },
+    sections: [
+      {
+        heading: "What to link from packaging",
+        paragraphs: [
+          "A QR code works best when it gives the buyer something useful right away. Popular choices are a how-to or setup page, a care or ingredients page, a warranty or support form, a review link, and a reorder page.",
+        ],
+      },
+      {
+        heading: "Use a link you will keep",
+        paragraphs: [
+          "Printed packaging is expensive to change. Link to a page on your own website that you can update, and keep that address in place for as long as the product is sold. A static QR code never expires, but it can only open the link it contains.",
+        ],
+      },
+      {
+        heading: "Size and placement",
+        paragraphs: ["A few rules prevent most scanning problems:"],
+        list: [
+          "Print the code at least 2 x 2 cm, and larger if people scan from a shelf or from an arm's length away.",
+          "Keep a blank margin around the code, about the width of four small squares.",
+          "Place it on a flat area, away from folds, seams, curves and the edges of the box.",
+          "Add a short label such as Scan for setup help, so buyers know what they will get.",
+        ],
+      },
+      {
+        heading: "Colors, finishes and logos",
+        paragraphs: [
+          "Dark dots on a light background scan best. Glossy coatings, foil and textured stock can reflect light and lower contrast, so test on the real material. If you add a logo, keep it small so the code stays readable.",
+        ],
+      },
+      {
+        heading: "Test before the print run",
+        paragraphs: [
+          "Print a proof on the actual packaging material and scan it with an iPhone and an Android phone, in normal and dim light. Fix any weak spots before ordering the full run.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "How big should a QR code be on product packaging?",
+        a: "At least 2 x 2 cm with a blank margin around it. Use a larger code if shoppers will scan it from further away.",
+      },
+      {
+        q: "What should a packaging QR code link to?",
+        a: "Something useful to the buyer, such as setup instructions, care details, support or a review page, on a link you control and will keep.",
+      },
+      {
+        q: "Will a QR code scan on glossy or curved packaging?",
+        a: "It can, but glare and curves reduce reliability. Place the code on a flat, matte area if you can, and test a printed proof on the real material.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string) {
