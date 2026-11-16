@@ -5,7 +5,7 @@ import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
   path: "/sms-qr-code-generator",
-  title: "SMS QR Code Generator - Free Pre-filled Text Message",
+  title: "SMS QR Code Generator - Free Text Message QR Code",
   description: "Make a free SMS QR code with the number and message pre-filled. Scan, tap send. Add your logo and colors, download PNG, SVG or PDF. No sign-up.",
   socialTitle: "Free SMS QR Code Generator | QR Vibe",
   socialDescription: "Scanning opens the messages app with your number and text ready to send.",
@@ -70,6 +70,8 @@ export default function SmsQRPage() {
         { q: "Does an SMS QR code expire?", a: "No. The number and message are stored inside the QR code itself, so it works forever." },
         { q: "What is the best SMS QR code generator for a text message?", a: "Pick one that lets you pre-fill both the number and the message and does not route scans through a redirect. QR Vibe's SMS tab does this for free, with no sign-up, and the code works without an expiry date." },
         { q: "How do I make a QR code that texts a specific message?", a: "Open the SMS tab, enter the number with its country code, type the message to pre-fill, then download the QR code. When someone scans it, their messages app opens with the number and text ready to send." },
+        { q: "How do I turn a phone number and message into a QR code that opens SMS?", a: "Use the SMS tab: enter the number with its country code and the text, and the QR code is created instantly in your browser. Scanning it opens the messages app with the recipient and text filled in, ready for the person to tap send." },
+        { q: "Can an SMS QR code send a picture or MMS?", a: "No. QR Vibe's SMS code pre-fills a number and a text message only. It cannot attach a picture, so if you want people to see an image, link to it with a URL QR code instead." },
       ]}
     />
   );
