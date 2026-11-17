@@ -1351,6 +1351,71 @@ export const GUIDES: Guide[] = [
       },
     ],
   },
+  {
+    slug: "can-a-qr-code-be-white-or-inverted",
+    title: "Can a QR Code Be White or Inverted? Dark Background Guide",
+    description:
+      "Can a QR code be white, inverted or placed on a dark background? Learn when light-on-dark QR codes scan, when they fail and the safe way to use dark designs.",
+    excerpt:
+      "A white QR code on a dark background looks great, but not every scanner can read it. Here is what works, what fails and how to stay safe.",
+    published: "2026-11-17",
+    updated: "2026-11-17",
+    readMinutes: 5,
+    tool: { href: "/", label: "Make a QR code and check it scans" },
+    sections: [
+      {
+        heading: "The short answer",
+        paragraphs: [
+          "Yes, a QR code can be inverted, meaning light squares on a dark background. Many modern phone cameras read these, but not every scanner app does, especially older ones. A normal QR code has dark squares on a light background, and that is the version every scanner is built around.",
+          "So the answer depends on who will scan it. If you need the code to work for everyone, use dark squares on a light background. If you want a dark design, put a light panel behind the code instead of inverting the code itself.",
+        ],
+      },
+      {
+        heading: "Why inverted codes fail on some scanners",
+        paragraphs: [
+          "Scanners look for the three large square markers in the corners and then read the pattern as dark modules on a light field. Some apps only try that one polarity, so when the colors are flipped they find nothing and show no result.",
+          "You cannot predict which app your audience uses. That is why a code that scans perfectly on your phone can still fail for a customer.",
+        ],
+      },
+      {
+        heading: "How to use a QR code on a dark design",
+        paragraphs: ["These options keep the dark look and stay safe:"],
+        list: [
+          "Place the normal QR code on a white or very light rounded panel and put that panel on the dark background.",
+          "Leave a clear light margin of about four modules around the code, the quiet zone, inside the panel.",
+          "Use dark dots that are much darker than the panel. A deep navy or black is safest.",
+          "Avoid putting the code directly on a photo or a pattern, because the background competes with the squares.",
+        ],
+      },
+      {
+        heading: "What about other colors, like grey or yellow?",
+        paragraphs: [
+          "The rule is contrast, not a particular color. The dots must be clearly darker than the background. Pale grey, yellow or pastel dots on white have too little contrast and often fail, even though they look fine to the eye.",
+          "A coloured QR code is fine when the dots are dark enough. Our guide to the best colors for QR codes lists safe combinations.",
+        ],
+      },
+      {
+        heading: "Test on more than one phone",
+        paragraphs: [
+          "If you still want a true inverted code, scan it with the built-in camera on an iPhone and an Android phone, and with at least one scanner app, before you print. In QR Vibe the live scan check tells you whether the current colors can be read, but a real test on the devices your audience uses is the final step.",
+        ],
+      },
+    ],
+    faqs: [
+      {
+        q: "Can a QR code be white?",
+        a: "A white code needs a dark background behind it, which makes it an inverted code. Some scanners read it and some do not. A white panel with dark dots is the safer choice.",
+      },
+      {
+        q: "Will a dark mode QR code scan?",
+        a: "It might, but it is not guaranteed on every scanner app. Keep dark dots on a light panel if the code must work for everyone.",
+      },
+      {
+        q: "What is the safest background for a QR code?",
+        a: "A plain white or very light background with dark dots and a clear margin around the code.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string) {
