@@ -135,6 +135,10 @@ export const PAGE_FAQS: Record<string, Faq[]> = {
       q: "Can I add my company logo to a business card QR code?",
       a: "Yes. Upload your logo in the Logo tab. QR Vibe switches to high error correction automatically so the code still scans.",
     },
+    {
+      q: "Does a visiting card QR code need internet to work?",
+      a: "No. A vCard QR code stores your contact details inside the code itself, so the phone can read them offline. The trade-off is that the details are fixed, so a new number or email means a new code.",
+    },
   ],
   custom: [
     {

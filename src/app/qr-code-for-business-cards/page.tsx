@@ -7,6 +7,7 @@ import Link from "next/link";
 import { PageFAQ } from "@/components/PageFAQ";
 import { PAGE_FAQS, breadcrumbSchema, pageMetadata } from "@/lib/seo";
 import { JsonLd } from "@/components/JsonLd";
+import { GuideLinks } from "@/components/PageExtras";
 
 export const metadata: Metadata = pageMetadata({
   path: "/qr-code-for-business-cards",
@@ -100,6 +101,8 @@ export default function BusinessCardQRPage() {
               </ul>
             </div>
           </div>
+
+          <GuideLinks slugs={["vcard-qr-code-for-business-cards", "qr-code-size-for-printing", "how-to-test-a-qr-code-before-printing"]} />
 
           <PageFAQ title="Business Card QR Code FAQ" faqs={PAGE_FAQS.businessCard} />
 
